@@ -142,20 +142,20 @@ void main() {
       expect(unratedSeason.ratedEpisodeCount, 0);
     });
 
-    test('Letterboxd review and rating fields on WatchedEpisode and TrackedShow', () {
+    test('Letterboxd review and 10-star rating fields on WatchedEpisode and TrackedShow', () {
       final logDate = DateTime(2026, 10, 9);
       final episode = WatchedEpisode(
         showId: 100,
         key: const EpisodeKey(1, 1),
         runtime: 45,
         watchedAt: logDate,
-        userRating: 4.5,
+        userRating: 8.5,
         reviewText: 'Incrível episódio, reviravolta brilhante!',
         hasSpoilers: true,
         loggedAt: logDate,
       );
 
-      expect(episode.userRating, 4.5);
+      expect(episode.userRating, 8.5);
       expect(episode.reviewText, 'Incrível episódio, reviravolta brilhante!');
       expect(episode.hasSpoilers, isTrue);
       expect(episode.loggedAt, logDate);
@@ -166,13 +166,13 @@ void main() {
         status: TrackingStatus.watching,
         addedAt: logDate,
         updatedAt: logDate,
-        overallUserRating: 5.0,
+        overallUserRating: 9.5,
         reviewText: 'Uma obra-prima contemporânea.',
         hasSpoilers: false,
         loggedAt: logDate,
       );
 
-      expect(show.overallUserRating, 5.0);
+      expect(show.overallUserRating, 9.5);
       expect(show.reviewText, 'Uma obra-prima contemporânea.');
       expect(show.hasSpoilers, isFalse);
       expect(show.loggedAt, logDate);

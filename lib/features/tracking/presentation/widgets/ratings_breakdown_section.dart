@@ -140,7 +140,6 @@ class _RatingsBreakdownSectionState
   Widget _buildInspectionBanner(Map<String, int> distribution, int total) {
     if (_selectedScore != null) {
       final key = _selectedScore!.toStringAsFixed(1);
-      final starEquivalent = (_selectedScore! / 2).toStringAsFixed(1);
       final count = distribution[key] ?? 0;
       final percent = total > 0 ? ((count / total) * 100).toStringAsFixed(1) : '0';
 
@@ -164,7 +163,7 @@ class _RatingsBreakdownSectionState
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                '$starEquivalent ★ ($key/10)  •  $count ${count == 1 ? 'série' : 'séries'} ($percent%)',
+                '$key / 10 ★  •  $count ${count == 1 ? 'avaliação' : 'avaliações'} ($percent%)',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,

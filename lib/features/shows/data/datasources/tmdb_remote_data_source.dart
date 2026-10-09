@@ -1,6 +1,5 @@
 import 'package:http/http.dart' as http;
 
-import '../../../../core/config/app_config.dart';
 import '../../domain/entities/genre.dart';
 import '../../domain/entities/show.dart';
 import '../models/tmdb_mapper.dart';

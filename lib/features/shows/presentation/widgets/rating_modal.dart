@@ -18,7 +18,7 @@ class RatingLogSaved extends RatingResult {
     required this.loggedAt,
   });
 
-  /// Rating score in Letterboxd scale (0.5 to 5.0 stars), or null if unrated.
+  /// Rating score in 10-star scale (0.5 to 10.0 stars with 0.5 increments), or null if unrated.
   final double? rating;
 
   /// Optional written review or notes.
@@ -39,7 +39,7 @@ class RatingRemoved extends RatingResult {
   const RatingRemoved();
 }
 
-/// Letterboxd-style rating and review log modal for Seriolab.
+/// Letterboxd-style 10-Star Rating and Review Log Modal for Seriolab.
 class RatingModal extends StatefulWidget {
   const RatingModal({
     super.key,
@@ -103,15 +103,17 @@ class _RatingModalState extends State<RatingModal> {
   late bool _hasSpoilers;
   late DateTime _loggedAt;
   late final bool _hadInitialData;
+  bool _useTwoRows = false;
+  bool _layoutInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    // Normalize initial rating to Letterboxd 0.5 - 5.0 scale if it was previously in 1-10
     final initial = widget.initialRating;
     if (initial != null) {
-      final normalized = initial > 5.0 ? initial / 2.0 : initial;
-      _currentRating = (normalized * 2).round() / 2;
+      // Clamped to 0.5 - 10.0 with 0.5 steps
+      final clamped = initial.clamp(0.5, 10.0);
+      _currentRating = (clamped * 2).round() / 2;
     } else {
       _currentRating = null;
     }
@@ -131,28 +133,51 @@ class _RatingModalState extends State<RatingModal> {
   }
 
   String _getRatingQualifier(double score) {
-    if (score >= 5.0) return 'Obra-Prima ★★★';
-    if (score >= 4.5) return 'Brilhante / Excelente';
-    if (score >= 4.0) return 'Muito Bom';
-    if (score >= 3.5) return 'Bom';
-    if (score >= 3.0) return 'Acima da Média';
-    if (score >= 2.5) return 'Razoável / Médio';
-    if (score >= 2.0) return 'Abaixo da Média';
-    if (score >= 1.5) return 'Fraco';
-    if (score >= 1.0) return 'Muito Fraco';
-    return 'Terrível';
+    if (score >= 10.0) return 'Obra-Prima ★★★';
+    if (score >= 9.5) return 'Obra-Prima';
+    if (score >= 9.0) return 'Brilhante / Excelente';
+    if (score >= 8.5) return 'Excelente';
+    if (score >= 8.0) return 'Muito Bom';
+    if (score >= 7.5) return 'Bom +';
+    if (score >= 7.0) return 'Bom';
+    if (score >= 6.5) return 'Acima da Média';
+    if (score >= 6.0) return 'Razoável +';
+    if (score >= 5.5) return 'Razoável';
+    if (score >= 5.0) return 'Mediano';
+    if (score >= 4.5) return 'Abaixo da Média';
+    if (score >= 4.0) return 'Fraco +';
+    if (score >= 3.5) return 'Fraco';
+    if (score >= 3.0) return 'Muito Fraco';
+    if (score >= 2.5) return 'Mau';
+    if (score >= 2.0) return 'Muito Mau';
+    if (score >= 1.5) return 'Terrível';
+    if (score >= 1.0) return 'Pavoroso';
+    return 'Insuportável';
   }
 
-  void _updateScoreFromOffset(double dx, double totalWidth) {
+  void _updateScore10Line(double dx, double totalWidth) {
     if (totalWidth <= 0) return;
     final clampedDx = dx.clamp(0.0, totalWidth);
-    final raw = (clampedDx / totalWidth) * 5.0;
-    // Snap to steps of 0.5: left half gives .5, right half gives 1.0
+    final raw = (clampedDx / totalWidth) * 10.0;
+    double snapped = (raw * 2).ceil() / 2;
+    if (snapped < 0.5) snapped = 0.5;
+    if (snapped > 10.0) snapped = 10.0;
+    setState(() {
+      _currentRating = snapped;
+    });
+  }
+
+  void _updateScoreTwoRows(double dx, double rowWidth, int rowIndex) {
+    if (rowWidth <= 0) return;
+    final clampedDx = dx.clamp(0.0, rowWidth);
+    final raw = (clampedDx / rowWidth) * 5.0;
     double snapped = (raw * 2).ceil() / 2;
     if (snapped < 0.5) snapped = 0.5;
     if (snapped > 5.0) snapped = 5.0;
+
+    final finalScore = rowIndex == 0 ? snapped : (5.0 + snapped);
     setState(() {
-      _currentRating = snapped;
+      _currentRating = finalScore.clamp(0.5, 10.0);
     });
   }
 
@@ -197,6 +222,13 @@ class _RatingModalState extends State<RatingModal> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (!_layoutInitialized) {
+      // For compact mobile screens (< 360px), default to 2 rows of 5 stars for maximum touch comfort
+      _useTwoRows = screenWidth < 360;
+      _layoutInitialized = true;
+    }
+
     final now = DateTime.now();
     final isToday = _loggedAt.year == now.year &&
         _loggedAt.month == now.month &&
@@ -205,8 +237,8 @@ class _RatingModalState extends State<RatingModal> {
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
+          left: 18,
+          right: 18,
           top: 12,
           bottom: MediaQuery.of(context).viewInsets.bottom + 16,
         ),
@@ -295,17 +327,17 @@ class _RatingModalState extends State<RatingModal> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              // Letterboxd 5-Star Rating Container
+              // 10-Star Rating Container
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceHigh,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: _currentRating != null
-                        ? RatingModal.letterboxdGreen.withValues(alpha: 0.4)
+                        ? RatingModal.letterboxdGreen.withValues(alpha: 0.45)
                         : AppColors.outline,
                     width: 1.2,
                   ),
@@ -313,7 +345,7 @@ class _RatingModalState extends State<RatingModal> {
                       ? [
                           BoxShadow(
                             color: RatingModal.letterboxdGreen
-                                .withValues(alpha: 0.12),
+                                .withValues(alpha: 0.14),
                             blurRadius: 18,
                             spreadRadius: 2,
                           ),
@@ -322,11 +354,75 @@ class _RatingModalState extends State<RatingModal> {
                 ),
                 child: Column(
                   children: [
-                    // The 5 Stars gesture bar
-                    _buildStarBar(),
+                    // Layout Switcher Header (1 row vs 2 rows)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'CLASSIFICAÇÃO (10 ESTRELAS)',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _useTwoRows = !_useTwoRows;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: AppColors.outline,
+                                width: 0.6,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _useTwoRows
+                                      ? Icons.view_headline_rounded
+                                      : Icons.grid_view_rounded,
+                                  size: 13,
+                                  color: AppColors.textSecondary,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _useTwoRows ? '1 Linha (10★)' : '2 Linhas (2x5★)',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // The Stars (1-line or 2-lines mode)
+                    if (_useTwoRows)
+                      _buildTwoRowsStarBar()
+                    else
+                      _buildSingleRowStarBar(),
+
                     const SizedBox(height: 14),
 
-                    // Label & Qualifier or Clear Rating button
+                    // Real-time Text Indicator (e.g. "8.5 / 10 ★") and Qualifier
                     if (_currentRating != null) ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -336,26 +432,27 @@ class _RatingModalState extends State<RatingModal> {
                           Text(
                             _currentRating!.toStringAsFixed(1),
                             style: const TextStyle(
-                              fontSize: 32,
+                              fontSize: 34,
                               fontWeight: FontWeight.w900,
                               color: RatingModal.letterboxdGreen,
+                              letterSpacing: -0.5,
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 3),
                           const Text(
                             '★',
                             style: TextStyle(
-                              fontSize: 22,
+                              fontSize: 24,
                               fontWeight: FontWeight.w900,
                               color: RatingModal.letterboxdGreen,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '(${(_currentRating! * 2).toStringAsFixed(0)}/10)',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
+                          const SizedBox(width: 6),
+                          const Text(
+                            '/ 10',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
                               color: AppColors.textMuted,
                             ),
                           ),
@@ -418,7 +515,7 @@ class _RatingModalState extends State<RatingModal> {
                       ),
                     ] else ...[
                       const Text(
-                        'Toca ou desliza para avaliar (0.5 a 5.0 ★)',
+                        'Toca ou desliza para avaliar (0.5 a 10.0 ★)',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -429,7 +526,7 @@ class _RatingModalState extends State<RatingModal> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Review / Notes TextField
               Container(
@@ -438,7 +535,7 @@ class _RatingModalState extends State<RatingModal> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.outline, width: 0.8),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 child: TextField(
                   controller: _reviewController,
                   minLines: 3,
@@ -457,7 +554,7 @@ class _RatingModalState extends State<RatingModal> {
                     ),
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(vertical: 4),
                   ),
                 ),
               ),
@@ -516,7 +613,7 @@ class _RatingModalState extends State<RatingModal> {
                     ),
                     Switch.adaptive(
                       value: _hasSpoilers,
-                      activeColor: const Color(0xFFF59E0B),
+                      activeThumbColor: const Color(0xFFF59E0B),
                       onChanged: (val) => setState(() => _hasSpoilers = val),
                     ),
                   ],
@@ -670,25 +767,26 @@ class _RatingModalState extends State<RatingModal> {
     );
   }
 
-  Widget _buildStarBar() {
+  /// Single line with 10 stars (continuous horizontal drag 0.5 to 10.0).
+  Widget _buildSingleRowStarBar() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final barWidth = math.min(constraints.maxWidth, 260.0);
+        final barWidth = math.min(constraints.maxWidth, 360.0);
 
         return Center(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTapDown: (details) =>
-                _updateScoreFromOffset(details.localPosition.dx, barWidth),
+                _updateScore10Line(details.localPosition.dx, barWidth),
             onHorizontalDragUpdate: (details) =>
-                _updateScoreFromOffset(details.localPosition.dx, barWidth),
+                _updateScore10Line(details.localPosition.dx, barWidth),
             child: SizedBox(
               width: barWidth,
-              height: 52,
+              height: 48,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(5, (starIndex) {
-                  return _buildIndividualStar(starIndex);
+                children: List.generate(10, (starIndex) {
+                  return _buildIndividualStar(starIndex, size: 28.0);
                 }),
               ),
             ),
@@ -698,19 +796,69 @@ class _RatingModalState extends State<RatingModal> {
     );
   }
 
-  Widget _buildIndividualStar(int starIndex) {
-    const starSize = 44.0;
+  /// Two rows of 5 stars (Stars 1-5 top, Stars 6-10 bottom) for compact mobile screens.
+  Widget _buildTwoRowsStarBar() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final rowWidth = math.min(constraints.maxWidth, 260.0);
+
+        return Column(
+          children: [
+            // Row 1: Stars 1 to 5 (0.5 to 5.0)
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: (details) =>
+                  _updateScoreTwoRows(details.localPosition.dx, rowWidth, 0),
+              onHorizontalDragUpdate: (details) =>
+                  _updateScoreTwoRows(details.localPosition.dx, rowWidth, 0),
+              child: SizedBox(
+                width: rowWidth,
+                height: 44,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(5, (i) {
+                    return _buildIndividualStar(i, size: 38.0);
+                  }),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            // Row 2: Stars 6 to 10 (5.5 to 10.0)
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: (details) =>
+                  _updateScoreTwoRows(details.localPosition.dx, rowWidth, 1),
+              onHorizontalDragUpdate: (details) =>
+                  _updateScoreTwoRows(details.localPosition.dx, rowWidth, 1),
+              child: SizedBox(
+                width: rowWidth,
+                height: 44,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(5, (i) {
+                    return _buildIndividualStar(5 + i, size: 38.0);
+                  }),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildIndividualStar(int starIndex, {required double size}) {
     final rating = _currentRating;
 
     if (rating == null || rating < (starIndex + 0.5)) {
       // Empty star
       return Container(
-        width: starSize,
-        height: starSize,
+        width: size,
+        height: size,
         alignment: Alignment.center,
-        child: const Icon(
+        child: Icon(
           Icons.star_rounded,
-          size: starSize,
+          size: size,
           color: RatingModal.emptyStarColor,
         ),
       );
@@ -719,17 +867,17 @@ class _RatingModalState extends State<RatingModal> {
     if (rating >= (starIndex + 1.0)) {
       // Full star
       return Container(
-        width: starSize,
-        height: starSize,
+        width: size,
+        height: size,
         alignment: Alignment.center,
-        child: const Icon(
+        child: Icon(
           Icons.star_rounded,
-          size: starSize,
+          size: size,
           color: RatingModal.letterboxdGreen,
-          shadows: [
+          shadows: const [
             Shadow(
               color: Color(0x6600E054),
-              blurRadius: 10,
+              blurRadius: 8,
             ),
           ],
         ),
@@ -738,26 +886,26 @@ class _RatingModalState extends State<RatingModal> {
 
     // Half star (clipped left half filled with green, right half empty)
     return SizedBox(
-      width: starSize,
-      height: starSize,
+      width: size,
+      height: size,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.star_rounded,
-            size: starSize,
+            size: size,
             color: RatingModal.emptyStarColor,
           ),
           ClipRect(
             clipper: _LeftHalfClipper(),
-            child: const Icon(
+            child: Icon(
               Icons.star_rounded,
-              size: starSize,
+              size: size,
               color: RatingModal.letterboxdGreen,
-              shadows: [
+              shadows: const [
                 Shadow(
                   color: Color(0x6600E054),
-                  blurRadius: 10,
+                  blurRadius: 8,
                 ),
               ],
             ),
