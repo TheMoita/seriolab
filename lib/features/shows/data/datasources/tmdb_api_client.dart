@@ -69,17 +69,16 @@ class TmdbApiException extends TmdbException {
 /// - Safe UTF-8 decoding & JSON deserialization
 class TmdbApiClient {
   TmdbApiClient({
-    required http.Client client,
+    required this.client,
     String? apiKey,
     String? baseUrl,
     this.timeout = const Duration(seconds: 15),
     String? defaultLanguage,
-  })  : _client = client,
-        _apiKey = apiKey ?? AppConfig.tmdbApiKey,
+  })  : _apiKey = apiKey ?? AppConfig.tmdbApiKey,
         baseUrl = baseUrl ?? AppConfig.tmdbBaseUrl,
         defaultLanguage = defaultLanguage ?? AppConfig.tmdbLanguage;
 
-  final http.Client _client;
+  final http.Client client;
   final String _apiKey;
   final String baseUrl;
   final Duration timeout;
@@ -101,7 +100,7 @@ class TmdbApiClient {
     final query = <String, String>{
       'language': language ?? defaultLanguage,
       if (!_isBearerToken) 'api_key': _apiKey,
-      if (queryParameters != null) ...queryParameters,
+      ...?queryParameters,
     };
 
     final uri = Uri.parse('$baseUrl$path').replace(queryParameters: query);
@@ -112,7 +111,7 @@ class TmdbApiClient {
         if (_isBearerToken) HttpHeaders.authorizationHeader: 'Bearer $_apiKey',
       };
 
-      final response = await _client.get(uri, headers: headers).timeout(timeout);
+      final response = await client.get(uri, headers: headers).timeout(timeout);
 
       final bodyString = utf8.decode(response.bodyBytes);
 
