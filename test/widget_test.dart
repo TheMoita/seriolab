@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:series_app/core/di/providers.dart';
 import 'package:series_app/core/widgets/app_network_image.dart';
+import 'package:series_app/features/main/presentation/screens/main_screen.dart';
 import 'package:series_app/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
 import 'package:series_app/features/shows/data/repositories/show_repository_impl.dart';
 import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
@@ -24,7 +25,7 @@ void main() {
           showRepositoryProvider.overrideWithValue(testRepo),
           demoSeedingEnabledProvider.overrideWithValue(false),
         ],
-        child: const SeriesApp(),
+        child: const SeriesApp(home: MainScreen()),
       ),
     );
 
@@ -78,7 +79,7 @@ void main() {
           showRepositoryProvider.overrideWithValue(testRepo),
           demoSeedingEnabledProvider.overrideWithValue(false),
         ],
-        child: const SeriesApp(),
+        child: const SeriesApp(home: MainScreen()),
       ),
     );
 
@@ -148,5 +149,44 @@ void main() {
 
     expect(find.text('Carrie'), findsOneWidget);
     expect(find.byIcon(Icons.movie_filter_rounded), findsOneWidget);
+  });
+
+  testWidgets('AuthGate displays LoginScreen when unauthenticated and not guest',
+      (WidgetTester tester) async {
+    final inMemoryRepo = InMemoryTrackingRepository();
+    final testRepo = ShowRepositoryImpl(
+      remote: MockShowRemoteDataSource(latency: Duration.zero),
+      isUsingMockData: true,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          trackingRepositoryProvider.overrideWithValue(inMemoryRepo),
+          showRepositoryProvider.overrideWithValue(testRepo),
+          demoSeedingEnabledProvider.overrideWithValue(false),
+        ],
+        child: const SeriesApp(),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Verify login UI components
+    expect(find.text('Iniciar Sessão'), findsOneWidget);
+    expect(find.text('Continuar com o Google'), findsOneWidget);
+    expect(find.text('Continuar como Convidado'), findsOneWidget);
+    expect(find.text('Regista-te'), findsOneWidget);
+
+    // Tap Continuar como Convidado
+    final guestBtn = find.text('Continuar como Convidado');
+    await tester.ensureVisible(guestBtn);
+    await tester.tap(guestBtn);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    // Verify transitioned to MainScreen
+    expect(find.text('Início'), findsOneWidget);
+    expect(find.text('Perfil'), findsOneWidget);
   });
 }

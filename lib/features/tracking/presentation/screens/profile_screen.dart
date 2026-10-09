@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../auth/domain/entities/app_user.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
@@ -46,6 +49,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final trackingAsync = ref.watch(trackingControllerProvider);
     final stats = ref.watch(userStatsProvider);
     final settings = ref.watch(settingsControllerProvider);
+    final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -157,6 +161,79 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                   color: AppColors.secondary,
                                 ),
                               ),
+                              if (authState.user != null) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      authState.user!.provider ==
+                                              AuthProviderKind.google
+                                          ? Icons.account_circle_outlined
+                                          : Icons.mail_outline_rounded,
+                                      size: 13,
+                                      color: AppColors.textMuted,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      authState.user!.email,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.textMuted,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ] else if (authState.isGuest) ...[
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surfaceHigh,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: AppColors.outline,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text(
+                                        'Modo Convidado • ',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textMuted,
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute<void>(
+                                              builder: (_) =>
+                                                  const LoginScreen(),
+                                            ),
+                                          );
+                                        },
+                                        child: const Text(
+                                          'Iniciar Sessão',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.primary,
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                               if (settings.bio.isNotEmpty) ...[
                                 const SizedBox(height: 6),
                                 Padding(

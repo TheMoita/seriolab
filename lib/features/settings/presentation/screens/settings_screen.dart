@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../auth/domain/entities/app_user.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
 import '../providers/settings_providers.dart';
@@ -308,10 +311,72 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  void _confirmSignOut() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.outline, width: 0.8),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.logout_rounded, color: AppColors.danger, size: 22),
+              SizedBox(width: 10),
+              Text(
+                'Terminar Sessão',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Tens a certeza que pretendes terminar a sessão no Seriolab?',
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            ),
+            FilledButton(
+              onPressed: () async {
+                Navigator.of(ctx).pop();
+                await ref.read(authControllerProvider.notifier).signOut();
+                if (mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const LoginScreen(),
+                    ),
+                    (route) => false,
+                  );
+                }
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.danger,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Terminar Sessão'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsControllerProvider);
     final notifier = ref.read(settingsControllerProvider.notifier);
+    final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -434,6 +499,102 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 onTap: () => EditProfileSheet.show(context),
               ),
+              if (authState.user != null) ...[
+                const Divider(),
+                ListTile(
+                  leading: Icon(
+                    authState.user!.provider == AuthProviderKind.google
+                        ? Icons.account_circle_outlined
+                        : Icons.mail_outline_rounded,
+                    color: AppColors.secondary,
+                    size: 22,
+                  ),
+                  title: Text(
+                    authState.user!.email,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Autenticado via ${authState.user!.provider.label}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.logout_rounded,
+                    color: AppColors.danger,
+                    size: 22,
+                  ),
+                  title: const Text(
+                    'Terminar Sessão',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.danger,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Termina a sessão ativa no Seriolab',
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  onTap: _confirmSignOut,
+                ),
+              ] else if (authState.isGuest) ...[
+                const Divider(),
+                ListTile(
+                  leading: const Icon(
+                    Icons.login_rounded,
+                    color: AppColors.secondary,
+                    size: 22,
+                  ),
+                  title: const Text(
+                    'Iniciar Sessão / Criar Conta',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'A navegar como convidado. Inicia sessão para guardar na nuvem',
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: AppColors.textMuted,
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const LoginScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.logout_rounded,
+                    color: AppColors.danger,
+                    size: 22,
+                  ),
+                  title: const Text(
+                    'Sair do Modo Convidado',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.danger,
+                    ),
+                  ),
+                  onTap: _confirmSignOut,
+                ),
+              ],
             ],
           ),
 

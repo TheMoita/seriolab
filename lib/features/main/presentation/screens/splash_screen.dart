@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../auth/presentation/widgets/auth_gate.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
-import 'main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({
@@ -58,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen>
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            const MainScreen(),
+            const AuthGate(),
         transitionsBuilder:
             (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
