@@ -246,13 +246,13 @@ class TrackingController extends AsyncNotifier<TrackingState> {
           ));
 
           if (rating != null) {
-            final newHistogramScore = rating.clamp(1.0, 10.0);
-            final oldHistogramScore = prevRating?.clamp(1.0, 10.0);
+            final newHistogramScore = rating.clamp(0.5, 10.0);
+            final oldHistogramScore = prevRating?.clamp(0.5, 10.0);
             await ref
                 .read(settingsControllerProvider.notifier)
                 .recordRating(newHistogramScore, oldScore: oldHistogramScore);
           } else if (prevRating != null && clearReview) {
-            final oldHistogramScore = prevRating.clamp(1.0, 10.0);
+            final oldHistogramScore = prevRating.clamp(0.5, 10.0);
             await ref
                 .read(settingsControllerProvider.notifier)
                 .removeRating(oldHistogramScore);
@@ -315,13 +315,13 @@ class TrackingController extends AsyncNotifier<TrackingState> {
           ));
 
           if (rating != null) {
-            final newHistogramScore = rating.clamp(1.0, 10.0);
-            final oldHistogramScore = prevRating?.clamp(1.0, 10.0);
+            final newHistogramScore = rating.clamp(0.5, 10.0);
+            final oldHistogramScore = prevRating?.clamp(0.5, 10.0);
             await ref
                 .read(settingsControllerProvider.notifier)
                 .recordRating(newHistogramScore, oldScore: oldHistogramScore);
           } else if (prevRating != null && clearReview) {
-            final oldHistogramScore = prevRating.clamp(1.0, 10.0);
+            final oldHistogramScore = prevRating.clamp(0.5, 10.0);
             await ref
                 .read(settingsControllerProvider.notifier)
                 .removeRating(oldHistogramScore);

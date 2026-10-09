@@ -76,5 +76,5 @@ final trackingRepositoryProvider =
 
 /// Whether to pre-populate a demo profile on first launch.
 final demoSeedingEnabledProvider = Provider<bool>(
-  (ref) => ref.watch(showRepositoryProvider).isUsingMockData,
+  (ref) => false,
 );

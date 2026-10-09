@@ -19,10 +19,10 @@ void main() {
       expect(settings.groupSpecialEpisodes, isTrue);
       expect(settings.episodeReleaseReminders, isTrue);
       expect(settings.formattedReminderTime, '20:00');
-      expect(settings.favoriteShowIds.length, 5);
-      expect(settings.ratingDistribution.length, 19);
-      expect(settings.totalRatingsCount, greaterThan(0));
-      expect(settings.averageRating, greaterThan(0.0));
+      expect(settings.favoriteShowIds, isEmpty);
+      expect(settings.ratingDistribution.length, 20);
+      expect(settings.totalRatingsCount, 0);
+      expect(settings.averageRating, 0.0);
     });
 
     test('tmdbLanguageCode maps properly for regions and languages', () {
@@ -229,14 +229,14 @@ void main() {
       expect(directContainer.read(settingsControllerProvider).avatarValue, '/path/to/my_photo.jpg');
 
       // Test favorites management
-      await notifier.removeFavoriteShow(1396);
-      expect(directContainer.read(settingsControllerProvider).favoriteShowIds.contains(1396), isFalse);
-
+      expect(directContainer.read(settingsControllerProvider).favoriteShowIds, isEmpty);
       await notifier.addFavoriteShow(1396);
       expect(directContainer.read(settingsControllerProvider).favoriteShowIds.contains(1396), isTrue);
+      expect(directContainer.read(settingsControllerProvider).favoriteShowIds.length, 1);
 
-      await notifier.reorderFavoriteShows(0, 1);
-      expect(directContainer.read(settingsControllerProvider).favoriteShowIds.length, 5);
+      await notifier.removeFavoriteShow(1396);
+      expect(directContainer.read(settingsControllerProvider).favoriteShowIds.contains(1396), isFalse);
+      expect(directContainer.read(settingsControllerProvider).favoriteShowIds, isEmpty);
 
       // Test banner management
       await notifier.setProfileBannerUrl('https://image.tmdb.org/t/p/w1280/backdrop.jpg');

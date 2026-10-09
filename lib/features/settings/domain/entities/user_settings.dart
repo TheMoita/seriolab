@@ -147,7 +147,7 @@ class UserSettings {
     required this.reminderHour,
     required this.reminderMinute,
     this.showOriginalTitles = false,
-    this.favoriteShowIds = const [1396, 95396, 100088, 126308, 94605],
+    this.favoriteShowIds = const [],
     this.ratingDistribution = defaultRatingDistribution,
   });
 
@@ -220,25 +220,26 @@ class UserSettings {
   }
 
   static const Map<String, int> defaultRatingDistribution = {
+    '0.5': 0,
     '1.0': 0,
     '1.5': 0,
     '2.0': 0,
-    '2.5': 1,
+    '2.5': 0,
     '3.0': 0,
-    '3.5': 1,
-    '4.0': 2,
-    '4.5': 1,
-    '5.0': 3,
-    '5.5': 2,
-    '6.0': 4,
-    '6.5': 5,
-    '7.0': 7,
-    '7.5': 9,
-    '8.0': 12,
-    '8.5': 15,
-    '9.0': 11,
-    '9.5': 6,
-    '10.0': 4,
+    '3.5': 0,
+    '4.0': 0,
+    '4.5': 0,
+    '5.0': 0,
+    '5.5': 0,
+    '6.0': 0,
+    '6.5': 0,
+    '7.0': 0,
+    '7.5': 0,
+    '8.0': 0,
+    '8.5': 0,
+    '9.0': 0,
+    '9.5': 0,
+    '10.0': 0,
   };
 
   static const UserSettings defaultSettings = UserSettings(
@@ -256,7 +257,7 @@ class UserSettings {
     episodeReleaseReminders: true,
     reminderHour: 20,
     reminderMinute: 0,
-    favoriteShowIds: [1396, 95396, 100088, 126308, 94605],
+    favoriteShowIds: [],
     ratingDistribution: defaultRatingDistribution,
   );
 

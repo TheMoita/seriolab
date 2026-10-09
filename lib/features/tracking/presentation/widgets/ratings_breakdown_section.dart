@@ -19,7 +19,7 @@ class _RatingsBreakdownSectionState
   double? _selectedScore;
 
   static const List<double> _allScores = [
-    1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5,
+    0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5,
     6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0,
   ];
 
@@ -67,7 +67,9 @@ class _RatingsBreakdownSectionState
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Média: ${average.toStringAsFixed(1)} ★',
+                    totalCount == 0
+                        ? 'Média: N/A'
+                        : 'Média: ${average.toStringAsFixed(1)} ★',
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w800,
@@ -104,7 +106,7 @@ class _RatingsBreakdownSectionState
                 _buildInspectionBanner(distribution, totalCount),
                 const SizedBox(height: 14),
 
-                // 19-Bar Histogram
+                // 20-Bar Histogram
                 SizedBox(
                   height: 94,
                   child: Row(
@@ -127,7 +129,7 @@ class _RatingsBreakdownSectionState
                 ),
                 const SizedBox(height: 8),
 
-                // X-Axis Axis labels (1, 3, 5, 7, 10)
+                // X-Axis Axis labels (0.5, 3, 5, 7, 10)
                 _buildXAxisLabels(),
               ],
             ),
@@ -138,6 +140,27 @@ class _RatingsBreakdownSectionState
   }
 
   Widget _buildInspectionBanner(Map<String, int> distribution, int total) {
+    if (total == 0) {
+      return const Row(
+        children: [
+          Icon(
+            Icons.bar_chart_rounded,
+            size: 14,
+            color: AppColors.textMuted,
+          ),
+          SizedBox(width: 6),
+          Text(
+            'Nenhuma série avaliada até ao momento',
+            style: TextStyle(
+              fontSize: 11,
+              color: AppColors.textMuted,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      );
+    }
+
     if (_selectedScore != null) {
       final key = _selectedScore!.toStringAsFixed(1);
       final count = distribution[key] ?? 0;
@@ -211,9 +234,9 @@ class _RatingsBreakdownSectionState
     required bool isSelected,
   }) {
     const maxHeight = 88.0;
-    final ratio = count / maxCount;
+    final ratio = maxCount > 0 ? (count / maxCount) : 0.0;
     final fillHeight = count == 0
-        ? 3.0
+        ? 2.0
         : math.max(6.0, ratio * maxHeight);
 
     return GestureDetector(

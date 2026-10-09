@@ -91,6 +91,19 @@ class TopFavoritesSection extends ConsumerWidget {
               );
             },
           ),
+          if (favoriteIds.isEmpty) ...[
+            const SizedBox(height: 10),
+            const Center(
+              child: Text(
+                'Ainda não selecionaste as tuas séries favoritas',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
