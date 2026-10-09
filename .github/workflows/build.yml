@@ -37,11 +37,11 @@ jobs:
 
       - name: Configure environment (.env)
         run: |
-          if [ -n "${{ secrets.TMDB_API_KEY }}" ]; then
-            echo "TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}" > .env
-          else
-            echo "TMDB_API_KEY=***REMOVED***" > .env
+          TMDB_KEY="${{ secrets.TMDB_API_KEY }}"
+          if [ -z "$TMDB_KEY" ]; then
+            TMDB_KEY="***REMOVED***"
           fi
+          echo "TMDB_API_KEY=$TMDB_KEY" > .env
           echo "TMDB_BASE_URL=https://api.themoviedb.org/3" >> .env
           echo "TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p/w500" >> .env
           echo "TMDB_LANGUAGE=pt-PT" >> .env
@@ -56,7 +56,12 @@ jobs:
         run: flutter test
 
       - name: Build Android Release APK
-        run: flutter build apk --release
+        run: |
+          TMDB_KEY="${{ secrets.TMDB_API_KEY }}"
+          if [ -z "$TMDB_KEY" ]; then
+            TMDB_KEY="***REMOVED***"
+          fi
+          flutter build apk --release --dart-define=TMDB_API_KEY="$TMDB_KEY"
 
       - name: Upload APK Artifact (Actions Tab)
         uses: actions/upload-artifact@v4
