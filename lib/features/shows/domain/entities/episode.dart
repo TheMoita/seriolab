@@ -73,6 +73,9 @@ class Episode {
     this.stillUrl,
     this.rating = 0,
     this.userRating,
+    this.reviewText,
+    this.hasSpoilers = false,
+    this.loggedAt,
   });
 
   final int id;
@@ -88,8 +91,17 @@ class Episode {
   final String? stillUrl;
   final double rating;
 
-  /// Optional rating given by the user (1.0 to 10.0, step 0.5).
+  /// Optional rating given by the user (1.0 to 10.0, or 0.5 to 5.0 stars).
   final double? userRating;
+
+  /// Optional written review or notes.
+  final String? reviewText;
+
+  /// Whether the review contains spoilers.
+  final bool hasSpoilers;
+
+  /// Date the log was recorded.
+  final DateTime? loggedAt;
 
   EpisodeKey get key => EpisodeKey(seasonNumber, episodeNumber);
   String get code => episodeCode(seasonNumber, episodeNumber);
@@ -121,6 +133,11 @@ class Episode {
     double? rating,
     double? userRating,
     bool clearUserRating = false,
+    String? reviewText,
+    bool clearReviewText = false,
+    bool? hasSpoilers,
+    DateTime? loggedAt,
+    bool clearLoggedAt = false,
   }) =>
       Episode(
         id: id ?? this.id,
@@ -134,6 +151,10 @@ class Episode {
         stillUrl: stillUrl ?? this.stillUrl,
         rating: rating ?? this.rating,
         userRating: clearUserRating ? null : (userRating ?? this.userRating),
+        reviewText:
+            clearReviewText ? null : (reviewText ?? this.reviewText),
+        hasSpoilers: hasSpoilers ?? this.hasSpoilers,
+        loggedAt: clearLoggedAt ? null : (loggedAt ?? this.loggedAt),
       );
 }
 

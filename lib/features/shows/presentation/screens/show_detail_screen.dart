@@ -283,7 +283,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                 _buildOverallRatingCard(
                   context,
                   show,
-                  tracked?.overallUserRating,
+                  tracked,
                 ),
 
                 const SizedBox(height: 12),
@@ -612,8 +612,13 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
           data: (seasonDetails) {
             final episodesWithRatings = seasonDetails.episodes.map((ep) {
               final watched = trackingState?.watchedFor(show.id)[ep.key];
-              if (watched != null && watched.userRating != null) {
-                return ep.copyWith(userRating: watched.userRating);
+              if (watched != null) {
+                return ep.copyWith(
+                  userRating: watched.userRating,
+                  reviewText: watched.reviewText,
+                  hasSpoilers: watched.hasSpoilers,
+                  loggedAt: watched.loggedAt ?? watched.watchedAt,
+                );
               }
               return ep;
             }).toList();
@@ -889,7 +894,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Episode User Rating Badge or Subtle "★ Rate" Button
-                if (episode.userRating != null)
+                if (episode.userRating != null || episode.reviewText != null)
                   InkWell(
                     borderRadius: BorderRadius.circular(6),
                     onTap: () => _openEpisodeRatingModal(show, episode),
@@ -899,10 +904,10 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.18),
+                        color: const Color(0xFF00E054).withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.5),
+                          color: const Color(0xFF00E054).withValues(alpha: 0.5),
                           width: 0.8,
                         ),
                       ),
@@ -912,17 +917,28 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                           const Icon(
                             Icons.star_rounded,
                             size: 13,
-                            color: AppColors.secondary,
+                            color: Color(0xFF00E054),
                           ),
                           const SizedBox(width: 3),
                           Text(
-                            '${episode.userRating!.toStringAsFixed(1)} ★',
+                            episode.userRating != null
+                                ? '${episode.userRating!.toStringAsFixed(1)} ★'
+                                : '★ Registo',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.secondary,
+                              color: Color(0xFF00E054),
                             ),
                           ),
+                          if (episode.reviewText != null &&
+                              episode.reviewText!.isNotEmpty) ...[
+                            const SizedBox(width: 3),
+                            const Icon(
+                              Icons.notes_rounded,
+                              size: 11,
+                              color: Color(0xFF00E054),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -1169,8 +1185,12 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
   Widget _buildOverallRatingCard(
     BuildContext context,
     ShowDetails show,
-    double? userRating,
+    TrackedShow? tracked,
   ) {
+    final userRating = tracked?.overallUserRating;
+    final reviewText = tracked?.reviewText;
+    final hasReview = reviewText != null && reviewText.isNotEmpty;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -1178,119 +1198,160 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: userRating != null
-              ? AppColors.primary.withValues(alpha: 0.5)
+              ? const Color(0xFF00E054).withValues(alpha: 0.5)
               : AppColors.outline,
           width: 0.8,
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Community Rating
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'COMUNIDADE',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.0,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
+          Row(
+            children: [
+              // Community Rating
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.star_rounded,
-                      size: 18,
-                      color: AppColors.secondary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      show.rating > 0
-                          ? '${show.rating.toStringAsFixed(1)} ★'
-                          : '—',
-                      style: const TextStyle(
-                        fontSize: 16,
+                    const Text(
+                      'COMUNIDADE',
+                      style: TextStyle(
+                        fontSize: 10,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        letterSpacing: 1.0,
+                        color: AppColors.textMuted,
                       ),
                     ),
-                    if (show.voteCount > 0) ...[
-                      const SizedBox(width: 4),
-                      Text(
-                        '(${show.voteCount})',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textSecondary,
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.star_rounded,
+                          size: 18,
+                          color: AppColors.secondary,
                         ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 1,
-            height: 38,
-            color: AppColors.outline,
-          ),
-          const SizedBox(width: 14),
-          // User's Overall Rating
-          Expanded(
-            child: InkWell(
-              borderRadius: BorderRadius.circular(10),
-              onTap: () => _openShowRatingModal(show, userRating),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'YOUR OVERALL RATING',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.0,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        userRating != null
-                            ? Icons.star_rounded
-                            : Icons.star_outline_rounded,
-                        size: 18,
-                        color: userRating != null
-                            ? AppColors.primary
-                            : AppColors.secondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          userRating != null
-                              ? '${userRating.toStringAsFixed(1)} ★'
-                              : '★ Rate Show',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14,
+                        const SizedBox(width: 4),
+                        Text(
+                          show.rating > 0
+                              ? '${show.rating.toStringAsFixed(1)} ★'
+                              : '—',
+                          style: const TextStyle(
+                            fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: userRating != null
-                                ? AppColors.textPrimary
-                                : AppColors.secondary,
+                            color: AppColors.textPrimary,
                           ),
                         ),
+                        if (show.voteCount > 0) ...[
+                          const SizedBox(width: 4),
+                          Text(
+                            '(${show.voteCount})',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 38,
+                color: AppColors.outline,
+              ),
+              const SizedBox(width: 14),
+              // User's Overall Rating
+              Expanded(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () => _openShowRatingModal(show, tracked),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'A TUA AVALIAÇÃO',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.0,
+                          color: Color(0xFF00E054),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            userRating != null
+                                ? Icons.star_rounded
+                                : Icons.star_outline_rounded,
+                            size: 18,
+                            color: userRating != null
+                                ? const Color(0xFF00E054)
+                                : AppColors.secondary,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              userRating != null
+                                  ? '${userRating.toStringAsFixed(1)} ★'
+                                  : '★ Rate Show',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: userRating != null
+                                    ? const Color(0xFF00E054)
+                                    : AppColors.secondary,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (hasReview) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceHigh,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.outline, width: 0.6),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.format_quote_rounded,
+                    size: 14,
+                    color: Color(0xFF00E054),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      reviewText,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                        color: AppColors.textSecondary,
+                        height: 1.3,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -1298,25 +1359,38 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
 
   Future<void> _openShowRatingModal(
     ShowDetails show,
-    double? currentRating,
+    TrackedShow? tracked,
   ) async {
     final result = await RatingModal.show(
       context,
-      title: 'Overall Show Rating',
+      title: 'Classificar & Registar Série',
       itemName: show.name,
-      initialRating: currentRating,
+      badgeText: 'SÉRIE',
+      initialRating: tracked?.overallUserRating,
+      initialReview: tracked?.reviewText,
+      initialHasSpoilers: tracked?.hasSpoilers ?? false,
+      initialLoggedAt: tracked?.loggedAt,
     );
     if (!mounted || result == null) return;
 
     if (result is RatingSelected) {
       await ref
           .read(trackingControllerProvider.notifier)
-          .setOverallShowRating(show, result.rating);
+          .setOverallShowRating(
+            show,
+            result.rating,
+            reviewText: result.reviewText,
+            hasSpoilers: result.hasSpoilers,
+            loggedAt: result.loggedAt,
+          );
       if (mounted) {
+        final scoreText = result.rating != null
+            ? '${result.rating!.toStringAsFixed(1)} ★'
+            : 'registo guardado';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Avaliação da série guardada: ${result.rating.toStringAsFixed(1)} ★!',
+              'Série atualizada: $scoreText!',
             ),
             duration: const Duration(seconds: 2),
           ),
@@ -1325,11 +1399,11 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
     } else if (result is RatingRemoved) {
       await ref
           .read(trackingControllerProvider.notifier)
-          .setOverallShowRating(show, null);
+          .setOverallShowRating(show, null, clearReview: true);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Avaliação da série removida.'),
+            content: Text('Avaliação e registo da série removidos.'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -1341,23 +1415,43 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
     ShowDetails show,
     Episode episode,
   ) async {
+    final watched = ref
+        .read(trackingControllerProvider)
+        .asData
+        ?.value
+        .watchedFor(show.id)[episode.key];
+
     final result = await RatingModal.show(
       context,
       title: 'Classificar Episódio',
       itemName: '${episode.code} • ${episode.name}',
-      initialRating: episode.userRating,
+      badgeText: episode.code,
+      initialRating: watched?.userRating ?? episode.userRating,
+      initialReview: watched?.reviewText ?? episode.reviewText,
+      initialHasSpoilers: watched?.hasSpoilers ?? episode.hasSpoilers,
+      initialLoggedAt: watched?.loggedAt ?? episode.loggedAt,
     );
     if (!mounted || result == null) return;
 
     if (result is RatingSelected) {
       await ref
           .read(trackingControllerProvider.notifier)
-          .rateEpisode(show, episode, result.rating);
+          .rateEpisode(
+            show,
+            episode,
+            result.rating,
+            reviewText: result.reviewText,
+            hasSpoilers: result.hasSpoilers,
+            loggedAt: result.loggedAt,
+          );
       if (mounted) {
+        final scoreMsg = result.rating != null
+            ? 'avaliado com ${result.rating!.toStringAsFixed(1)} ★'
+            : 'registado';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Episódio ${episode.code} avaliado com ${result.rating.toStringAsFixed(1)} ★ (marcado como visto)!',
+              'Episódio ${episode.code} $scoreMsg (marcado como visto)!',
             ),
             duration: const Duration(seconds: 2),
           ),
@@ -1366,7 +1460,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
     } else if (result is RatingRemoved) {
       await ref
           .read(trackingControllerProvider.notifier)
-          .rateEpisode(show, episode, null);
+          .rateEpisode(show, episode, null, clearReview: true);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -183,6 +183,9 @@ class ShowDetails {
     this.lastEpisodeToAir,
     this.nextEpisodeToAir,
     this.overallUserRating,
+    this.reviewText,
+    this.hasSpoilers = false,
+    this.loggedAt,
   });
 
   final int id;
@@ -210,8 +213,17 @@ class ShowDetails {
   final Episode? lastEpisodeToAir;
   final Episode? nextEpisodeToAir;
 
-  /// Independent overall user rating for the entire series (1.0 to 10.0).
+  /// Independent overall user rating for the entire series (1.0 to 10.0 or 0.5 to 5.0 stars).
   final double? overallUserRating;
+
+  /// Optional user written review/notes for the show.
+  final String? reviewText;
+
+  /// Whether the review contains spoilers.
+  final bool hasSpoilers;
+
+  /// Date the log was recorded.
+  final DateTime? loggedAt;
 
   int? get year => firstAirDate?.year;
 
@@ -282,6 +294,11 @@ class ShowDetails {
     Episode? nextEpisodeToAir,
     double? overallUserRating,
     bool clearOverallUserRating = false,
+    String? reviewText,
+    bool clearReviewText = false,
+    bool? hasSpoilers,
+    DateTime? loggedAt,
+    bool clearLoggedAt = false,
   }) =>
       ShowDetails(
         id: id ?? this.id,
@@ -309,6 +326,10 @@ class ShowDetails {
         overallUserRating: clearOverallUserRating
             ? null
             : (overallUserRating ?? this.overallUserRating),
+        reviewText:
+            clearReviewText ? null : (reviewText ?? this.reviewText),
+        hasSpoilers: hasSpoilers ?? this.hasSpoilers,
+        loggedAt: clearLoggedAt ? null : (loggedAt ?? this.loggedAt),
       );
 }
 

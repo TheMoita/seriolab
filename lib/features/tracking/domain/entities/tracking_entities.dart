@@ -50,6 +50,9 @@ class TrackedShow {
     this.showStatus = ShowStatus.unknown,
     this.network,
     this.overallUserRating,
+    this.reviewText,
+    this.hasSpoilers = false,
+    this.loggedAt,
   });
 
   final int showId;
@@ -63,6 +66,9 @@ class TrackedShow {
   final DateTime addedAt;
   final DateTime updatedAt;
   final double? overallUserRating;
+  final String? reviewText;
+  final bool hasSpoilers;
+  final DateTime? loggedAt;
 
   TrackedShow copyWith({
     String? name,
@@ -75,6 +81,11 @@ class TrackedShow {
     DateTime? updatedAt,
     double? overallUserRating,
     bool clearOverallUserRating = false,
+    String? reviewText,
+    bool clearReviewText = false,
+    bool? hasSpoilers,
+    DateTime? loggedAt,
+    bool clearLoggedAt = false,
   }) =>
       TrackedShow(
         showId: showId,
@@ -90,6 +101,10 @@ class TrackedShow {
         overallUserRating: clearOverallUserRating
             ? null
             : (overallUserRating ?? this.overallUserRating),
+        reviewText:
+            clearReviewText ? null : (reviewText ?? this.reviewText),
+        hasSpoilers: hasSpoilers ?? this.hasSpoilers,
+        loggedAt: clearLoggedAt ? null : (loggedAt ?? this.loggedAt),
       );
 }
 
@@ -101,6 +116,9 @@ class WatchedEpisode {
     required this.runtime,
     required this.watchedAt,
     this.userRating,
+    this.reviewText,
+    this.hasSpoilers = false,
+    this.loggedAt,
   });
 
   final int showId;
@@ -110,8 +128,17 @@ class WatchedEpisode {
   final int runtime;
   final DateTime watchedAt;
 
-  /// User rating given to this episode (1.0 to 10.0, step 0.5).
+  /// User rating given to this episode (1.0 to 10.0, or 0.5 to 5.0 stars).
   final double? userRating;
+
+  /// Optional written review or notes.
+  final String? reviewText;
+
+  /// Whether the review contains spoilers.
+  final bool hasSpoilers;
+
+  /// Date the log was recorded.
+  final DateTime? loggedAt;
 
   WatchedEpisode copyWith({
     int? showId,
@@ -120,6 +147,11 @@ class WatchedEpisode {
     DateTime? watchedAt,
     double? userRating,
     bool clearUserRating = false,
+    String? reviewText,
+    bool clearReviewText = false,
+    bool? hasSpoilers,
+    DateTime? loggedAt,
+    bool clearLoggedAt = false,
   }) =>
       WatchedEpisode(
         showId: showId ?? this.showId,
@@ -127,6 +159,10 @@ class WatchedEpisode {
         runtime: runtime ?? this.runtime,
         watchedAt: watchedAt ?? this.watchedAt,
         userRating: clearUserRating ? null : (userRating ?? this.userRating),
+        reviewText:
+            clearReviewText ? null : (reviewText ?? this.reviewText),
+        hasSpoilers: hasSpoilers ?? this.hasSpoilers,
+        loggedAt: clearLoggedAt ? null : (loggedAt ?? this.loggedAt),
       );
 }
 

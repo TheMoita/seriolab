@@ -80,6 +80,10 @@ class TrackingController extends AsyncNotifier<TrackingState> {
       network: show.primaryNetwork,
       addedAt: existing?.addedAt ?? now,
       updatedAt: now,
+      overallUserRating: existing?.overallUserRating ?? show.overallUserRating,
+      reviewText: existing?.reviewText ?? show.reviewText,
+      hasSpoilers: existing?.hasSpoilers ?? show.hasSpoilers,
+      loggedAt: existing?.loggedAt ?? show.loggedAt,
     );
   }
 
@@ -192,13 +196,17 @@ class TrackingController extends AsyncNotifier<TrackingState> {
         ));
       });
 
-  /// Sets or removes an episode rating. Automatically marks episode as watched
-  /// if it wasn't already watched.
+  /// Sets or removes an episode rating, review, and log metadata.
+  /// Automatically marks episode as watched if it wasn't already watched.
   Future<void> rateEpisode(
     ShowDetails show,
     Episode episode,
-    double? rating,
-  ) =>
+    double? rating, {
+    String? reviewText,
+    bool hasSpoilers = false,
+    DateTime? loggedAt,
+    bool clearReview = false,
+  }) =>
       _serial(() async {
         final now = _now();
         final current = _current;
@@ -206,14 +214,17 @@ class TrackingController extends AsyncNotifier<TrackingState> {
         final existingWatched = watchedMap[episode.key];
         final prevRating = existingWatched?.userRating;
 
-        if (rating != null) {
+        if (rating != null || reviewText != null || !clearReview) {
           final updatedWatched = WatchedEpisode(
             showId: show.id,
             key: episode.key,
             runtime: existingWatched?.runtime ??
                 (episode.runtime ?? show.episodeRuntime),
-            watchedAt: existingWatched?.watchedAt ?? now,
-            userRating: rating,
+            watchedAt: existingWatched?.watchedAt ?? loggedAt ?? now,
+            userRating: rating ?? (clearReview ? null : existingWatched?.userRating),
+            reviewText: clearReview ? null : (reviewText ?? existingWatched?.reviewText),
+            hasSpoilers: clearReview ? false : hasSpoilers,
+            loggedAt: loggedAt ?? existingWatched?.loggedAt ?? now,
           );
           await _repo.markWatched([updatedWatched]);
           watchedMap[episode.key] = updatedWatched;
@@ -234,14 +245,29 @@ class TrackingController extends AsyncNotifier<TrackingState> {
             watched: {...current.watched, show.id: watchedMap},
           ));
 
-          await ref
-              .read(settingsControllerProvider.notifier)
-              .recordRating(rating, oldScore: prevRating);
+          if (rating != null) {
+            final newHistogramScore = rating <= 5.0 ? rating * 2.0 : rating;
+            final oldHistogramScore = prevRating != null
+                ? (prevRating <= 5.0 ? prevRating * 2.0 : prevRating)
+                : null;
+            await ref
+                .read(settingsControllerProvider.notifier)
+                .recordRating(newHistogramScore, oldScore: oldHistogramScore);
+          } else if (prevRating != null && clearReview) {
+            final oldHistogramScore =
+                prevRating <= 5.0 ? prevRating * 2.0 : prevRating;
+            await ref
+                .read(settingsControllerProvider.notifier)
+                .removeRating(oldHistogramScore);
+          }
         } else {
-          // Remove episode rating
+          // Remove episode rating & review
           if (existingWatched != null) {
-            final updatedWatched =
-                existingWatched.copyWith(clearUserRating: true);
+            final updatedWatched = existingWatched.copyWith(
+              clearUserRating: true,
+              clearReviewText: true,
+              hasSpoilers: false,
+            );
             await _repo.markWatched([updatedWatched]);
             watchedMap[episode.key] = updatedWatched;
 
@@ -250,41 +276,70 @@ class TrackingController extends AsyncNotifier<TrackingState> {
             ));
 
             if (prevRating != null) {
+              final oldHistogramScore =
+                  prevRating <= 5.0 ? prevRating * 2.0 : prevRating;
               await ref
                   .read(settingsControllerProvider.notifier)
-                  .removeRating(prevRating);
+                  .removeRating(oldHistogramScore);
             }
           }
         }
       });
 
-  /// Sets or removes the independent overall rating for the entire series.
+  /// Sets or removes the independent overall rating, review, and log metadata
+  /// for the entire series.
   Future<void> setOverallShowRating(
     ShowDetails show,
-    double? rating,
-  ) =>
+    double? rating, {
+    String? reviewText,
+    bool hasSpoilers = false,
+    DateTime? loggedAt,
+    bool clearReview = false,
+  }) =>
       _serial(() async {
         final current = _current;
         final existing = current.show(show.id);
         final prevRating = existing?.overallUserRating;
 
-        if (rating != null) {
+        if (rating != null || reviewText != null || !clearReview) {
           final tracked = (existing ??
                   _snapshot(show, TrackingStatus.watching))
-              .copyWith(overallUserRating: rating);
+              .copyWith(
+            overallUserRating: rating ?? (clearReview ? null : existing?.overallUserRating),
+            clearOverallUserRating: rating == null && clearReview,
+            reviewText: clearReview ? null : (reviewText ?? existing?.reviewText),
+            clearReviewText: clearReview && reviewText == null,
+            hasSpoilers: clearReview ? false : hasSpoilers,
+            loggedAt: loggedAt ?? existing?.loggedAt ?? _now(),
+          );
           await _repo.upsertShow(tracked);
 
           state = AsyncData(current.copyWith(
             shows: {...current.shows, show.id: tracked},
           ));
 
-          await ref
-              .read(settingsControllerProvider.notifier)
-              .recordRating(rating, oldScore: prevRating);
+          if (rating != null) {
+            final newHistogramScore = rating <= 5.0 ? rating * 2.0 : rating;
+            final oldHistogramScore = prevRating != null
+                ? (prevRating <= 5.0 ? prevRating * 2.0 : prevRating)
+                : null;
+            await ref
+                .read(settingsControllerProvider.notifier)
+                .recordRating(newHistogramScore, oldScore: oldHistogramScore);
+          } else if (prevRating != null && clearReview) {
+            final oldHistogramScore =
+                prevRating <= 5.0 ? prevRating * 2.0 : prevRating;
+            await ref
+                .read(settingsControllerProvider.notifier)
+                .removeRating(oldHistogramScore);
+          }
         } else {
           if (existing != null) {
-            final tracked =
-                existing.copyWith(clearOverallUserRating: true);
+            final tracked = existing.copyWith(
+              clearOverallUserRating: true,
+              clearReviewText: true,
+              hasSpoilers: false,
+            );
             await _repo.upsertShow(tracked);
 
             state = AsyncData(current.copyWith(
@@ -292,9 +347,11 @@ class TrackingController extends AsyncNotifier<TrackingState> {
             ));
 
             if (prevRating != null) {
+              final oldHistogramScore =
+                  prevRating <= 5.0 ? prevRating * 2.0 : prevRating;
               await ref
                   .read(settingsControllerProvider.notifier)
-                  .removeRating(prevRating);
+                  .removeRating(oldHistogramScore);
             }
           }
         }

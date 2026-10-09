@@ -140,30 +140,31 @@ class _RatingsBreakdownSectionState
   Widget _buildInspectionBanner(Map<String, int> distribution, int total) {
     if (_selectedScore != null) {
       final key = _selectedScore!.toStringAsFixed(1);
+      final starEquivalent = (_selectedScore! / 2).toStringAsFixed(1);
       final count = distribution[key] ?? 0;
       final percent = total > 0 ? ((count / total) * 100).toStringAsFixed(1) : '0';
 
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.15),
+          color: const Color(0xFF00E054).withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.6),
+            color: const Color(0xFF00E054).withValues(alpha: 0.5),
             width: 0.8,
           ),
         ),
         child: Row(
           children: [
             const Icon(
-              Icons.bar_chart_rounded,
+              Icons.star_rounded,
               size: 15,
-              color: AppColors.secondary,
+              color: Color(0xFF00E054),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Nota $key ★  •  $count ${count == 1 ? 'série' : 'séries'} ($percent%)',
+                '$starEquivalent ★ ($key/10)  •  $count ${count == 1 ? 'série' : 'séries'} ($percent%)',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,

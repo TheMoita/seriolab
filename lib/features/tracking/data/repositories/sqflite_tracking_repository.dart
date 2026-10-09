@@ -50,6 +50,9 @@ class SqfliteTrackingRepository implements TrackingRepository {
           'runtime': e.runtime,
           'watched_at': e.watchedAt.millisecondsSinceEpoch,
           'user_rating': e.userRating,
+          'review_text': e.reviewText,
+          'has_spoilers': e.hasSpoilers ? 1 : 0,
+          'logged_at': e.loggedAt?.millisecondsSinceEpoch,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -99,6 +102,9 @@ class SqfliteTrackingRepository implements TrackingRepository {
         'added_at': s.addedAt.millisecondsSinceEpoch,
         'updated_at': s.updatedAt.millisecondsSinceEpoch,
         'overall_user_rating': s.overallUserRating,
+        'review_text': s.reviewText,
+        'has_spoilers': s.hasSpoilers ? 1 : 0,
+        'logged_at': s.loggedAt?.millisecondsSinceEpoch,
       };
 
   static TrackedShow _showFromRow(Map<String, Object?> r) => TrackedShow(
@@ -113,6 +119,11 @@ class SqfliteTrackingRepository implements TrackingRepository {
         addedAt: DateTime.fromMillisecondsSinceEpoch(r['added_at']! as int),
         updatedAt: DateTime.fromMillisecondsSinceEpoch(r['updated_at']! as int),
         overallUserRating: (r['overall_user_rating'] as num?)?.toDouble(),
+        reviewText: r['review_text'] as String?,
+        hasSpoilers: (r['has_spoilers'] as int?) == 1,
+        loggedAt: r['logged_at'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(r['logged_at']! as int)
+            : null,
       );
 
   static WatchedEpisode _episodeFromRow(Map<String, Object?> r) =>
@@ -124,5 +135,10 @@ class SqfliteTrackingRepository implements TrackingRepository {
         watchedAt:
             DateTime.fromMillisecondsSinceEpoch(r['watched_at']! as int),
         userRating: (r['user_rating'] as num?)?.toDouble(),
+        reviewText: r['review_text'] as String?,
+        hasSpoilers: (r['has_spoilers'] as int?) == 1,
+        loggedAt: r['logged_at'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(r['logged_at']! as int)
+            : null,
       );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:series_app/features/shows/domain/entities/episode.dart';
+import 'package:series_app/features/shows/domain/entities/show.dart';
 import 'package:series_app/features/tracking/domain/entities/tracking_entities.dart';
 import 'package:series_app/features/tracking/domain/entities/tracking_state.dart';
 import 'package:series_app/features/tracking/presentation/providers/tracking_providers.dart';
@@ -141,23 +142,40 @@ void main() {
       expect(unratedSeason.ratedEpisodeCount, 0);
     });
 
-    test('Independent overall show rating on TrackedShow and ShowDetails', () {
-      const showDetails = ShowDetails(
-        id: 100,
-        name: 'Test Show',
-        overallUserRating: 9.5,
-      );
-      expect(showDetails.overallUserRating, 9.5);
-
-      final tracked = TrackedShow(
+    test('Letterboxd review and rating fields on WatchedEpisode and TrackedShow', () {
+      final logDate = DateTime(2026, 10, 9);
+      final episode = WatchedEpisode(
         showId: 100,
-        name: 'Test Show',
-        status: TrackingStatus.watching,
-        addedAt: DateTime(2026, 1, 1),
-        updatedAt: DateTime(2026, 1, 1),
-        overallUserRating: 9.5,
+        key: const EpisodeKey(1, 1),
+        runtime: 45,
+        watchedAt: logDate,
+        userRating: 4.5,
+        reviewText: 'Incrível episódio, reviravolta brilhante!',
+        hasSpoilers: true,
+        loggedAt: logDate,
       );
-      expect(tracked.overallUserRating, 9.5);
+
+      expect(episode.userRating, 4.5);
+      expect(episode.reviewText, 'Incrível episódio, reviravolta brilhante!');
+      expect(episode.hasSpoilers, isTrue);
+      expect(episode.loggedAt, logDate);
+
+      final show = TrackedShow(
+        showId: 100,
+        name: 'Succession',
+        status: TrackingStatus.watching,
+        addedAt: logDate,
+        updatedAt: logDate,
+        overallUserRating: 5.0,
+        reviewText: 'Uma obra-prima contemporânea.',
+        hasSpoilers: false,
+        loggedAt: logDate,
+      );
+
+      expect(show.overallUserRating, 5.0);
+      expect(show.reviewText, 'Uma obra-prima contemporânea.');
+      expect(show.hasSpoilers, isFalse);
+      expect(show.loggedAt, logDate);
     });
   });
 }
