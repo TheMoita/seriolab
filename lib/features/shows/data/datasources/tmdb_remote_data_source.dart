@@ -31,9 +31,10 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
   final TmdbApiClient apiClient;
 
   @override
-  Future<List<ShowSummary>> trending() async {
+  Future<List<ShowSummary>> trending({String? language}) async {
     try {
-      final json = await apiClient.getTrendingTv(timeWindow: 'week');
+      final json =
+          await apiClient.getTrendingTv(timeWindow: 'week', language: language);
       return TmdbMapper.summaries(json);
     } on TmdbException catch (e) {
       throw CatalogException(e.message, statusCode: e.statusCode);
@@ -41,10 +42,11 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
   }
 
   @override
-  Future<List<ShowSummary>> popularThisWeek() async => trending();
+  Future<List<ShowSummary>> popularThisWeek({String? language}) async =>
+      trending(language: language);
 
   @override
-  Future<List<ShowSummary>> justPremiered() async {
+  Future<List<ShowSummary>> justPremiered({String? language}) async {
     final nowStr = DateTime.now().toIso8601String().substring(0, 10);
     final pastStr = DateTime.now()
         .subtract(const Duration(days: 90))
@@ -57,7 +59,7 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
         'first_air_date.lte': nowStr,
         'first_air_date.gte': pastStr,
         'vote_count.gte': '20',
-      });
+      }, language: language);
       return TmdbMapper.summaries(json);
     } on TmdbException catch (e) {
       throw CatalogException(e.message, statusCode: e.statusCode);
@@ -65,9 +67,9 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
   }
 
   @override
-  Future<List<ShowSummary>> topRated() async {
+  Future<List<ShowSummary>> topRated({String? language}) async {
     try {
-      final json = await apiClient.getTopRatedTv();
+      final json = await apiClient.getTopRatedTv(language: language);
       return TmdbMapper.summaries(json);
     } on TmdbException catch (e) {
       throw CatalogException(e.message, statusCode: e.statusCode);
@@ -78,6 +80,7 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
   Future<List<ShowSummary>> discover({
     Genre? genre,
     required ShowSort sort,
+    String? language,
   }) async {
     final query = <String, String>{
       'include_adult': 'false',
@@ -101,7 +104,7 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
       }
     }
     try {
-      final json = await apiClient.discoverTv(query);
+      final json = await apiClient.discoverTv(query, language: language);
       return TmdbMapper.summaries(json);
     } on TmdbException catch (e) {
       throw CatalogException(e.message, statusCode: e.statusCode);
@@ -109,9 +112,9 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
   }
 
   @override
-  Future<List<ShowSummary>> search(String query) async {
+  Future<List<ShowSummary>> search(String query, {String? language}) async {
     try {
-      final json = await apiClient.searchTv(query);
+      final json = await apiClient.searchTv(query, language: language);
       return TmdbMapper.summaries(json);
     } on TmdbException catch (e) {
       throw CatalogException(e.message, statusCode: e.statusCode);
@@ -119,11 +122,12 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
   }
 
   @override
-  Future<ShowDetails> showDetails(int showId) async {
+  Future<ShowDetails> showDetails(int showId, {String? language}) async {
     try {
       final json = await apiClient.getTvDetails(
         showId,
         appendToResponse: 'aggregate_credits',
+        language: language,
       );
       return TmdbMapper.details(json);
     } on TmdbException catch (e) {
@@ -132,9 +136,14 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
   }
 
   @override
-  Future<SeasonDetails> season(int showId, int seasonNumber) async {
+  Future<SeasonDetails> season(int showId, int seasonNumber,
+      {String? language}) async {
     try {
-      final json = await apiClient.getSeasonDetails(showId, seasonNumber);
+      final json = await apiClient.getSeasonDetails(
+        showId,
+        seasonNumber,
+        language: language,
+      );
       return TmdbMapper.season(json, showId: showId);
     } on TmdbException catch (e) {
       throw CatalogException(e.message, statusCode: e.statusCode);

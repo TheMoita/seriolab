@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
+import '../../features/settings/presentation/providers/settings_providers.dart';
 import '../../features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
 import '../../features/shows/data/datasources/tmdb_api_client.dart';
 import '../../features/shows/data/datasources/tmdb_remote_data_source.dart';
@@ -22,12 +23,13 @@ final httpClientProvider = Provider<http.Client>((ref) {
   return client;
 });
 
-/// TMDB API Client provider configured with active credentials.
+/// TMDB API Client provider configured with active credentials and user selected language.
 final tmdbApiClientProvider = Provider<TmdbApiClient>((ref) {
+  final settings = ref.watch(settingsControllerProvider);
   return TmdbApiClient(
     client: ref.watch(httpClientProvider),
     apiKey: AppConfig.tmdbApiKey,
-    defaultLanguage: AppConfig.tmdbLanguage,
+    defaultLanguage: settings.tmdbLanguageCode,
   );
 });
 

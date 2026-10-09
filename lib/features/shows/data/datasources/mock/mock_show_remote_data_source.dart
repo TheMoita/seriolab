@@ -120,7 +120,7 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
   // ---------------------------------------------------------------------------
 
   @override
-  Future<List<ShowSummary>> trending() => _respond(() {
+  Future<List<ShowSummary>> trending({String? language}) => _respond(() {
         final today = _today;
         // "Trending" = shows with episodes airing in the last/next weeks first.
         int score(MockShowSeed s) {
@@ -140,7 +140,7 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
       });
 
   @override
-  Future<List<ShowSummary>> popularThisWeek() => _respond(() {
+  Future<List<ShowSummary>> popularThisWeek({String? language}) => _respond(() {
         const priorityIds = [
           100088, // The Last of Us
           95396, // Severance
@@ -167,7 +167,7 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
       });
 
   @override
-  Future<List<ShowSummary>> justPremiered() => _respond(() {
+  Future<List<ShowSummary>> justPremiered({String? language}) => _respond(() {
         const premieredIds = [
           95396, // Severance (S2)
           100088, // The Last of Us (S2)
@@ -189,7 +189,7 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
       });
 
   @override
-  Future<List<ShowSummary>> topRated() => _respond(() {
+  Future<List<ShowSummary>> topRated({String? language}) => _respond(() {
         final list = [..._catalog]
           ..sort((a, b) {
             final byRating = b.rating.compareTo(a.rating);
@@ -201,7 +201,11 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
       });
 
   @override
-  Future<List<ShowSummary>> discover({Genre? genre, required ShowSort sort}) =>
+  Future<List<ShowSummary>> discover({
+    Genre? genre,
+    required ShowSort sort,
+    String? language,
+  }) =>
       _respond(() {
         final results = _catalog
             .map(_summary)
@@ -211,7 +215,8 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
       });
 
   @override
-  Future<List<ShowSummary>> search(String query) => _respond(() {
+  Future<List<ShowSummary>> search(String query, {String? language}) =>
+      _respond(() {
         final q = normalizeForSearch(query);
         if (q.isEmpty) return <ShowSummary>[];
         final matches = _catalog.where((s) {
@@ -223,11 +228,13 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
       });
 
   @override
-  Future<ShowDetails> showDetails(int showId) =>
+  Future<ShowDetails> showDetails(int showId, {String? language}) =>
       _respond(() => _details(_seed(showId)));
 
   @override
-  Future<SeasonDetails> season(int showId, int seasonNumber) => _respond(() {
+  Future<SeasonDetails> season(int showId, int seasonNumber,
+          {String? language}) =>
+      _respond(() {
         final seed = _seed(showId);
         if (seasonNumber < 1 || seasonNumber > seed.seasons.length) {
           throw CatalogException('Temporada $seasonNumber não encontrada',

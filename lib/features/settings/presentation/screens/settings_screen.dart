@@ -26,9 +26,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _cacheCleared = false;
 
   static const Map<String, String> _languages = {
-    'pt': 'Português (PT) 🇵🇹',
-    'en': 'English (US) 🇺🇸',
-    'es': 'Español (ES) 🇪🇸',
+    'pt-PT': 'Português (Portugal) 🇵🇹',
+    'pt-BR': 'Português (Brasil) 🇧🇷',
+    'en-US': 'English (US) 🇺🇸',
+    'es-ES': 'Español 🇪🇸',
   };
 
   static const Map<String, String> _regions = {
@@ -42,6 +43,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   };
 
   Future<void> _selectLanguage(BuildContext context, String current) async {
+    final effectiveCurrent = current == 'pt'
+        ? 'pt-PT'
+        : (current == 'en'
+            ? 'en-US'
+            : (current == 'es' ? 'es-ES' : current));
+
     final selected = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: AppColors.surface,
@@ -78,7 +85,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const Divider(),
                 ..._languages.entries.map((entry) {
-                  final isCurrent = entry.key == current;
+                  final isCurrent =
+                      entry.key == effectiveCurrent || entry.key == current;
                   return ListTile(
                     title: Text(
                       entry.value,
@@ -659,6 +667,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   color: AppColors.textMuted,
                 ),
                 onTap: () => _selectRegion(context, settings.streamingRegion),
+              ),
+              SwitchListTile(
+                secondary: const Icon(
+                  Icons.subtitles_rounded,
+                  color: AppColors.secondary,
+                  size: 22,
+                ),
+                title: const Text(
+                  'Ver títulos no idioma original',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Apresenta os nomes originais de séries e episódios em vez dos títulos traduzidos',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                value: settings.showOriginalTitles,
+                activeThumbColor: AppColors.primary,
+                onChanged: (val) => notifier.setShowOriginalTitles(val),
               ),
             ],
           ),

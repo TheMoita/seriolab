@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
+import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../domain/entities/show.dart';
 import '../screens/show_detail_screen.dart';
 
-class ShowCard extends StatelessWidget {
+class ShowCard extends ConsumerWidget {
   const ShowCard({
     super.key,
     required this.show,
@@ -19,7 +21,11 @@ class ShowCard extends StatelessWidget {
   final bool showRating;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final showOriginal =
+        ref.watch(settingsControllerProvider.select((s) => s.showOriginalTitles));
+    final title = show.displayTitle(showOriginal: showOriginal);
+
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
@@ -42,7 +48,7 @@ class ShowCard extends StatelessWidget {
                     child: AppNetworkImage(
                       imageUrl: show.posterUrl,
                       fallbackImageUrl: show.backdropUrl,
-                      title: show.name,
+                      title: title,
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
@@ -113,7 +119,7 @@ class ShowCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              show.name,
+              title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(

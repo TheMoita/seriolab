@@ -55,12 +55,16 @@ abstract final class TmdbMapper {
   static ShowSummary summary(Map<String, dynamic> json) {
     final poster = image(json['poster_path']);
     final backdrop = image(json['backdrop_path'], size: 'w780');
+    final rawName = json['name'] ?? json['title'];
+    final rawOriginal = json['original_name'] ?? json['original_title'];
+    final nameStr = rawName is String ? rawName.trim() : '';
+    final originalStr = rawOriginal is String ? rawOriginal.trim() : '';
+    final title = nameStr.isNotEmpty ? nameStr : originalStr;
 
     return ShowSummary(
       id: _int(json['id']),
-      name: _string(json['name']).isNotEmpty
-          ? _string(json['name'])
-          : _string(json['original_name']),
+      name: title,
+      originalName: originalStr,
       overview: _string(json['overview']),
       posterUrl: poster ?? backdrop,
       backdropUrl: backdrop ?? poster,
@@ -77,6 +81,7 @@ abstract final class TmdbMapper {
   static Map<String, dynamic> summaryToJson(ShowSummary summary) => {
         'id': summary.id,
         'name': summary.name,
+        'original_name': summary.originalName,
         'overview': summary.overview,
         'poster_path': summary.posterUrl,
         'backdrop_path': summary.backdropUrl,
@@ -91,21 +96,32 @@ abstract final class TmdbMapper {
   static List<ShowSummary> summaries(Map<String, dynamic> page) =>
       _list(page['results']).map(summary).where((s) => s.id != 0).toList();
 
-  static Episode episode(Map<String, dynamic> json, {required int showId}) =>
-      Episode(
-        id: _int(json['id']),
-        showId: showId,
-        seasonNumber: _int(json['season_number']),
-        episodeNumber: _int(json['episode_number']),
-        name: _string(json['name']).isEmpty
-            ? 'Episódio ${_int(json['episode_number'])}'
-            : _string(json['name']),
-        overview: _string(json['overview']),
-        airDate: date(json['air_date']),
-        runtime: json['runtime'] is num ? _int(json['runtime']) : null,
-        stillUrl: image(json['still_path'], size: 'w300'),
-        rating: _double(json['vote_average']),
-      );
+  static Episode episode(Map<String, dynamic> json, {required int showId}) {
+    final rawName = json['name'] ?? json['title'];
+    final rawOriginal = json['original_name'] ?? json['original_title'];
+    final nameStr = rawName is String ? rawName.trim() : '';
+    final originalStr = rawOriginal is String ? rawOriginal.trim() : '';
+    final epNum = _int(json['episode_number']);
+    final fallbackName = 'Episódio $epNum';
+    final title = nameStr.isNotEmpty
+        ? nameStr
+        : (originalStr.isNotEmpty ? originalStr : fallbackName);
+    final origTitle = originalStr.isNotEmpty ? originalStr : title;
+
+    return Episode(
+      id: _int(json['id']),
+      showId: showId,
+      seasonNumber: _int(json['season_number']),
+      episodeNumber: epNum,
+      name: title,
+      originalName: origTitle,
+      overview: _string(json['overview']),
+      airDate: date(json['air_date']),
+      runtime: json['runtime'] is num ? _int(json['runtime']) : null,
+      stillUrl: image(json['still_path'], size: 'w300'),
+      rating: _double(json['vote_average']),
+    );
+  }
 
   static Map<String, dynamic> episodeToJson(Episode ep) => {
         'id': ep.id,
@@ -113,6 +129,7 @@ abstract final class TmdbMapper {
         'season_number': ep.seasonNumber,
         'episode_number': ep.episodeNumber,
         'name': ep.name,
+        if (ep.originalName.isNotEmpty) 'original_name': ep.originalName,
         'overview': ep.overview,
         'air_date': ep.airDate?.toIso8601String().substring(0, 10),
         'runtime': ep.runtime,
@@ -123,6 +140,12 @@ abstract final class TmdbMapper {
 
   static ShowDetails details(Map<String, dynamic> json) {
     final id = _int(json['id']);
+    final rawName = json['name'] ?? json['title'];
+    final rawOriginal = json['original_name'] ?? json['original_title'];
+    final nameStr = rawName is String ? rawName.trim() : '';
+    final originalStr = rawOriginal is String ? rawOriginal.trim() : '';
+    final title = nameStr.isNotEmpty ? nameStr : originalStr;
+
     final runtimes =
         (json['episode_run_time'] as List?)?.whereType<num>().toList() ??
             const <num>[];
@@ -140,8 +163,8 @@ abstract final class TmdbMapper {
 
     return ShowDetails(
       id: id,
-      name: _string(json['name']),
-      originalName: _string(json['original_name']),
+      name: title,
+      originalName: originalStr.isNotEmpty ? originalStr : null,
       overview: _string(json['overview']),
       tagline: _string(json['tagline']),
       posterUrl: poster ?? backdrop,

@@ -194,9 +194,11 @@ class TmdbApiClient {
   Future<Map<String, dynamic>> getTrendingTv({
     String timeWindow = 'week',
     int page = 1,
+    String? language,
   }) async {
     return get(
       '/trending/tv/$timeWindow',
+      language: language,
       queryParameters: {
         if (page > 1) 'page': '$page',
       },
@@ -208,9 +210,11 @@ class TmdbApiClient {
     String query, {
     int page = 1,
     bool includeAdult = false,
+    String? language,
   }) async {
     return get(
       '/search/tv',
+      language: language,
       queryParameters: {
         'query': query,
         'include_adult': '$includeAdult',
@@ -223,9 +227,11 @@ class TmdbApiClient {
   Future<Map<String, dynamic>> getTvDetails(
     int seriesId, {
     String? appendToResponse = 'aggregate_credits',
+    String? language,
   }) async {
     return get(
       '/tv/$seriesId',
+      language: language,
       queryParameters: {
         if (appendToResponse != null && appendToResponse.isNotEmpty)
           'append_to_response': appendToResponse,
@@ -236,15 +242,23 @@ class TmdbApiClient {
   /// 4. Season & Episodes: GET /tv/{series_id}/season/{season_number}
   Future<Map<String, dynamic>> getSeasonDetails(
     int seriesId,
-    int seasonNumber,
-  ) async {
-    return get('/tv/$seriesId/season/$seasonNumber');
+    int seasonNumber, {
+    String? language,
+  }) async {
+    return get(
+      '/tv/$seriesId/season/$seasonNumber',
+      language: language,
+    );
   }
 
   /// Top Rated TV Shows: GET /tv/top_rated
-  Future<Map<String, dynamic>> getTopRatedTv({int page = 1}) async {
+  Future<Map<String, dynamic>> getTopRatedTv({
+    int page = 1,
+    String? language,
+  }) async {
     return get(
       '/tv/top_rated',
+      language: language,
       queryParameters: {
         if (page > 1) 'page': '$page',
       },
@@ -253,8 +267,13 @@ class TmdbApiClient {
 
   /// Discover TV Shows: GET /discover/tv
   Future<Map<String, dynamic>> discoverTv(
-    Map<String, String> queryParameters,
-  ) async {
-    return get('/discover/tv', queryParameters: queryParameters);
+    Map<String, String> queryParameters, {
+    String? language,
+  }) async {
+    return get(
+      '/discover/tv',
+      language: language,
+      queryParameters: queryParameters,
+    );
   }
 }

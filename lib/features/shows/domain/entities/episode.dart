@@ -67,6 +67,7 @@ class Episode {
     required this.seasonNumber,
     required this.episodeNumber,
     required this.name,
+    this.originalName = '',
     this.overview = '',
     this.airDate,
     this.runtime,
@@ -83,7 +84,21 @@ class Episode {
   final int seasonNumber;
   final int episodeNumber;
   final String name;
+  final String originalName;
   final String overview;
+
+  /// Localized title fallback to [name].
+  String get title => name;
+
+  /// Original episode title.
+  String get originalTitle =>
+      originalName.isNotEmpty ? originalName : name;
+
+  /// Helper to decide which title to render based on user preference.
+  String displayTitle({bool showOriginal = false}) =>
+      showOriginal && originalTitle.isNotEmpty
+          ? originalTitle
+          : (title.isNotEmpty ? title : originalTitle);
 
   /// Date-only air date (local), `null` when still to be announced.
   final DateTime? airDate;
@@ -126,6 +141,7 @@ class Episode {
     int? seasonNumber,
     int? episodeNumber,
     String? name,
+    String? originalName,
     String? overview,
     DateTime? airDate,
     int? runtime,
@@ -145,6 +161,7 @@ class Episode {
         seasonNumber: seasonNumber ?? this.seasonNumber,
         episodeNumber: episodeNumber ?? this.episodeNumber,
         name: name ?? this.name,
+        originalName: originalName ?? this.originalName,
         overview: overview ?? this.overview,
         airDate: airDate ?? this.airDate,
         runtime: runtime ?? this.runtime,

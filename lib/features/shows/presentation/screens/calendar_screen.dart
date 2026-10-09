@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../domain/entities/show.dart';
 import '../providers/show_providers.dart';
 import 'show_detail_screen.dart';
@@ -130,14 +131,17 @@ class CalendarScreen extends ConsumerWidget {
   }
 }
 
-class _UpcomingEpisodeCard extends StatelessWidget {
+class _UpcomingEpisodeCard extends ConsumerWidget {
   const _UpcomingEpisodeCard({required this.item});
 
   final UpcomingEpisode item;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ep = item.episode;
+    final showOriginal =
+        ref.watch(settingsControllerProvider.select((s) => s.showOriginalTitles));
+    final episodeTitle = ep.displayTitle(showOriginal: showOriginal);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -251,7 +255,7 @@ class _UpcomingEpisodeCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      ep.name,
+                      episodeTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

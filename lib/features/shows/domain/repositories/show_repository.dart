@@ -6,30 +6,40 @@ abstract interface class ShowRepository {
   /// `true` when backed by the offline demo catalogue.
   bool get isUsingMockData;
 
-  Future<List<ShowSummary>> getTrending();
+  Future<List<ShowSummary>> getTrending({String? language});
 
   /// Popular shows this week (curated / trending)
-  Future<List<ShowSummary>> getPopularThisWeek();
+  Future<List<ShowSummary>> getPopularThisWeek({String? language});
 
   /// Recently premiered or new seasons currently airing
-  Future<List<ShowSummary>> getJustPremiered();
+  Future<List<ShowSummary>> getJustPremiered({String? language});
 
   /// Highest rated TV shows of all time
-  Future<List<ShowSummary>> getTopRated();
+  Future<List<ShowSummary>> getTopRated({String? language});
 
   /// Discover shows, optionally filtered by [genre], ordered by [sort].
-  Future<List<ShowSummary>> discover({Genre? genre, ShowSort sort});
+  Future<List<ShowSummary>> discover({
+    Genre? genre,
+    ShowSort sort,
+    String? language,
+  });
 
   /// Search by title, optionally refined by [genre] and re-ordered by [sort]
   /// (`null` keeps the API relevance order).
-  Future<List<ShowSummary>> search(String query, {Genre? genre, ShowSort? sort});
+  Future<List<ShowSummary>> search(
+    String query, {
+    Genre? genre,
+    ShowSort? sort,
+    String? language,
+  });
 
-  Future<ShowDetails> getShowDetails(int showId);
+  Future<ShowDetails> getShowDetails(int showId, {String? language});
 
-  Future<SeasonDetails> getSeason(int showId, int seasonNumber);
+  Future<SeasonDetails> getSeason(int showId, int seasonNumber,
+      {String? language});
 
   /// Show details plus all regular-season episodes.
-  Future<ShowWithEpisodes> getShowWithEpisodes(int showId);
+  Future<ShowWithEpisodes> getShowWithEpisodes(int showId, {String? language});
 
   /// Episodes airing from today up to [days] ahead for the given shows,
   /// ordered chronologically.

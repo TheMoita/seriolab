@@ -13,6 +13,8 @@ void main() {
       expect(settings.username, 'afonsodias');
       expect(settings.language, 'pt');
       expect(settings.streamingRegion, 'PT');
+      expect(settings.showOriginalTitles, isFalse);
+      expect(settings.tmdbLanguageCode, 'pt-PT');
       expect(settings.hideSpoilersForUnwatched, isTrue);
       expect(settings.groupSpecialEpisodes, isTrue);
       expect(settings.episodeReleaseReminders, isTrue);
@@ -23,6 +25,24 @@ void main() {
       expect(settings.averageRating, greaterThan(0.0));
     });
 
+    test('tmdbLanguageCode maps properly for regions and languages', () {
+      final ptBr = UserSettings.defaultSettings.copyWith(
+        language: 'pt',
+        streamingRegion: 'BR',
+      );
+      expect(ptBr.tmdbLanguageCode, 'pt-BR');
+
+      final en = UserSettings.defaultSettings.copyWith(
+        language: 'en',
+      );
+      expect(en.tmdbLanguageCode, 'en-US');
+
+      final es = UserSettings.defaultSettings.copyWith(
+        language: 'es',
+      );
+      expect(es.tmdbLanguageCode, 'es-ES');
+    });
+
     test('toJson and fromJson preserves all fields', () {
       const original = UserSettings(
         displayName: 'Test User',
@@ -31,6 +51,7 @@ void main() {
         avatarId: 'cyan',
         language: 'en',
         streamingRegion: 'US',
+        showOriginalTitles: true,
         hideSpoilersForUnwatched: false,
         groupSpecialEpisodes: false,
         episodeReleaseReminders: false,
@@ -47,6 +68,7 @@ void main() {
       expect(reconstructed.avatarId, original.avatarId);
       expect(reconstructed.language, original.language);
       expect(reconstructed.streamingRegion, original.streamingRegion);
+      expect(reconstructed.showOriginalTitles, isTrue);
       expect(reconstructed.hideSpoilersForUnwatched, isFalse);
       expect(reconstructed.groupSpecialEpisodes, isFalse);
       expect(reconstructed.episodeReleaseReminders, isFalse);
@@ -59,10 +81,12 @@ void main() {
       const initial = UserSettings.defaultSettings;
       final updated = initial.copyWith(
         displayName: 'Novo Nome',
+        showOriginalTitles: true,
         hideSpoilersForUnwatched: false,
       );
 
       expect(updated.displayName, 'Novo Nome');
+      expect(updated.showOriginalTitles, isTrue);
       expect(updated.hideSpoilersForUnwatched, isFalse);
       expect(updated.username, initial.username);
       expect(updated.language, initial.language);
@@ -132,6 +156,12 @@ void main() {
       expect(
         directContainer.read(settingsControllerProvider).hideSpoilersForUnwatched,
         isFalse,
+      );
+
+      await notifier.setShowOriginalTitles(true);
+      expect(
+        directContainer.read(settingsControllerProvider).showOriginalTitles,
+        isTrue,
       );
 
       await notifier.updateProfile(

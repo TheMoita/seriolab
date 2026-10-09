@@ -127,6 +127,7 @@ class UserSettings {
     required this.episodeReleaseReminders,
     required this.reminderHour,
     required this.reminderMinute,
+    this.showOriginalTitles = false,
     this.favoriteShowIds = const [1396, 95396, 100088, 126308, 94605],
     this.ratingDistribution = defaultRatingDistribution,
   });
@@ -138,12 +139,24 @@ class UserSettings {
   final String avatarId;
 
   // Content & Language
-  final String language; // 'pt', 'en', 'es'
+  final String language; // 'pt-PT', 'pt-BR', 'en-US', 'es-ES' or 'pt', 'en', 'es'
   final String streamingRegion; // 'PT', 'BR', 'US', 'GB', 'ES', etc.
 
   // Anti-spoiler & Display
   final bool hideSpoilersForUnwatched;
   final bool groupSpecialEpisodes;
+  final bool showOriginalTitles;
+
+  /// Returns standard TMDB language code (e.g., 'pt-PT', 'pt-BR', 'en-US', 'es-ES').
+  String get tmdbLanguageCode {
+    if (language.contains('-')) return language;
+    return switch (language.toLowerCase()) {
+      'pt' => streamingRegion == 'BR' ? 'pt-BR' : 'pt-PT',
+      'en' => 'en-US',
+      'es' => 'es-ES',
+      _ => 'pt-PT',
+    };
+  }
 
   // Notifications
   final bool episodeReleaseReminders;
@@ -208,6 +221,7 @@ class UserSettings {
     streamingRegion: 'PT',
     hideSpoilersForUnwatched: true,
     groupSpecialEpisodes: true,
+    showOriginalTitles: false,
     episodeReleaseReminders: true,
     reminderHour: 20,
     reminderMinute: 0,
@@ -224,6 +238,7 @@ class UserSettings {
     String? streamingRegion,
     bool? hideSpoilersForUnwatched,
     bool? groupSpecialEpisodes,
+    bool? showOriginalTitles,
     bool? episodeReleaseReminders,
     int? reminderHour,
     int? reminderMinute,
@@ -240,6 +255,7 @@ class UserSettings {
       hideSpoilersForUnwatched:
           hideSpoilersForUnwatched ?? this.hideSpoilersForUnwatched,
       groupSpecialEpisodes: groupSpecialEpisodes ?? this.groupSpecialEpisodes,
+      showOriginalTitles: showOriginalTitles ?? this.showOriginalTitles,
       episodeReleaseReminders:
           episodeReleaseReminders ?? this.episodeReleaseReminders,
       reminderHour: reminderHour ?? this.reminderHour,
@@ -259,6 +275,7 @@ class UserSettings {
       'streamingRegion': streamingRegion,
       'hideSpoilersForUnwatched': hideSpoilersForUnwatched,
       'groupSpecialEpisodes': groupSpecialEpisodes,
+      'showOriginalTitles': showOriginalTitles,
       'episodeReleaseReminders': episodeReleaseReminders,
       'reminderHour': reminderHour,
       'reminderMinute': reminderMinute,
@@ -295,6 +312,8 @@ class UserSettings {
           defaultSettings.hideSpoilersForUnwatched,
       groupSpecialEpisodes: json['groupSpecialEpisodes'] as bool? ??
           defaultSettings.groupSpecialEpisodes,
+      showOriginalTitles: json['showOriginalTitles'] as bool? ??
+          defaultSettings.showOriginalTitles,
       episodeReleaseReminders: json['episodeReleaseReminders'] as bool? ??
           defaultSettings.episodeReleaseReminders,
       reminderHour:

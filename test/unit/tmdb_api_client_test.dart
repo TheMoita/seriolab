@@ -59,6 +59,30 @@ void main() {
       expect(requestedUri.queryParameters['language'], 'pt-PT');
     });
 
+    test('supports dynamic language override in requests', () async {
+      late Uri requestedUri;
+      final mockHttp = MockClient((request) async {
+        requestedUri = request.url;
+        return http.Response(
+          jsonEncode({'results': []}),
+          200,
+          headers: {'content-type': 'application/json; charset=utf-8'},
+        );
+      });
+
+      final client = TmdbApiClient(
+        client: mockHttp,
+        apiKey: 'test_api_key_32_characters_1234',
+        defaultLanguage: 'pt-PT',
+      );
+
+      await client.getTrendingTv(language: 'en-US');
+      expect(requestedUri.queryParameters['language'], 'en-US');
+
+      await client.searchTv('Dark', language: 'pt-BR');
+      expect(requestedUri.queryParameters['language'], 'pt-BR');
+    });
+
     test('attaches Authorization Bearer header for v4 token', () async {
       late http.Request sentRequest;
       final mockHttp = MockClient((request) async {
@@ -160,6 +184,61 @@ void main() {
       final json = summary.toJson();
       expect(json['id'], 100088);
       expect(json['name'], 'The Last of Us');
+    });
+
+    test('ShowSummary extracts localized and original titles and displayTitle works', () {
+      final raw = {
+        'id': 100088,
+        'name': 'O Último de Nós',
+        'original_name': 'The Last of Us',
+        'overview': 'Drama pós-apocalíptico',
+        'poster_path': '/uKwX94d1F6U1.jpg',
+      };
+
+      final summary = ShowSummary.fromTmdbJson(raw);
+      expect(summary.name, 'O Último de Nós');
+      expect(summary.title, 'O Último de Nós');
+      expect(summary.originalName, 'The Last of Us');
+      expect(summary.originalTitle, 'The Last of Us');
+      expect(summary.displayTitle(showOriginal: false), 'O Último de Nós');
+      expect(summary.displayTitle(showOriginal: true), 'The Last of Us');
+    });
+
+    test('ShowDetails / SeriesModel extracts localized and original titles', () {
+      final raw = {
+        'id': 70523,
+        'name': 'Matrioska',
+        'original_name': 'Russian Doll',
+        'overview': 'Nádia morre repetidamente...',
+        'poster_path': '/poster.jpg',
+      };
+
+      final details = ShowDetails.fromTmdbJson(raw);
+      expect(details.name, 'Matrioska');
+      expect(details.title, 'Matrioska');
+      expect(details.originalName, 'Russian Doll');
+      expect(details.originalTitle, 'Russian Doll');
+      expect(details.displayTitle(showOriginal: false), 'Matrioska');
+      expect(details.displayTitle(showOriginal: true), 'Russian Doll');
+    });
+
+    test('Episode / EpisodeModel extracts localized and original titles and displayTitle works', () {
+      final raw = {
+        'id': 2001,
+        'season_number': 1,
+        'episode_number': 1,
+        'name': 'Quando Estás Perdido na Escuridão',
+        'original_name': 'When You\'re Lost in the Darkness',
+        'overview': 'Vinte anos após o surto...',
+      };
+
+      final episode = Episode.fromTmdbJson(raw, showId: 100088);
+      expect(episode.name, 'Quando Estás Perdido na Escuridão');
+      expect(episode.title, 'Quando Estás Perdido na Escuridão');
+      expect(episode.originalName, 'When You\'re Lost in the Darkness');
+      expect(episode.originalTitle, 'When You\'re Lost in the Darkness');
+      expect(episode.displayTitle(showOriginal: false), 'Quando Estás Perdido na Escuridão');
+      expect(episode.displayTitle(showOriginal: true), 'When You\'re Lost in the Darkness');
     });
 
     test('Episode fromTmdbJson and toJson', () {

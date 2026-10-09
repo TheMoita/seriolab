@@ -258,7 +258,11 @@ class _FavoriteSlotTile extends ConsumerWidget {
             data: (show) => AppNetworkImage(
               imageUrl: show.posterUrl ?? show.backdropUrl,
               fallbackImageUrl: show.backdropUrl,
-              title: show.name,
+              title: show.displayTitle(
+                showOriginal: ref.watch(
+                  settingsControllerProvider.select((s) => s.showOriginalTitles),
+                ),
+              ),
               fit: BoxFit.cover,
               borderRadius: BorderRadius.circular(10),
             ),
@@ -529,18 +533,22 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
           itemBuilder: (context, index) {
             final show = shows[index];
             final isAlreadyFavorite = currentFavorites.contains(show.id);
+            final showOriginal = ref.watch(
+              settingsControllerProvider.select((s) => s.showOriginalTitles),
+            );
+            final title = show.displayTitle(showOriginal: showOriginal);
 
             return ListTile(
               leading: AppNetworkImage(
                 imageUrl: show.posterUrl ?? show.backdropUrl,
                 fallbackImageUrl: show.backdropUrl,
-                title: show.name,
+                title: title,
                 width: 36,
                 height: 52,
                 borderRadius: BorderRadius.circular(6),
               ),
               title: Text(
-                show.name,
+                title,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -596,18 +604,22 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
         ),
         ...trending.map((show) {
           final isAlreadyFavorite = currentFavorites.contains(show.id);
+          final showOriginal = ref.watch(
+            settingsControllerProvider.select((s) => s.showOriginalTitles),
+          );
+          final title = show.displayTitle(showOriginal: showOriginal);
           return ListTile(
             contentPadding: EdgeInsets.zero,
             leading: AppNetworkImage(
               imageUrl: show.posterUrl ?? show.backdropUrl,
               fallbackImageUrl: show.backdropUrl,
-              title: show.name,
+              title: title,
               width: 36,
               height: 52,
               borderRadius: BorderRadius.circular(6),
             ),
             title: Text(
-              show.name,
+              title,
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,

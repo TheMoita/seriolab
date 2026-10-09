@@ -40,33 +40,39 @@ class ShowRepositoryImpl implements ShowRepository {
   }
 
   @override
-  Future<List<ShowSummary>> getTrending() => remote.trending();
+  Future<List<ShowSummary>> getTrending({String? language}) =>
+      remote.trending(language: language);
 
   @override
-  Future<List<ShowSummary>> getPopularThisWeek() => remote.popularThisWeek();
+  Future<List<ShowSummary>> getPopularThisWeek({String? language}) =>
+      remote.popularThisWeek(language: language);
 
   @override
-  Future<List<ShowSummary>> getJustPremiered() => remote.justPremiered();
+  Future<List<ShowSummary>> getJustPremiered({String? language}) =>
+      remote.justPremiered(language: language);
 
   @override
-  Future<List<ShowSummary>> getTopRated() => remote.topRated();
+  Future<List<ShowSummary>> getTopRated({String? language}) =>
+      remote.topRated(language: language);
 
   @override
   Future<List<ShowSummary>> discover({
     Genre? genre,
     ShowSort sort = ShowSort.popularity,
+    String? language,
   }) =>
-      remote.discover(genre: genre, sort: sort);
+      remote.discover(genre: genre, sort: sort, language: language);
 
   @override
   Future<List<ShowSummary>> search(
     String query, {
     Genre? genre,
     ShowSort? sort,
+    String? language,
   }) async {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return const [];
-    final results = await remote.search(trimmed);
+    final results = await remote.search(trimmed, language: language);
     final filtered = genre == null
         ? results
         : results.where((s) => s.matchesGenre(genre)).toList();
@@ -74,23 +80,27 @@ class ShowRepositoryImpl implements ShowRepository {
   }
 
   @override
-  Future<ShowDetails> getShowDetails(int showId) =>
-      _cached(_details, showId, () => remote.showDetails(showId));
+  Future<ShowDetails> getShowDetails(int showId, {String? language}) =>
+      _cached(_details, showId,
+          () => remote.showDetails(showId, language: language));
 
   @override
-  Future<SeasonDetails> getSeason(int showId, int seasonNumber) => _cached(
+  Future<SeasonDetails> getSeason(int showId, int seasonNumber,
+          {String? language}) =>
+      _cached(
         _seasons,
         (showId, seasonNumber),
-        () => remote.season(showId, seasonNumber),
+        () => remote.season(showId, seasonNumber, language: language),
       );
 
   @override
-  Future<ShowWithEpisodes> getShowWithEpisodes(int showId) async {
-    final show = await getShowDetails(showId);
+  Future<ShowWithEpisodes> getShowWithEpisodes(int showId,
+      {String? language}) async {
+    final show = await getShowDetails(showId, language: language);
     final seasons = await Future.wait(
       show.regularSeasons
           .where((s) => s.episodeCount > 0)
-          .map((s) => getSeason(showId, s.seasonNumber)),
+          .map((s) => getSeason(showId, s.seasonNumber, language: language)),
     );
     final episodes = [for (final s in seasons) ...s.episodes]
       ..sort((a, b) => a.key.compareTo(b.key));

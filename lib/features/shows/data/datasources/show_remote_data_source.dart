@@ -3,14 +3,18 @@ import '../../domain/entities/show.dart';
 
 /// Raw catalogue access. Implemented by TMDB (network) and the mock catalogue.
 abstract interface class ShowRemoteDataSource {
-  Future<List<ShowSummary>> trending();
-  Future<List<ShowSummary>> popularThisWeek();
-  Future<List<ShowSummary>> justPremiered();
-  Future<List<ShowSummary>> topRated();
-  Future<List<ShowSummary>> discover({Genre? genre, required ShowSort sort});
-  Future<List<ShowSummary>> search(String query);
-  Future<ShowDetails> showDetails(int showId);
-  Future<SeasonDetails> season(int showId, int seasonNumber);
+  Future<List<ShowSummary>> trending({String? language});
+  Future<List<ShowSummary>> popularThisWeek({String? language});
+  Future<List<ShowSummary>> justPremiered({String? language});
+  Future<List<ShowSummary>> topRated({String? language});
+  Future<List<ShowSummary>> discover({
+    Genre? genre,
+    required ShowSort sort,
+    String? language,
+  });
+  Future<List<ShowSummary>> search(String query, {String? language});
+  Future<ShowDetails> showDetails(int showId, {String? language});
+  Future<SeasonDetails> season(int showId, int seasonNumber, {String? language});
 }
 
 class CatalogException implements Exception {

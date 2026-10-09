@@ -10,6 +10,7 @@ class ShowSummary {
   const ShowSummary({
     required this.id,
     required this.name,
+    this.originalName = '',
     this.overview = '',
     this.posterUrl,
     this.backdropUrl,
@@ -28,6 +29,7 @@ class ShowSummary {
 
   final int id;
   final String name;
+  final String originalName;
   final String overview;
   final String? posterUrl;
   final String? backdropUrl;
@@ -37,6 +39,18 @@ class ShowSummary {
   final DateTime? firstAirDate;
   final List<int> genreIds;
   final String originalLanguage;
+
+  /// Localized title fallback to [name].
+  String get title => name;
+
+  /// Original series title (from original_name/original_title).
+  String get originalTitle => originalName.isNotEmpty ? originalName : name;
+
+  /// Helper to decide which title to render based on user preference.
+  String displayTitle({bool showOriginal = false}) =>
+      showOriginal && originalTitle.isNotEmpty
+          ? originalTitle
+          : (title.isNotEmpty ? title : originalTitle);
 
   int? get year => firstAirDate?.year;
 
@@ -225,6 +239,21 @@ class ShowDetails {
   /// Date the log was recorded.
   final DateTime? loggedAt;
 
+  /// Localized title fallback to [name].
+  String get title => name;
+
+  /// Original series title (from original_name/original_title).
+  String get originalTitle =>
+      (originalName != null && originalName!.trim().isNotEmpty)
+          ? originalName!.trim()
+          : name;
+
+  /// Helper to decide which title to render based on user preference.
+  String displayTitle({bool showOriginal = false}) =>
+      showOriginal && originalTitle.isNotEmpty
+          ? originalTitle
+          : (title.isNotEmpty ? title : originalTitle);
+
   int? get year => firstAirDate?.year;
 
   bool get isAnime =>
@@ -253,6 +282,7 @@ class ShowDetails {
   ShowSummary toSummary() => ShowSummary(
         id: id,
         name: name,
+        originalName: originalName ?? '',
         overview: overview,
         posterUrl: posterUrl,
         backdropUrl: backdropUrl,

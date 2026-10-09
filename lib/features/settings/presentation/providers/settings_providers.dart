@@ -68,6 +68,10 @@ class SettingsNotifier extends Notifier<UserSettings> {
     await update((current) => current.copyWith(hideSpoilersForUnwatched: value));
   }
 
+  Future<void> setShowOriginalTitles(bool value) async {
+    await update((current) => current.copyWith(showOriginalTitles: value));
+  }
+
   Future<void> setGroupSpecialEpisodes(bool value) async {
     await update((current) => current.copyWith(groupSpecialEpisodes: value));
   }

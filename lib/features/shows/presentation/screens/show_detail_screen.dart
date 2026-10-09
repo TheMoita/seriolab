@@ -87,7 +87,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                 AppNetworkImage(
                   imageUrl: show.backdropUrl ?? show.posterUrl,
                   fallbackImageUrl: show.posterUrl,
-                  title: show.name,
+                  title: show.displayTitle(showOriginal: settings.showOriginalTitles),
                   fit: BoxFit.cover,
                   placeholderIcon: Icons.tv_rounded,
                 ),
@@ -125,7 +125,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                     AppNetworkImage(
                       imageUrl: show.posterUrl ?? show.backdropUrl,
                       fallbackImageUrl: show.backdropUrl,
-                      title: show.name,
+                      title: show.displayTitle(showOriginal: settings.showOriginalTitles),
                       width: 100,
                       height: 150,
                       borderRadius: BorderRadius.circular(12),
@@ -137,7 +137,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            show.name,
+                            show.displayTitle(showOriginal: settings.showOriginalTitles),
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
@@ -145,11 +145,24 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                               height: 1.2,
                             ),
                           ),
-                          if (show.originalName != null &&
-                              show.originalName != show.name) ...[
+                          if (settings.showOriginalTitles &&
+                              show.title.isNotEmpty &&
+                              show.title != show.displayTitle(showOriginal: true)) ...[
                             const SizedBox(height: 2),
                             Text(
-                              show.originalName!,
+                              show.title,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ] else if (!settings.showOriginalTitles &&
+                              show.originalTitle.isNotEmpty &&
+                              show.originalTitle != show.displayTitle(showOriginal: false)) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              show.originalTitle,
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: AppColors.textSecondary,
@@ -795,6 +808,9 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
     required bool isAired,
     required bool hideSpoilers,
   }) {
+    final showOriginal =
+        ref.watch(settingsControllerProvider.select((s) => s.showOriginalTitles));
+    final episodeTitle = episode.displayTitle(showOriginal: showOriginal);
     final isSpoilerProtected =
         hideSpoilers && !isWatched && !_revealedSpoilers.contains(episode.key);
 
@@ -840,7 +856,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
               ),
             ),
             title: Text(
-              episode.name,
+              episodeTitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -1365,10 +1381,12 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
     ShowDetails show,
     TrackedShow? tracked,
   ) async {
+    final showOriginal =
+        ref.read(settingsControllerProvider).showOriginalTitles;
     final result = await RatingModal.show(
       context,
       title: 'Classificar & Registar Série',
-      itemName: show.name,
+      itemName: show.displayTitle(showOriginal: showOriginal),
       badgeText: 'SÉRIE',
       initialRating: tracked?.overallUserRating,
       initialReview: tracked?.reviewText,
@@ -1424,11 +1442,14 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
         .asData
         ?.value
         .watchedFor(show.id)[episode.key];
+    final showOriginal =
+        ref.read(settingsControllerProvider).showOriginalTitles;
 
     final result = await RatingModal.show(
       context,
       title: 'Classificar Episódio',
-      itemName: '${episode.code} • ${episode.name}',
+      itemName:
+          '${episode.code} • ${episode.displayTitle(showOriginal: showOriginal)}',
       badgeText: episode.code,
       initialRating: watched?.userRating ?? episode.userRating,
       initialReview: watched?.reviewText ?? episode.reviewText,

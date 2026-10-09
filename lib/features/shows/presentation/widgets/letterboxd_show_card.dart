@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
+import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../tracking/domain/entities/tracking_entities.dart';
 import '../../../tracking/presentation/providers/tracking_providers.dart';
 import '../../domain/entities/show.dart';
@@ -49,6 +50,9 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
   void _showQuickStatusSheet(BuildContext context, TrackedShow? current) {
     final theme = Theme.of(context);
     final tracking = ref.read(trackingControllerProvider.notifier);
+    final showOriginal =
+        ref.read(settingsControllerProvider).showOriginalTitles;
+    final displayTitle = widget.show.displayTitle(showOriginal: showOriginal);
 
     showModalBottomSheet<void>(
       context: context,
@@ -82,7 +86,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                       child: AppNetworkImage(
                         imageUrl: widget.show.posterUrl,
                         fallbackImageUrl: widget.show.backdropUrl,
-                        title: widget.show.name,
+                        title: displayTitle,
                         width: 36,
                         height: 54,
                       ),
@@ -93,7 +97,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.show.name,
+                            displayTitle,
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
@@ -145,7 +149,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            '${widget.show.name} marcada como "${status.label}"',
+                            '$displayTitle marcada como "${status.label}"',
                           ),
                           duration: const Duration(seconds: 2),
                         ),
@@ -174,7 +178,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            '${widget.show.name} removida da lista',
+                            '$displayTitle removida da lista',
                           ),
                           duration: const Duration(seconds: 2),
                         ),
@@ -194,6 +198,9 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
   Widget build(BuildContext context) {
     final tracked = ref.watch(trackedShowProvider(widget.show.id));
     final hasStatus = tracked != null;
+    final showOriginal =
+        ref.watch(settingsControllerProvider.select((s) => s.showOriginalTitles));
+    final displayTitle = widget.show.displayTitle(showOriginal: showOriginal);
 
     final content = Column(
       mainAxisSize: MainAxisSize.min,
@@ -237,7 +244,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                   AppNetworkImage(
                     imageUrl: widget.show.posterUrl,
                     fallbackImageUrl: widget.show.backdropUrl,
-                    title: widget.show.name,
+                    title: displayTitle,
                     fit: BoxFit.cover,
                   ),
 
@@ -368,7 +375,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
 
         // Show Title (Clean, sober Letterboxd typography)
         Text(
-          widget.show.name,
+          displayTitle,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
