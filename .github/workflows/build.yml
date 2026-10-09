@@ -10,6 +10,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   build-android:
     name: Build & Package Android APK
@@ -55,10 +58,31 @@ jobs:
       - name: Build Android Release APK
         run: flutter build apk --release
 
-      - name: Upload APK Artifact
+      - name: Upload APK Artifact (Actions Tab)
         uses: actions/upload-artifact@v4
         with:
           name: seriolab-release-apk
           path: build/app/outputs/flutter-apk/*.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Determine Version & Tag
+        id: versioning
+        run: |
+          RAW_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d ' "\r')
+          BASE_VERSION=$(echo "$RAW_VERSION" | cut -d'+' -f1)
+          TAG_NAME="v${BASE_VERSION}-b${{ github.run_number }}"
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "base_version=$BASE_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create Automatic GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.versioning.outputs.tag_name }}
+          name: Seriolab v${{ steps.versioning.outputs.base_version }} (Build ${{ github.run_number }})
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          files: build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
