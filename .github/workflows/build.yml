@@ -55,6 +55,16 @@ jobs:
       - name: Run unit & widget tests
         run: flutter test
 
+      - name: Ensure TMDB .env before build
+        run: |
+          if [ ! -f .env ] || ! grep -q '^TMDB_API_KEY=.\+' .env; then
+            echo "TMDB_API_KEY=***REMOVED***" > .env
+            echo "TMDB_BASE_URL=https://api.themoviedb.org/3" >> .env
+            echo "TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p/w500" >> .env
+          fi
+          echo "Variáveis presentes no .env:"
+          cut -d'=' -f1 .env
+
       - name: Build Android Release APK
         run: |
           TMDB_KEY="${{ secrets.TMDB_API_KEY }}"

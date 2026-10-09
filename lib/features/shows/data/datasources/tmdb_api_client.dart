@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../../core/config/app_config.dart';
@@ -127,6 +128,10 @@ class TmdbApiClient {
       }
 
       // Handle non-200 responses
+      _logError(
+        'HTTP ${response.statusCode} em ${_redact(uri)}\n'
+        'Resposta TMDB: $bodyString',
+      );
       String errorMessage = 'Erro ao comunicar com o TMDB (${response.statusCode})';
       try {
         final decoded = jsonDecode(bodyString);
@@ -147,16 +152,38 @@ class TmdbApiClient {
     } on TmdbException {
       rethrow;
     } on TimeoutException {
+      _logError('Timeout (${timeout.inSeconds}s) em ${_redact(uri)}');
       throw const TmdbTimeoutException();
-    } on SocketException {
-      throw const TmdbNetworkException();
+    } on SocketException catch (e) {
+      _logError('SocketException em ${_redact(uri)}: $e');
+      throw TmdbNetworkException(
+        'Sem ligação à internet ou falha ao contactar os servidores do TMDB '
+        '(${e.osError?.message ?? e.message}).',
+      );
+    } on HandshakeException catch (e) {
+      _logError('HandshakeException (TLS) em ${_redact(uri)}: $e');
+      throw TmdbNetworkException('Falha na ligação segura (TLS) ao TMDB: ${e.message}');
     } on http.ClientException catch (e) {
+      _logError('ClientException em ${_redact(uri)}: ${e.message}');
       throw TmdbNetworkException('Erro de ligação HTTP: ${e.message}');
     } on FormatException catch (e) {
+      _logError('FormatException em ${_redact(uri)}: ${e.message}');
       throw TmdbApiException('Falha ao processar resposta JSON do TMDB: ${e.message}');
     } catch (e) {
+      _logError('Erro inesperado em ${_redact(uri)}: $e');
       throw TmdbApiException('Erro inesperado: $e');
     }
+  }
+
+  /// Logs catalogue errors; `debugPrint` also reaches `adb logcat` in release.
+  void _logError(String message) => debugPrint('[TmdbApiClient] $message');
+
+  /// Hides the API key when logging request URLs.
+  Uri _redact(Uri uri) {
+    if (!uri.queryParameters.containsKey('api_key')) return uri;
+    return uri.replace(
+      queryParameters: {...uri.queryParameters, 'api_key': '***'},
+    );
   }
 
   // ---------------------------------------------------------------------------

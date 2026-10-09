@@ -1,9 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Configuration for Seriolab, reading credentials from `.env` via `flutter_dotenv`
 /// with fallback to `--dart-define`.
 class AppConfig {
   const AppConfig._();
+
+  /// Fallback TMDB v3 key used when neither `.env` nor `--dart-define`
+  /// provide one (e.g. the `.env` asset was not bundled in a release build).
+  static const String _fallbackTmdbApiKey = '***REMOVED***';
 
   /// TMDB credential read from `.env` or `--dart-define`.
   /// Accepts either a v3 API key or a v4 "Read Access Token".
@@ -20,7 +25,8 @@ class AppConfig {
     if (envVal.isNotEmpty && !envVal.contains('your_tmdb_api_key')) {
       return envVal.trim();
     }
-    return '';
+    debugPrint('[AppConfig] TMDB_API_KEY ausente no .env/dart-define — a usar chave de fallback.');
+    return _fallbackTmdbApiKey;
   }
 
   /// Whether a non-empty TMDB API key is configured.
