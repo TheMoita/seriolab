@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
-import '../../../auth/presentation/screens/login_screen.dart';
+import '../../../auth/presentation/widgets/auth_gate.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
 import '../providers/settings_providers.dart';
@@ -363,7 +363,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 if (mounted) {
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute<void>(
-                      builder: (_) => const LoginScreen(),
+                      builder: (_) => const AuthGate(),
                     ),
                     (route) => false,
                   );
@@ -580,55 +580,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   subtitle: const Text(
                     'Termina a sessão ativa no Seriolab',
                     style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                  ),
-                  onTap: _confirmSignOut,
-                ),
-              ] else if (authState.isGuest) ...[
-                const Divider(),
-                ListTile(
-                  leading: const Icon(
-                    Icons.login_rounded,
-                    color: AppColors.secondary,
-                    size: 22,
-                  ),
-                  title: const Text(
-                    'Iniciar Sessão / Criar Conta',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.secondary,
-                    ),
-                  ),
-                  subtitle: const Text(
-                    'A navegar como convidado. Inicia sessão para guardar na nuvem',
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                  ),
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: AppColors.textMuted,
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const LoginScreen(),
-                      ),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(
-                    Icons.logout_rounded,
-                    color: AppColors.danger,
-                    size: 22,
-                  ),
-                  title: const Text(
-                    'Sair do Modo Convidado',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.danger,
-                    ),
                   ),
                   onTap: _confirmSignOut,
                 ),

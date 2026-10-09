@@ -3,19 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
-import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../settings/presentation/screens/settings_screen.dart';
-import '../../../settings/presentation/widgets/avatar_selection_sheet.dart';
-import '../../../settings/presentation/widgets/user_avatar_widget.dart';
 import '../../../shows/presentation/providers/show_providers.dart';
 import '../../../shows/presentation/screens/show_detail_screen.dart';
 import '../../domain/entities/tracking_entities.dart';
 import '../providers/tracking_providers.dart';
+import '../widgets/profile_banner_header.dart';
 import '../widgets/ratings_breakdown_section.dart';
 import '../widgets/top_favorites_section.dart';
 
@@ -86,62 +84,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 // Profile Header, Favorites & Ratings
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
+                    padding: const EdgeInsets.only(bottom: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // User Profile Header with Avatar & Edit Badge
+                        // Top Customizable Banner & Overlapping Avatar
+                        ProfileBannerHeader(settings: settings),
+                        const SizedBox(height: 12),
+
+                        // User Profile Header Info
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  InkWell(
-                                    borderRadius: BorderRadius.circular(44),
-                                    onTap: () => AvatarSelectionSheet.show(context),
-                                    child: UserAvatarWidget.fromSettings(
-                                      settings: settings,
-                                      size: 80,
-                                      showGlow: true,
-                                      borderWidth: 2.5,
-                                    ),
-                                  ),
-                                  Positioned(
-                                    right: -2,
-                                    bottom: -2,
-                                    child: InkWell(
-                                      onTap: () => AvatarSelectionSheet.show(context),
-                                      borderRadius: BorderRadius.circular(14),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.primary,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: AppColors.background,
-                                            width: 2.2,
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: AppColors.primary.withValues(alpha: 0.4),
-                                              blurRadius: 6,
-                                            ),
-                                          ],
-                                        ),
-                                        child: const Icon(
-                                          Icons.edit_rounded,
-                                          size: 13,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
                               Text(
                                 settings.displayName,
                                 textAlign: TextAlign.center,
@@ -185,53 +141,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                       ),
                                     ),
                                   ],
-                                ),
-                              ] else if (authState.isGuest) ...[
-                                const SizedBox(height: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.surfaceHigh,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: AppColors.outline,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Text(
-                                        'Modo Convidado • ',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.textMuted,
-                                        ),
-                                      ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute<void>(
-                                              builder: (_) =>
-                                                  const LoginScreen(),
-                                            ),
-                                          );
-                                        },
-                                        child: const Text(
-                                          'Iniciar Sessão',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppColors.primary,
-                                            decoration: TextDecoration.underline,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                 ),
                               ],
                               if (settings.bio.isNotEmpty) ...[

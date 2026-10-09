@@ -8,7 +8,7 @@ import '../providers/auth_providers.dart';
 import '../widgets/social_auth_button.dart';
 import 'register_screen.dart';
 
-/// Screen enabling user login via Email/Password or Google, with guest mode skip.
+/// Screen enabling user login via Email/Password or Google.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -57,13 +57,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         await ref.read(authControllerProvider.notifier).signInWithGoogle();
 
     if (success && mounted) {
-      _navigateToMain();
-    }
-  }
-
-  Future<void> _handleGuestMode() async {
-    await ref.read(authControllerProvider.notifier).continueAsGuest();
-    if (mounted) {
       _navigateToMain();
     }
   }
@@ -308,25 +301,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Guest Mode Button
-                    TextButton.icon(
-                      onPressed: authState.isLoading ? null : _handleGuestMode,
-                      icon: const Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 16,
-                        color: AppColors.textMuted,
-                      ),
-                      label: const Text(
-                        'Continuar como Convidado',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
                     ),
                   ],
                 ),

@@ -15,6 +15,7 @@ abstract interface class ShowRemoteDataSource {
   Future<List<ShowSummary>> search(String query, {String? language});
   Future<ShowDetails> showDetails(int showId, {String? language});
   Future<SeasonDetails> season(int showId, int seasonNumber, {String? language});
+  Future<List<String>> showBackdrops(int showId);
 }
 
 class CatalogException implements Exception {

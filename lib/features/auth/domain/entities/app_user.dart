@@ -22,6 +22,8 @@ class AppUser {
     required this.provider,
     this.displayName,
     this.photoUrl,
+    this.profileBannerUrl,
+    this.profileBannerPath,
   });
 
   final String uid;
@@ -29,8 +31,13 @@ class AppUser {
   final AuthProviderKind provider;
   final String? displayName;
   final String? photoUrl;
+  final String? profileBannerUrl;
+  final String? profileBannerPath;
 
   bool get hasPhoto => photoUrl != null && photoUrl!.trim().isNotEmpty;
+  bool get hasCustomBanner =>
+      (profileBannerUrl != null && profileBannerUrl!.trim().isNotEmpty) ||
+      (profileBannerPath != null && profileBannerPath!.trim().isNotEmpty);
 
   /// Best human-readable name: account display name, else the email prefix.
   String get preferredName {
@@ -74,8 +81,18 @@ class AppUser {
       other.email == email &&
       other.provider == provider &&
       other.displayName == displayName &&
-      other.photoUrl == photoUrl;
+      other.photoUrl == photoUrl &&
+      other.profileBannerUrl == profileBannerUrl &&
+      other.profileBannerPath == profileBannerPath;
 
   @override
-  int get hashCode => Object.hash(uid, email, provider, displayName, photoUrl);
+  int get hashCode => Object.hash(
+        uid,
+        email,
+        provider,
+        displayName,
+        photoUrl,
+        profileBannerUrl,
+        profileBannerPath,
+      );
 }

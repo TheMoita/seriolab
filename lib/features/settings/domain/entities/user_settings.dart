@@ -137,6 +137,8 @@ class UserSettings {
     required this.avatarId,
     this.avatarType = AvatarType.preset,
     this.avatarValue,
+    this.profileBannerUrl,
+    this.profileBannerPath,
     required this.language,
     required this.streamingRegion,
     required this.hideSpoilersForUnwatched,
@@ -156,6 +158,12 @@ class UserSettings {
   final String avatarId;
   final AvatarType avatarType;
   final String? avatarValue;
+  final String? profileBannerUrl;
+  final String? profileBannerPath;
+
+  bool get hasCustomBanner =>
+      (profileBannerUrl != null && profileBannerUrl!.trim().isNotEmpty) ||
+      (profileBannerPath != null && profileBannerPath!.trim().isNotEmpty);
 
   String get effectiveAvatarValue => avatarValue ?? avatarId;
 
@@ -259,6 +267,11 @@ class UserSettings {
     String? avatarId,
     AvatarType? avatarType,
     String? avatarValue,
+    String? profileBannerUrl,
+    String? profileBannerPath,
+    bool clearProfileBanner = false,
+    bool clearProfileBannerUrl = false,
+    bool clearProfileBannerPath = false,
     String? language,
     String? streamingRegion,
     bool? hideSpoilersForUnwatched,
@@ -277,6 +290,12 @@ class UserSettings {
       avatarId: avatarId ?? this.avatarId,
       avatarType: avatarType ?? this.avatarType,
       avatarValue: avatarValue ?? this.avatarValue,
+      profileBannerUrl: (clearProfileBanner || clearProfileBannerUrl)
+          ? null
+          : (profileBannerUrl ?? this.profileBannerUrl),
+      profileBannerPath: (clearProfileBanner || clearProfileBannerPath)
+          ? null
+          : (profileBannerPath ?? this.profileBannerPath),
       language: language ?? this.language,
       streamingRegion: streamingRegion ?? this.streamingRegion,
       hideSpoilersForUnwatched:
@@ -300,6 +319,8 @@ class UserSettings {
       'avatarId': avatarId,
       'avatarType': avatarType.name,
       'avatarValue': avatarValue,
+      'profileBannerUrl': profileBannerUrl,
+      'profileBannerPath': profileBannerPath,
       'language': language,
       'streamingRegion': streamingRegion,
       'hideSpoilersForUnwatched': hideSpoilersForUnwatched,
@@ -342,6 +363,8 @@ class UserSettings {
       avatarId: avatarId,
       avatarType: avatarType,
       avatarValue: avatarValue,
+      profileBannerUrl: json['profileBannerUrl'] as String?,
+      profileBannerPath: json['profileBannerPath'] as String?,
       language: json['language'] as String? ?? defaultSettings.language,
       streamingRegion:
           json['streamingRegion'] as String? ?? defaultSettings.streamingRegion,

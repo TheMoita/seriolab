@@ -2,6 +2,7 @@ import '../../../../../core/utils/formatters.dart';
 import '../../../domain/entities/episode.dart';
 import '../../../domain/entities/genre.dart';
 import '../../../domain/entities/show.dart';
+import '../../models/tmdb_mapper.dart';
 import '../show_remote_data_source.dart';
 import 'mock_catalog.dart';
 
@@ -247,5 +248,20 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
           airDate: seed.seasons[seasonNumber - 1].premiereDate(_today),
           episodes: _episodesFor(seed, seasonNumber),
         );
+      });
+
+  @override
+  Future<List<String>> showBackdrops(int showId) => _respond(() {
+        final seed = _seed(showId);
+        final urls = <String>[];
+        if (seed.backdropPath != null) {
+          final url = TmdbMapper.image(seed.backdropPath, size: 'w1280');
+          if (url != null) urls.add(url);
+        }
+        if (seed.posterPath != null) {
+          final url = TmdbMapper.image(seed.posterPath, size: 'w1280');
+          if (url != null && !urls.contains(url)) urls.add(url);
+        }
+        return urls;
       });
 }

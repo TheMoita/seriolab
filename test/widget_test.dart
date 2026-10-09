@@ -151,7 +151,7 @@ void main() {
     expect(find.byIcon(Icons.movie_filter_rounded), findsOneWidget);
   });
 
-  testWidgets('AuthGate displays LoginScreen when unauthenticated and not guest',
+  testWidgets('AuthGate strictly requires authentication and removes guest mode',
       (WidgetTester tester) async {
     final inMemoryRepo = InMemoryTrackingRepository();
     final testRepo = ShowRepositoryImpl(
@@ -175,15 +175,16 @@ void main() {
     // Verify login UI components
     expect(find.text('Iniciar Sessão'), findsOneWidget);
     expect(find.text('Continuar com o Google'), findsOneWidget);
-    expect(find.text('Continuar como Convidado'), findsOneWidget);
     expect(find.text('Regista-te'), findsOneWidget);
+    // Guest mode is completely removed
+    expect(find.text('Continuar como Convidado'), findsNothing);
 
-    // Tap Continuar como Convidado
-    final guestBtn = find.text('Continuar como Convidado');
-    await tester.ensureVisible(guestBtn);
-    await tester.tap(guestBtn);
+    // Tap Continuar com o Google to authenticate
+    final googleBtn = find.text('Continuar com o Google');
+    await tester.ensureVisible(googleBtn);
+    await tester.tap(googleBtn);
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 300));
 
     // Verify transitioned to MainScreen
     expect(find.text('Início'), findsOneWidget);

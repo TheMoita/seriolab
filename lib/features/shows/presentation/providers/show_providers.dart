@@ -117,3 +117,10 @@ final upcomingEpisodesProvider =
   final repo = ref.watch(showRepositoryProvider);
   return repo.getUpcomingEpisodes(showIds);
 });
+
+/// High-resolution backdrops / wallpapers for a show
+final showBackdropsProvider =
+    FutureProvider.autoDispose.family<List<String>, int>(
+  (ref, showId) =>
+      ref.watch(showRepositoryProvider).getShowBackdrops(showId),
+);

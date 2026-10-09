@@ -251,6 +251,20 @@ class TmdbApiClient {
     );
   }
 
+  /// 5. Show Images & Backdrops: GET /tv/{series_id}/images
+  Future<Map<String, dynamic>> getTvImages(
+    int seriesId, {
+    String? language,
+  }) async {
+    return get(
+      '/tv/$seriesId/images',
+      language: language,
+      queryParameters: {
+        'include_image_language': 'en,pt,null',
+      },
+    );
+  }
+
   /// Top Rated TV Shows: GET /tv/top_rated
   Future<Map<String, dynamic>> getTopRatedTv({
     int page = 1,

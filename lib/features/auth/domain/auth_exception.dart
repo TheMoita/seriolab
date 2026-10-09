@@ -32,7 +32,7 @@ class AuthException implements Exception {
   /// Thrown when Firebase is not configured for this build.
   static const unavailable = AuthException(
     'A autenticação ainda não está configurada nesta versão da app '
-    '(Firebase em falta). Podes continuar como convidado.',
+    '(Firebase em falta).',
     code: 'auth-unavailable',
   );
 

@@ -57,6 +57,8 @@ void main() {
         episodeReleaseReminders: false,
         reminderHour: 9,
         reminderMinute: 30,
+        profileBannerUrl: 'https://image.tmdb.org/t/p/w1280/wallpaper.jpg',
+        profileBannerPath: '/storage/banner.jpg',
       );
 
       final json = original.toJson();
@@ -66,6 +68,8 @@ void main() {
       expect(reconstructed.username, original.username);
       expect(reconstructed.bio, original.bio);
       expect(reconstructed.avatarId, original.avatarId);
+      expect(reconstructed.profileBannerUrl, 'https://image.tmdb.org/t/p/w1280/wallpaper.jpg');
+      expect(reconstructed.profileBannerPath, '/storage/banner.jpg');
       expect(reconstructed.language, original.language);
       expect(reconstructed.streamingRegion, original.streamingRegion);
       expect(reconstructed.showOriginalTitles, isTrue);
@@ -233,6 +237,45 @@ void main() {
 
       await notifier.reorderFavoriteShows(0, 1);
       expect(directContainer.read(settingsControllerProvider).favoriteShowIds.length, 5);
+
+      // Test banner management
+      await notifier.setProfileBannerUrl('https://image.tmdb.org/t/p/w1280/backdrop.jpg');
+      expect(
+        directContainer.read(settingsControllerProvider).profileBannerUrl,
+        'https://image.tmdb.org/t/p/w1280/backdrop.jpg',
+      );
+      expect(
+        directContainer.read(settingsControllerProvider).profileBannerPath,
+        isNull,
+      );
+      expect(
+        directContainer.read(settingsControllerProvider).hasCustomBanner,
+        isTrue,
+      );
+
+      await notifier.setProfileBannerPath('/local/storage/my_banner.png');
+      expect(
+        directContainer.read(settingsControllerProvider).profileBannerPath,
+        '/local/storage/my_banner.png',
+      );
+      expect(
+        directContainer.read(settingsControllerProvider).profileBannerUrl,
+        isNull,
+      );
+
+      await notifier.clearProfileBanner();
+      expect(
+        directContainer.read(settingsControllerProvider).profileBannerUrl,
+        isNull,
+      );
+      expect(
+        directContainer.read(settingsControllerProvider).profileBannerPath,
+        isNull,
+      );
+      expect(
+        directContainer.read(settingsControllerProvider).hasCustomBanner,
+        isFalse,
+      );
     });
   });
 }

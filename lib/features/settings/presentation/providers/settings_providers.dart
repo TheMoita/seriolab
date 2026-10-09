@@ -121,6 +121,26 @@ class SettingsNotifier extends Notifier<UserSettings> {
         ));
   }
 
+  Future<void> setProfileBannerUrl(String url) async {
+    await update((current) => current.copyWith(
+          profileBannerUrl: url,
+          clearProfileBannerPath: true,
+        ));
+  }
+
+  Future<void> setProfileBannerPath(String path) async {
+    await update((current) => current.copyWith(
+          profileBannerPath: path,
+          clearProfileBannerUrl: true,
+        ));
+  }
+
+  Future<void> clearProfileBanner() async {
+    await update((current) => current.copyWith(
+          clearProfileBanner: true,
+        ));
+  }
+
   Future<void> setFavoriteShows(List<int> showIds) async {
     await update((current) => current.copyWith(favoriteShowIds: showIds));
   }

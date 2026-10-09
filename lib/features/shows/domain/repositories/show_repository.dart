@@ -50,4 +50,7 @@ abstract interface class ShowRepository {
 
   /// Clears cached data (all, or for a single show).
   void invalidate({int? showId});
+
+  /// High-resolution backdrops/wallpapers for the show.
+  Future<List<String>> getShowBackdrops(int showId);
 }

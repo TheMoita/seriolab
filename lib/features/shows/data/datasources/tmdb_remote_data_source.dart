@@ -149,4 +149,36 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
       throw CatalogException(e.message, statusCode: e.statusCode);
     }
   }
+
+  @override
+  Future<List<String>> showBackdrops(int showId) async {
+    try {
+      final json = await apiClient.getTvImages(showId);
+      final list = json['backdrops'];
+      final urls = <String>[];
+      if (list is List) {
+        for (final item in list) {
+          if (item is Map && item['file_path'] is String) {
+            final url = TmdbMapper.image(item['file_path'], size: 'w1280');
+            if (url != null && !urls.contains(url)) {
+              urls.add(url);
+            }
+          }
+        }
+      }
+      if (urls.isEmpty) {
+        final details = await showDetails(showId);
+        if (details.backdropUrl != null) {
+          urls.add(details.backdropUrl!);
+        }
+      }
+      return urls;
+    } catch (_) {
+      try {
+        final details = await showDetails(showId);
+        if (details.backdropUrl != null) return [details.backdropUrl!];
+      } catch (_) {}
+      return const [];
+    }
+  }
 }

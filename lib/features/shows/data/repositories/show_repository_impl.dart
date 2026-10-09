@@ -159,4 +159,8 @@ class ShowRepositoryImpl implements ShowRepository {
       _seasons.removeWhere((key, _) => key.$1 == showId);
     }
   }
+
+  @override
+  Future<List<String>> getShowBackdrops(int showId) =>
+      remote.showBackdrops(showId);
 }

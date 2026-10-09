@@ -151,5 +151,11 @@ void main() {
 
       expect(AppNetworkImage.isValidUrl('https://image.tmdb.org/t/p/w500/abc.jpg'), isTrue);
     });
+
+    test('getShowBackdrops returns high-res wallpapers', () async {
+      final backdrops = await repository.getShowBackdrops(1396); // Breaking Bad
+      expect(backdrops, isNotEmpty);
+      expect(backdrops.first, startsWith('https://image.tmdb.org/t/p/w1280'));
+    });
   });
 }

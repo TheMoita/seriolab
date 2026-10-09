@@ -5,8 +5,8 @@ import '../../../main/presentation/screens/main_screen.dart';
 import '../providers/auth_providers.dart';
 import '../screens/login_screen.dart';
 
-/// Entry gateway directing authenticated or guest users to [MainScreen],
-/// or unauthenticated users to [LoginScreen].
+/// Entry gateway directing authenticated users to [MainScreen],
+/// or unauthenticated users to [LoginScreen]. Registration/login is strictly mandatory.
 class AuthGate extends ConsumerWidget {
   const AuthGate({super.key});
 
@@ -14,7 +14,7 @@ class AuthGate extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authControllerProvider);
 
-    if (authState.canAccessApp) {
+    if (authState.isAuthenticated) {
       return const MainScreen();
     }
 
