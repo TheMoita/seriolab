@@ -47,12 +47,16 @@ class SettingsNotifier extends Notifier<UserSettings> {
     required String username,
     required String bio,
     required String avatarId,
+    AvatarType? avatarType,
+    String? avatarValue,
   }) async {
     await update((current) => current.copyWith(
           displayName: displayName,
           username: username,
           bio: bio,
           avatarId: avatarId,
+          avatarType: avatarType ?? current.avatarType,
+          avatarValue: avatarValue ?? current.avatarValue,
         ));
   }
 
@@ -88,7 +92,33 @@ class SettingsNotifier extends Notifier<UserSettings> {
   }
 
   Future<void> setAvatar(String avatarId) async {
-    await update((current) => current.copyWith(avatarId: avatarId));
+    await update((current) => current.copyWith(
+          avatarId: avatarId,
+          avatarType: AvatarType.preset,
+          avatarValue: avatarId,
+        ));
+  }
+
+  Future<void> setAvatarPreset(String avatarId) async {
+    await update((current) => current.copyWith(
+          avatarId: avatarId,
+          avatarType: AvatarType.preset,
+          avatarValue: avatarId,
+        ));
+  }
+
+  Future<void> setAvatarLocalFile(String filePath) async {
+    await update((current) => current.copyWith(
+          avatarType: AvatarType.localFile,
+          avatarValue: filePath,
+        ));
+  }
+
+  Future<void> setAvatarNetworkUrl(String url) async {
+    await update((current) => current.copyWith(
+          avatarType: AvatarType.networkUrl,
+          avatarValue: url,
+        ));
   }
 
   Future<void> setFavoriteShows(List<int> showIds) async {

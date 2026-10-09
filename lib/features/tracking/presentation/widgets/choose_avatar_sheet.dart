@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../settings/domain/entities/user_settings.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
+import '../../../settings/presentation/widgets/avatar_selection_sheet.dart';
 import '../../../settings/presentation/widgets/seriolab_avatar_view.dart';
 
 /// Modal bottom sheet allowing users to choose from thematic series/cinema icons.
@@ -11,15 +12,7 @@ class ChooseAvatarSheet extends ConsumerWidget {
   const ChooseAvatarSheet({super.key});
 
   static Future<void> show(BuildContext context) {
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => const ChooseAvatarSheet(),
-    );
+    return AvatarSelectionSheet.show(context);
   }
 
   @override

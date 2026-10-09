@@ -10,12 +10,12 @@ import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../settings/presentation/screens/settings_screen.dart';
-import '../../../settings/presentation/widgets/seriolab_avatar_view.dart';
+import '../../../settings/presentation/widgets/avatar_selection_sheet.dart';
+import '../../../settings/presentation/widgets/user_avatar_widget.dart';
 import '../../../shows/presentation/providers/show_providers.dart';
 import '../../../shows/presentation/screens/show_detail_screen.dart';
 import '../../domain/entities/tracking_entities.dart';
 import '../providers/tracking_providers.dart';
-import '../widgets/choose_avatar_sheet.dart';
 import '../widgets/ratings_breakdown_section.dart';
 import '../widgets/top_favorites_section.dart';
 
@@ -101,9 +101,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 children: [
                                   InkWell(
                                     borderRadius: BorderRadius.circular(44),
-                                    onTap: () => ChooseAvatarSheet.show(context),
-                                    child: SeriolabAvatarView(
-                                      avatarId: settings.avatarId,
+                                    onTap: () => AvatarSelectionSheet.show(context),
+                                    child: UserAvatarWidget.fromSettings(
+                                      settings: settings,
                                       size: 80,
                                       showGlow: true,
                                       borderWidth: 2.5,
@@ -113,7 +113,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     right: -2,
                                     bottom: -2,
                                     child: InkWell(
-                                      onTap: () => ChooseAvatarSheet.show(context),
+                                      onTap: () => AvatarSelectionSheet.show(context),
                                       borderRadius: BorderRadius.circular(14),
                                       child: Container(
                                         padding: const EdgeInsets.all(5),

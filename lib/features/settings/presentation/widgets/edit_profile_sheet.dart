@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/user_settings.dart';
 import '../providers/settings_providers.dart';
+import 'avatar_selection_sheet.dart';
 import 'seriolab_avatar_view.dart';
+import 'user_avatar_widget.dart';
 
 /// Modal bottom sheet for editing user profile (avatar, name, username, bio).
 class EditProfileSheet extends ConsumerStatefulWidget {
@@ -31,6 +33,8 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
   late final TextEditingController _usernameController;
   late final TextEditingController _bioController;
   late String _selectedAvatarId;
+  late AvatarType _selectedAvatarType;
+  late String? _selectedAvatarValue;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -41,6 +45,8 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
     _usernameController = TextEditingController(text: settings.username);
     _bioController = TextEditingController(text: settings.bio);
     _selectedAvatarId = settings.avatarId;
+    _selectedAvatarType = settings.avatarType;
+    _selectedAvatarValue = settings.avatarValue;
   }
 
   @override
@@ -64,6 +70,8 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
           username: cleanUsername,
           bio: _bioController.text.trim(),
           avatarId: _selectedAvatarId,
+          avatarType: _selectedAvatarType,
+          avatarValue: _selectedAvatarValue,
         );
 
     Navigator.of(context).pop();
@@ -150,29 +158,58 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                 Center(
                   child: Stack(
                     children: [
-                      SeriolabAvatarView(
-                        avatarId: _selectedAvatarId,
-                        size: 78,
-                        showGlow: true,
-                        borderWidth: 2.5,
+                      InkWell(
+                        borderRadius: BorderRadius.circular(40),
+                        onTap: () async {
+                          await AvatarSelectionSheet.show(context);
+                          if (mounted) {
+                            final current = ref.read(settingsControllerProvider);
+                            setState(() {
+                              _selectedAvatarId = current.avatarId;
+                              _selectedAvatarType = current.avatarType;
+                              _selectedAvatarValue = current.avatarValue;
+                            });
+                          }
+                        },
+                        child: UserAvatarWidget(
+                          avatarId: _selectedAvatarId,
+                          avatarType: _selectedAvatarType,
+                          avatarValue: _selectedAvatarValue,
+                          size: 78,
+                          showGlow: true,
+                          borderWidth: 2.5,
+                        ),
                       ),
                       Positioned(
                         right: 0,
                         bottom: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.surface,
-                              width: 2,
+                        child: InkWell(
+                          onTap: () async {
+                            await AvatarSelectionSheet.show(context);
+                            if (mounted) {
+                              final current = ref.read(settingsControllerProvider);
+                              setState(() {
+                                _selectedAvatarId = current.avatarId;
+                                _selectedAvatarType = current.avatarType;
+                                _selectedAvatarValue = current.avatarValue;
+                              });
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.surface,
+                                width: 2,
+                              ),
                             ),
-                          ),
-                          child: const Icon(
-                            Icons.auto_awesome_rounded,
-                            size: 13,
-                            color: Colors.white,
+                            child: const Icon(
+                              Icons.auto_awesome_rounded,
+                              size: 13,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -203,13 +240,16 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                       separatorBuilder: (_, _) => const SizedBox(width: 12),
                       itemBuilder: (context, index) {
                         final avatar = SeriolabAvatar.presets[index];
-                        final isSelected = avatar.id == _selectedAvatarId;
+                        final isSelected = _selectedAvatarType == AvatarType.preset &&
+                            avatar.id == _selectedAvatarId;
 
                         return InkWell(
                           borderRadius: BorderRadius.circular(30),
                           onTap: () {
                             setState(() {
                               _selectedAvatarId = avatar.id;
+                              _selectedAvatarType = AvatarType.preset;
+                              _selectedAvatarValue = avatar.id;
                             });
                           },
                           child: Container(
@@ -234,7 +274,36 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 8),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () async {
+                      await AvatarSelectionSheet.show(context);
+                      if (mounted) {
+                        final current = ref.read(settingsControllerProvider);
+                        setState(() {
+                          _selectedAvatarId = current.avatarId;
+                          _selectedAvatarType = current.avatarType;
+                          _selectedAvatarValue = current.avatarValue;
+                        });
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.tune_rounded,
+                      size: 16,
+                      color: AppColors.secondary,
+                    ),
+                    label: const Text(
+                      'Mais opções (Séries TMDB ou Foto)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.secondary,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
 
                 // Form Fields
                 const Text(

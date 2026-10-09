@@ -112,6 +112,21 @@ class SeriolabAvatar {
   }
 }
 
+/// Avatar source types supported in Seriolab.
+enum AvatarType {
+  preset,
+  localFile,
+  networkUrl;
+
+  static AvatarType fromString(String? val) {
+    if (val == null) return AvatarType.preset;
+    for (final type in AvatarType.values) {
+      if (type.name == val) return type;
+    }
+    return AvatarType.preset;
+  }
+}
+
 /// User profile and app preferences model.
 @immutable
 class UserSettings {
@@ -120,6 +135,8 @@ class UserSettings {
     required this.username,
     required this.bio,
     required this.avatarId,
+    this.avatarType = AvatarType.preset,
+    this.avatarValue,
     required this.language,
     required this.streamingRegion,
     required this.hideSpoilersForUnwatched,
@@ -137,6 +154,10 @@ class UserSettings {
   final String username;
   final String bio;
   final String avatarId;
+  final AvatarType avatarType;
+  final String? avatarValue;
+
+  String get effectiveAvatarValue => avatarValue ?? avatarId;
 
   // Content & Language
   final String language; // 'pt-PT', 'pt-BR', 'en-US', 'es-ES' or 'pt', 'en', 'es'
@@ -217,6 +238,8 @@ class UserSettings {
     username: 'afonsodias',
     bio: 'Maratonista de séries e entusiasta de ficção científica & drama.',
     avatarId: 'tv_retro',
+    avatarType: AvatarType.preset,
+    avatarValue: 'tv_retro',
     language: 'pt',
     streamingRegion: 'PT',
     hideSpoilersForUnwatched: true,
@@ -234,6 +257,8 @@ class UserSettings {
     String? username,
     String? bio,
     String? avatarId,
+    AvatarType? avatarType,
+    String? avatarValue,
     String? language,
     String? streamingRegion,
     bool? hideSpoilersForUnwatched,
@@ -250,6 +275,8 @@ class UserSettings {
       username: username ?? this.username,
       bio: bio ?? this.bio,
       avatarId: avatarId ?? this.avatarId,
+      avatarType: avatarType ?? this.avatarType,
+      avatarValue: avatarValue ?? this.avatarValue,
       language: language ?? this.language,
       streamingRegion: streamingRegion ?? this.streamingRegion,
       hideSpoilersForUnwatched:
@@ -271,6 +298,8 @@ class UserSettings {
       'username': username,
       'bio': bio,
       'avatarId': avatarId,
+      'avatarType': avatarType.name,
+      'avatarValue': avatarValue,
       'language': language,
       'streamingRegion': streamingRegion,
       'hideSpoilersForUnwatched': hideSpoilersForUnwatched,
@@ -299,12 +328,20 @@ class UserSettings {
       return defaultSettings.ratingDistribution;
     }
 
+    final avatarType = AvatarType.fromString(json['avatarType'] as String?);
+    final avatarId =
+        json['avatarId'] as String? ?? defaultSettings.avatarId;
+    final avatarValue = json['avatarValue'] as String? ??
+        (avatarType == AvatarType.preset ? avatarId : null);
+
     return UserSettings(
       displayName:
           json['displayName'] as String? ?? defaultSettings.displayName,
       username: json['username'] as String? ?? defaultSettings.username,
       bio: json['bio'] as String? ?? defaultSettings.bio,
-      avatarId: json['avatarId'] as String? ?? defaultSettings.avatarId,
+      avatarId: avatarId,
+      avatarType: avatarType,
+      avatarValue: avatarValue,
       language: json['language'] as String? ?? defaultSettings.language,
       streamingRegion:
           json['streamingRegion'] as String? ?? defaultSettings.streamingRegion,

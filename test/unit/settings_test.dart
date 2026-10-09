@@ -99,6 +99,38 @@ void main() {
       final iris = SeriolabAvatar.getById('iris');
       expect(iris.id, 'iris');
     });
+
+    test('AvatarType fromString and serialization work properly', () {
+      expect(AvatarType.fromString('preset'), AvatarType.preset);
+      expect(AvatarType.fromString('localFile'), AvatarType.localFile);
+      expect(AvatarType.fromString('networkUrl'), AvatarType.networkUrl);
+      expect(AvatarType.fromString(null), AvatarType.preset);
+      expect(AvatarType.fromString('invalid'), AvatarType.preset);
+
+      // Serialization with networkUrl
+      final networkSettings = UserSettings.defaultSettings.copyWith(
+        avatarType: AvatarType.networkUrl,
+        avatarValue: 'https://image.tmdb.org/t/p/w500/test.jpg',
+      );
+      final jsonNet = networkSettings.toJson();
+      expect(jsonNet['avatarType'], 'networkUrl');
+      expect(jsonNet['avatarValue'], 'https://image.tmdb.org/t/p/w500/test.jpg');
+
+      final reloadedNet = UserSettings.fromJson(jsonNet);
+      expect(reloadedNet.avatarType, AvatarType.networkUrl);
+      expect(reloadedNet.avatarValue, 'https://image.tmdb.org/t/p/w500/test.jpg');
+      expect(reloadedNet.effectiveAvatarValue, 'https://image.tmdb.org/t/p/w500/test.jpg');
+
+      // Serialization with localFile
+      final localSettings = UserSettings.defaultSettings.copyWith(
+        avatarType: AvatarType.localFile,
+        avatarValue: '/data/user/0/avatar.jpg',
+      );
+      final jsonLocal = localSettings.toJson();
+      final reloadedLocal = UserSettings.fromJson(jsonLocal);
+      expect(reloadedLocal.avatarType, AvatarType.localFile);
+      expect(reloadedLocal.avatarValue, '/data/user/0/avatar.jpg');
+    });
   });
 
   group('SettingsRepositoryImpl', () {
@@ -178,6 +210,19 @@ void main() {
       // Test avatar change
       await notifier.setAvatar('retro_tv');
       expect(directContainer.read(settingsControllerProvider).avatarId, 'retro_tv');
+      expect(directContainer.read(settingsControllerProvider).avatarType, AvatarType.preset);
+
+      await notifier.setAvatarPreset('iris');
+      expect(directContainer.read(settingsControllerProvider).avatarId, 'iris');
+      expect(directContainer.read(settingsControllerProvider).avatarType, AvatarType.preset);
+
+      await notifier.setAvatarNetworkUrl('https://image.tmdb.org/t/p/w500/series.jpg');
+      expect(directContainer.read(settingsControllerProvider).avatarType, AvatarType.networkUrl);
+      expect(directContainer.read(settingsControllerProvider).avatarValue, 'https://image.tmdb.org/t/p/w500/series.jpg');
+
+      await notifier.setAvatarLocalFile('/path/to/my_photo.jpg');
+      expect(directContainer.read(settingsControllerProvider).avatarType, AvatarType.localFile);
+      expect(directContainer.read(settingsControllerProvider).avatarValue, '/path/to/my_photo.jpg');
 
       // Test favorites management
       await notifier.removeFavoriteShow(1396);

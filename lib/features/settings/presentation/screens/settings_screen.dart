@@ -7,10 +7,11 @@ import '../../../auth/presentation/screens/login_screen.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
 import '../providers/settings_providers.dart';
+import '../widgets/avatar_selection_sheet.dart';
 import '../widgets/edit_profile_sheet.dart';
 import '../widgets/export_watchlist_sheet.dart';
-import '../widgets/seriolab_avatar_view.dart';
 import '../widgets/settings_group_card.dart';
+import '../widgets/user_avatar_widget.dart';
 
 /// Screen offering full application configuration, anti-spoiler controls,
 /// profile personalization, notifications, and data management.
@@ -405,16 +406,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     Stack(
                       children: [
-                        SeriolabAvatarView(
-                          avatarId: settings.avatarId,
-                          size: 60,
-                          showGlow: true,
+                        InkWell(
+                          borderRadius: BorderRadius.circular(30),
+                          onTap: () => AvatarSelectionSheet.show(context),
+                          child: UserAvatarWidget.fromSettings(
+                            settings: settings,
+                            size: 60,
+                            showGlow: true,
+                          ),
                         ),
                         Positioned(
                           right: 0,
                           bottom: 0,
                           child: InkWell(
-                            onTap: () => EditProfileSheet.show(context),
+                            onTap: () => AvatarSelectionSheet.show(context),
                             child: Container(
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
@@ -484,8 +489,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               ListTile(
                 leading: const Icon(
-                  Icons.person_outline_rounded,
+                  Icons.auto_awesome_rounded,
                   color: AppColors.primary,
+                  size: 22,
+                ),
+                title: const Text(
+                  'Personalizar Avatar',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Carregar foto, escolher de série TMDB ou ícones',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: AppColors.textMuted,
+                ),
+                onTap: () => AvatarSelectionSheet.show(context),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.person_outline_rounded,
+                  color: AppColors.secondary,
                   size: 22,
                 ),
                 title: const Text(

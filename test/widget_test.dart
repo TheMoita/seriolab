@@ -122,7 +122,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     // Scroll to verify lower settings sections
-    await tester.drag(find.byType(ListView).last, const Offset(0, -600));
+    await tester.drag(find.byType(ListView).last, const Offset(0, -1000));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
