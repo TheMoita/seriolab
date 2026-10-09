@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:series_app/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
 import 'package:series_app/features/shows/data/repositories/show_repository_impl.dart';
+import 'package:series_app/core/widgets/app_network_image.dart';
+import 'package:series_app/features/shows/data/models/tmdb_mapper.dart';
 import 'package:series_app/features/shows/domain/entities/episode.dart';
 import 'package:series_app/features/shows/domain/entities/genre.dart';
 
@@ -107,6 +109,47 @@ void main() {
         expect(item.showId, 95396);
         expect(item.episode.airDate!.isAfter(fixedDate), isTrue);
       }
+    });
+
+    test('TmdbMapper.image rejects invalid, null and incomplete paths', () {
+      expect(TmdbMapper.image(null), isNull);
+      expect(TmdbMapper.image(''), isNull);
+      expect(TmdbMapper.image('   '), isNull);
+      expect(TmdbMapper.image('null'), isNull);
+      expect(TmdbMapper.image('/null'), isNull);
+      expect(TmdbMapper.image('/undefined'), isNull);
+
+      final valid = TmdbMapper.image('/poster.jpg');
+      expect(valid, isNotNull);
+      expect(valid, contains('/w500/poster.jpg'));
+      expect(valid, isNot(endsWith('/null')));
+    });
+
+    test('TmdbMapper.summary falls back to backdrop when poster is null or invalid', () {
+      final summary = TmdbMapper.summary({
+        'id': 12345,
+        'name': 'Carrie',
+        'poster_path': null,
+        'backdrop_path': '/backdrop.jpg',
+      });
+
+      expect(summary.posterUrl, isNotNull);
+      expect(summary.posterUrl, contains('/backdrop.jpg'));
+      expect(summary.backdropUrl, contains('/backdrop.jpg'));
+    });
+
+    test('AppNetworkImage.isValidUrl correctly validates image URLs', () {
+      expect(AppNetworkImage.isValidUrl(null), isFalse);
+      expect(AppNetworkImage.isValidUrl(''), isFalse);
+      expect(AppNetworkImage.isValidUrl('   '), isFalse);
+      expect(AppNetworkImage.isValidUrl('not-a-url'), isFalse);
+      expect(AppNetworkImage.isValidUrl('https://image.tmdb.org/t/p/w500/null'), isFalse);
+      expect(AppNetworkImage.isValidUrl('https://image.tmdb.org/t/p/w500null'), isFalse);
+      expect(AppNetworkImage.isValidUrl('https://image.tmdb.org/t/p/w500/undefined'), isFalse);
+      expect(AppNetworkImage.isValidUrl('https://image.tmdb.org/t/p/w500'), isFalse);
+      expect(AppNetworkImage.isValidUrl('https://image.tmdb.org/t/p/w500/'), isFalse);
+
+      expect(AppNetworkImage.isValidUrl('https://image.tmdb.org/t/p/w500/abc.jpg'), isTrue);
     });
   });
 }

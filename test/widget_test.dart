@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:series_app/core/di/providers.dart';
+import 'package:series_app/core/widgets/app_network_image.dart';
 import 'package:series_app/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
 import 'package:series_app/features/shows/data/repositories/show_repository_impl.dart';
 import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
@@ -127,5 +128,25 @@ void main() {
     expect(find.text('NOTIFICAÇÕES'), findsOneWidget);
     expect(find.text('ARMAZENAMENTO & DADOS'), findsOneWidget);
     expect(find.text('SOBRE & VERSÃO'), findsOneWidget);
+  });
+
+  testWidgets('AppNetworkImage renders Seriolab placeholder with title on null image',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: AppNetworkImage(
+            imageUrl: null,
+            fallbackImageUrl: null,
+            title: 'Carrie',
+            width: 120,
+            height: 180,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Carrie'), findsOneWidget);
+    expect(find.byIcon(Icons.movie_filter_rounded), findsOneWidget);
   });
 }

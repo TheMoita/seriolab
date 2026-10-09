@@ -11,14 +11,30 @@ String? buildTmdbImageUrl(Object? path, {String size = 'w500'}) =>
 abstract final class TmdbMapper {
   /// Builds a fully-qualified image URL from a TMDB path (e.g. `/w500/abc.jpg`).
   /// If the path is already an absolute HTTP URL, it is returned unchanged.
+  /// Rejects null, empty, or incomplete paths like `/null`.
   static String? image(Object? path, {String size = 'w500'}) {
-    if (path is! String || path.trim().isEmpty) return null;
+    if (path is! String) return null;
     final trimmed = path.trim();
+    if (trimmed.isEmpty) return null;
+
+    final lower = trimmed.toLowerCase();
+    if (lower == 'null' ||
+        lower == '/null' ||
+        lower.endsWith('/null') ||
+        lower.endsWith('/undefined')) {
+      return null;
+    }
+
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       return trimmed;
     }
+
     final cleanPath = trimmed.startsWith('/') ? trimmed : '/$trimmed';
-    return '${AppConfig.tmdbImageBaseUrl}/$size$cleanPath';
+    if (cleanPath == '/null' || cleanPath.endsWith('/null')) return null;
+
+    final base = AppConfig.tmdbImageBaseUrl;
+    if (base.isEmpty) return null;
+    return '$base/$size$cleanPath';
   }
 
   static DateTime? date(Object? value) {
@@ -36,22 +52,27 @@ abstract final class TmdbMapper {
       ? v.whereType<Map>().map((e) => e.cast<String, dynamic>()).toList()
       : const [];
 
-  static ShowSummary summary(Map<String, dynamic> json) => ShowSummary(
-        id: _int(json['id']),
-        name: _string(json['name']).isNotEmpty
-            ? _string(json['name'])
-            : _string(json['original_name']),
-        overview: _string(json['overview']),
-        posterUrl: image(json['poster_path']),
-        backdropUrl: image(json['backdrop_path'], size: 'w780'),
-        rating: _double(json['vote_average']),
-        voteCount: _int(json['vote_count']),
-        popularity: _double(json['popularity']),
-        firstAirDate: date(json['first_air_date']),
-        genreIds: (json['genre_ids'] as List?)?.whereType<int>().toList() ??
-            const [],
-        originalLanguage: _string(json['original_language']),
-      );
+  static ShowSummary summary(Map<String, dynamic> json) {
+    final poster = image(json['poster_path']);
+    final backdrop = image(json['backdrop_path'], size: 'w780');
+
+    return ShowSummary(
+      id: _int(json['id']),
+      name: _string(json['name']).isNotEmpty
+          ? _string(json['name'])
+          : _string(json['original_name']),
+      overview: _string(json['overview']),
+      posterUrl: poster ?? backdrop,
+      backdropUrl: backdrop ?? poster,
+      rating: _double(json['vote_average']),
+      voteCount: _int(json['vote_count']),
+      popularity: _double(json['popularity']),
+      firstAirDate: date(json['first_air_date']),
+      genreIds: (json['genre_ids'] as List?)?.whereType<int>().toList() ??
+          const [],
+      originalLanguage: _string(json['original_language']),
+    );
+  }
 
   static Map<String, dynamic> summaryToJson(ShowSummary summary) => {
         'id': summary.id,
@@ -114,14 +135,17 @@ abstract final class TmdbMapper {
       runtime = (last['runtime'] as num).toInt();
     }
 
+    final poster = image(json['poster_path']);
+    final backdrop = image(json['backdrop_path'], size: 'w1280');
+
     return ShowDetails(
       id: id,
       name: _string(json['name']),
       originalName: _string(json['original_name']),
       overview: _string(json['overview']),
       tagline: _string(json['tagline']),
-      posterUrl: image(json['poster_path']),
-      backdropUrl: image(json['backdrop_path'], size: 'w1280'),
+      posterUrl: poster ?? backdrop,
+      backdropUrl: backdrop ?? poster,
       genres: _list(json['genres'])
           .map((g) => Genre.byId(_int(g['id'])) ??
               Genre(id: _int(g['id']), name: _string(g['name'])))
@@ -144,7 +168,7 @@ abstract final class TmdbMapper {
                 name: _string(s['name']),
                 episodeCount: _int(s['episode_count']),
                 airDate: date(s['air_date']),
-                posterUrl: image(s['poster_path'], size: 'w342'),
+                posterUrl: image(s['poster_path'], size: 'w342') ?? poster ?? backdrop,
                 overview: _string(s['overview']),
               ))
           .toList(),

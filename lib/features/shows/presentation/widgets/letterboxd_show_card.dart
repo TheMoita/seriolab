@@ -77,15 +77,16 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    if (widget.show.posterUrl != null)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: AppNetworkImage(
-                          imageUrl: widget.show.posterUrl,
-                          width: 36,
-                          height: 54,
-                        ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: AppNetworkImage(
+                        imageUrl: widget.show.posterUrl,
+                        fallbackImageUrl: widget.show.backdropUrl,
+                        title: widget.show.name,
+                        width: 36,
+                        height: 54,
                       ),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -235,6 +236,8 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                 children: [
                   AppNetworkImage(
                     imageUrl: widget.show.posterUrl,
+                    fallbackImageUrl: widget.show.backdropUrl,
+                    title: widget.show.name,
                     fit: BoxFit.cover,
                   ),
 

@@ -163,6 +163,7 @@ class _UpcomingEpisodeCard extends StatelessWidget {
               // Show Poster
               AppNetworkImage(
                 imageUrl: item.posterUrl,
+                title: item.showName,
                 width: 54,
                 height: 80,
                 borderRadius: BorderRadius.circular(8),

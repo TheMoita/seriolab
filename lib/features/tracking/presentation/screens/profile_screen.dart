@@ -390,6 +390,7 @@ class _TrackedShowTile extends ConsumerWidget {
                   // Poster
                   AppNetworkImage(
                     imageUrl: tracked.posterUrl,
+                    title: tracked.name,
                     width: 58,
                     height: 86,
                     borderRadius: BorderRadius.circular(10),

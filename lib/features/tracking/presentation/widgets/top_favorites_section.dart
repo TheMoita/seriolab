@@ -256,7 +256,9 @@ class _FavoriteSlotTile extends ConsumerWidget {
         children: [
           showAsync.when(
             data: (show) => AppNetworkImage(
-              imageUrl: show.posterUrl,
+              imageUrl: show.posterUrl ?? show.backdropUrl,
+              fallbackImageUrl: show.backdropUrl,
+              title: show.name,
               fit: BoxFit.cover,
               borderRadius: BorderRadius.circular(10),
             ),
@@ -530,7 +532,9 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
 
             return ListTile(
               leading: AppNetworkImage(
-                imageUrl: show.posterUrl,
+                imageUrl: show.posterUrl ?? show.backdropUrl,
+                fallbackImageUrl: show.backdropUrl,
+                title: show.name,
                 width: 36,
                 height: 52,
                 borderRadius: BorderRadius.circular(6),
@@ -595,7 +599,9 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
           return ListTile(
             contentPadding: EdgeInsets.zero,
             leading: AppNetworkImage(
-              imageUrl: show.posterUrl,
+              imageUrl: show.posterUrl ?? show.backdropUrl,
+              fallbackImageUrl: show.backdropUrl,
+              title: show.name,
               width: 36,
               height: 52,
               borderRadius: BorderRadius.circular(6),

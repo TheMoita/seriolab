@@ -41,6 +41,8 @@ class ShowCard extends StatelessWidget {
                   Positioned.fill(
                     child: AppNetworkImage(
                       imageUrl: show.posterUrl,
+                      fallbackImageUrl: show.backdropUrl,
+                      title: show.name,
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),

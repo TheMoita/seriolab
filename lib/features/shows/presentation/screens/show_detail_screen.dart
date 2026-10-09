@@ -86,6 +86,8 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
               children: [
                 AppNetworkImage(
                   imageUrl: show.backdropUrl ?? show.posterUrl,
+                  fallbackImageUrl: show.posterUrl,
+                  title: show.name,
                   fit: BoxFit.cover,
                   placeholderIcon: Icons.tv_rounded,
                 ),
@@ -121,7 +123,9 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                   children: [
                     // Poster
                     AppNetworkImage(
-                      imageUrl: show.posterUrl,
+                      imageUrl: show.posterUrl ?? show.backdropUrl,
+                      fallbackImageUrl: show.backdropUrl,
+                      title: show.name,
                       width: 100,
                       height: 150,
                       borderRadius: BorderRadius.circular(12),

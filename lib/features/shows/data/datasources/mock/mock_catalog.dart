@@ -78,11 +78,11 @@ class MockShowSeed {
 
   String? get posterUrl => posterPath != null
       ? 'https://image.tmdb.org/t/p/w500$posterPath'
-      : null;
+      : (backdropPath != null ? 'https://image.tmdb.org/t/p/w780$backdropPath' : null);
 
   String? get backdropUrl => backdropPath != null
       ? 'https://image.tmdb.org/t/p/w780$backdropPath'
-      : null;
+      : (posterPath != null ? 'https://image.tmdb.org/t/p/w500$posterPath' : null);
 
   List<Genre> get genres =>
       genreIds.map(Genre.byId).whereType<Genre>().toList();
