@@ -1,0 +1,152 @@
+import '../../../../core/config/app_config.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../domain/entities/genre.dart';
+import '../../domain/entities/show.dart';
+import '../../domain/repositories/show_repository.dart';
+import '../datasources/show_remote_data_source.dart';
+
+/// Single source of truth for catalogue data, with an in-memory cache so
+/// navigating back and forth does not refetch details/seasons.
+class ShowRepositoryImpl implements ShowRepository {
+  ShowRepositoryImpl({
+    required this.remote,
+    required this.isUsingMockData,
+    DateTime Function()? clock,
+  })  : _clock = clock ?? DateTime.now;
+
+  final ShowRemoteDataSource remote;
+  final DateTime Function() _clock;
+
+  @override
+  final bool isUsingMockData;
+
+  final Map<int, Future<ShowDetails>> _details = {};
+  final Map<(int, int), Future<SeasonDetails>> _seasons = {};
+
+  /// Caches the in-flight future; evicts it on failure so retries work.
+  Future<T> _cached<K, T>(
+    Map<K, Future<T>> cache,
+    K key,
+    Future<T> Function() load,
+  ) {
+    final existing = cache[key];
+    if (existing != null) return existing;
+    final future = load();
+    cache[key] = future;
+    future.then<void>((_) {}, onError: (Object _, StackTrace _) {
+      if (identical(cache[key], future)) cache.remove(key);
+    });
+    return future;
+  }
+
+  @override
+  Future<List<ShowSummary>> getTrending() => remote.trending();
+
+  @override
+  Future<List<ShowSummary>> getPopularThisWeek() => remote.popularThisWeek();
+
+  @override
+  Future<List<ShowSummary>> getJustPremiered() => remote.justPremiered();
+
+  @override
+  Future<List<ShowSummary>> getTopRated() => remote.topRated();
+
+  @override
+  Future<List<ShowSummary>> discover({
+    Genre? genre,
+    ShowSort sort = ShowSort.popularity,
+  }) =>
+      remote.discover(genre: genre, sort: sort);
+
+  @override
+  Future<List<ShowSummary>> search(
+    String query, {
+    Genre? genre,
+    ShowSort? sort,
+  }) async {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) return const [];
+    final results = await remote.search(trimmed);
+    final filtered = genre == null
+        ? results
+        : results.where((s) => s.matchesGenre(genre)).toList();
+    return sort == null ? filtered : sortShows(filtered, sort);
+  }
+
+  @override
+  Future<ShowDetails> getShowDetails(int showId) =>
+      _cached(_details, showId, () => remote.showDetails(showId));
+
+  @override
+  Future<SeasonDetails> getSeason(int showId, int seasonNumber) => _cached(
+        _seasons,
+        (showId, seasonNumber),
+        () => remote.season(showId, seasonNumber),
+      );
+
+  @override
+  Future<ShowWithEpisodes> getShowWithEpisodes(int showId) async {
+    final show = await getShowDetails(showId);
+    final seasons = await Future.wait(
+      show.regularSeasons
+          .where((s) => s.episodeCount > 0)
+          .map((s) => getSeason(showId, s.seasonNumber)),
+    );
+    final episodes = [for (final s in seasons) ...s.episodes]
+      ..sort((a, b) => a.key.compareTo(b.key));
+    return ShowWithEpisodes(show: show, episodes: episodes);
+  }
+
+  @override
+  Future<List<UpcomingEpisode>> getUpcomingEpisodes(
+    List<int> showIds, {
+    int days = AppConfig.calendarWindowDays,
+  }) async {
+    final today = Formatters.dateOnly(_clock());
+    final until = today.add(Duration(days: days));
+
+    Future<List<UpcomingEpisode>> forShow(int id) async {
+      try {
+        final show = await getShowDetails(id);
+        final next = show.nextEpisodeToAir;
+        if (next == null) return const [];
+        final season = await getSeason(id, next.seasonNumber);
+        return season.episodes
+            .where((e) {
+              final d = e.airDate;
+              return d != null && !d.isBefore(today) && !d.isAfter(until);
+            })
+            .map((e) => UpcomingEpisode(
+                  showId: id,
+                  showName: show.name,
+                  posterUrl: show.posterUrl,
+                  network: show.primaryNetwork,
+                  episode: e,
+                ))
+            .toList();
+      } on CatalogException {
+        // A single failing show must not break the whole calendar.
+        return const [];
+      }
+    }
+
+    final perShow = await Future.wait(showIds.map(forShow));
+    return [for (final list in perShow) ...list]..sort((a, b) {
+        final byDate = a.episode.airDate!.compareTo(b.episode.airDate!);
+        if (byDate != 0) return byDate;
+        final byShow = a.showName.compareTo(b.showName);
+        return byShow != 0 ? byShow : a.episode.key.compareTo(b.episode.key);
+      });
+  }
+
+  @override
+  void invalidate({int? showId}) {
+    if (showId == null) {
+      _details.clear();
+      _seasons.clear();
+    } else {
+      _details.remove(showId);
+      _seasons.removeWhere((key, _) => key.$1 == showId);
+    }
+  }
+}
