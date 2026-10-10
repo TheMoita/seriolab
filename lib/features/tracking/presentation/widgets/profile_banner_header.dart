@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/local_storage_utils.dart';
 import '../../../settings/domain/entities/user_settings.dart';
 import '../../../settings/presentation/widgets/avatar_selection_sheet.dart';
 import '../../../settings/presentation/widgets/user_avatar_widget.dart';
@@ -67,12 +68,32 @@ class ProfileBannerHeader extends StatelessWidget {
             errorBuilder: (context, error, stackTrace) => _buildDefaultGradient(),
           );
         } else {
-          return Image.file(
-            File(bannerPath),
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: bannerHeight,
-            errorBuilder: (context, error, stackTrace) => _buildDefaultGradient(),
+          final file = LocalStorageUtils.resolveFile(bannerPath);
+          if (file != null && file.existsSync()) {
+            return Image.file(
+              file,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: bannerHeight,
+              errorBuilder: (context, error, stackTrace) => _buildDefaultGradient(),
+            );
+          }
+
+          return FutureBuilder<File?>(
+            future: LocalStorageUtils.resolveFileAsync(bannerPath),
+            builder: (context, snapshot) {
+              final resolved = snapshot.data;
+              if (resolved != null && resolved.existsSync()) {
+                return Image.file(
+                  resolved,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: bannerHeight,
+                  errorBuilder: (context, error, stackTrace) => _buildDefaultGradient(),
+                );
+              }
+              return _buildDefaultGradient();
+            },
           );
         }
       } catch (_) {

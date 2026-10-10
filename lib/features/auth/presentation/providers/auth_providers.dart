@@ -205,23 +205,20 @@ class AuthController extends Notifier<AuthState> {
   }
 
   Future<void> _syncUserToProfile(AppUser user, {String? customUsername}) async {
-    try {
-      final notifier = ref.read(settingsControllerProvider.notifier);
-      final current = ref.read(settingsControllerProvider);
-
-      final displayName = user.preferredName;
-      final username = customUsername ??
-          (current.username.isEmpty || current.username == 'afonsodias'
-              ? user.suggestedUsername
-              : current.username);
-
-      await notifier.updateProfile(
-        displayName: displayName,
-        username: username,
-        bio: current.bio,
-        avatarId: current.avatarId,
-      );
-    } catch (_) {}
+    // Only update local profile immediately if customUsername was explicitly provided (e.g., registration).
+    // Avoid overwriting settings with default local values before Firestore sync downloads cloud state.
+    if (customUsername != null && customUsername.isNotEmpty) {
+      try {
+        final notifier = ref.read(settingsControllerProvider.notifier);
+        final current = ref.read(settingsControllerProvider);
+        await notifier.updateProfile(
+          displayName: user.preferredName,
+          username: customUsername,
+          bio: current.bio,
+          avatarId: current.avatarId,
+        );
+      } catch (_) {}
+    }
     _triggerFirestoreSync(user.uid);
   }
 

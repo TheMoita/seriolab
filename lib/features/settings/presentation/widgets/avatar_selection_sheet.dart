@@ -1,14 +1,11 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../../../core/di/providers.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/local_storage_utils.dart';
 import '../../../shows/domain/entities/show.dart';
 import '../../domain/entities/user_settings.dart';
 import '../providers/settings_providers.dart';
@@ -165,16 +162,12 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
         return;
       }
 
-      String savedPath = picked.path;
-      if (!kIsWeb) {
-        final docsDir = await getApplicationDocumentsDirectory();
-        final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final targetFile = File('${docsDir.path}/avatar_$timestamp.jpg');
-        final copied = await File(picked.path).copy(targetFile.path);
-        savedPath = copied.path;
-      }
+      final savedRelativePath = await LocalStorageUtils.copyToDocumentsDirectory(
+        picked.path,
+        'avatar',
+      );
 
-      await ref.read(settingsControllerProvider.notifier).setAvatarLocalFile(savedPath);
+      await ref.read(settingsControllerProvider.notifier).setAvatarLocalFile(savedRelativePath);
 
       if (mounted) {
         Navigator.of(context).pop();

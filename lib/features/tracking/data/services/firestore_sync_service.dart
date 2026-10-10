@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../../../core/utils/local_storage_utils.dart';
 import '../../../settings/domain/entities/user_settings.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
@@ -34,9 +36,22 @@ class FirestoreSyncService {
   String? _activeUid;
   bool _isSyncingDown = false;
 
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userDocSubscription;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _watchlistSubscription;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _profileSubscription;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _favoritesSubscription;
+
+  /// Resolves the authenticated user ID from active state or Firebase Auth.
+  String? get _resolvedUid {
+    if (_activeUid != null && _activeUid!.trim().isNotEmpty) return _activeUid;
+    if (Firebase.apps.isNotEmpty) {
+      try {
+        final u = FirebaseAuth.instance.currentUser;
+        if (u != null && u.uid.trim().isNotEmpty) return u.uid;
+      } catch (_) {}
+    }
+    return null;
+  }
 
   /// Returns whether Firebase is initialized and Firestore is available.
   bool get isAvailable {
@@ -65,6 +80,8 @@ class FirestoreSyncService {
   }
 
   void _cancelSubscriptions() {
+    _userDocSubscription?.cancel();
+    _userDocSubscription = null;
     _watchlistSubscription?.cancel();
     _watchlistSubscription = null;
     _profileSubscription?.cancel();
@@ -87,7 +104,7 @@ class FirestoreSyncService {
     try {
       final userDocRef = firestore.collection('users').doc(uid);
 
-      // 1. Maintain root user record
+      // 1. Maintain root user record (merge: true)
       try {
         await userDocRef.set({
           'uid': uid,
@@ -97,37 +114,82 @@ class FirestoreSyncService {
         debugPrint('FirestoreSyncService: root doc set note: $e');
       }
 
-      // 2. Profile Sync (users/{uid}/profile/info)
-      final profileDocRef = userDocRef.collection('profile').doc('info');
+      // 2. Fetch root document first to prevent overwriting cloud state with empty defaults
+      DocumentSnapshot<Map<String, dynamic>>? rootSnapshot;
       try {
-        final profileSnapshot = await profileDocRef.get();
-        if (profileSnapshot.exists && profileSnapshot.data() != null) {
-          final remoteSettings = profileFromMap(profileSnapshot.data()!);
-          await _settingsRepo.saveSettings(remoteSettings);
-          settingsNotifier?.syncFromRemote(remoteSettings);
-        } else {
-          // Upload local settings to Firestore
-          final localSettings = await _settingsRepo.getSettings();
-          await profileDocRef.set(userSettingsToMap(localSettings));
-        }
+        rootSnapshot = await userDocRef.get();
       } catch (e) {
-        debugPrint('FirestoreSyncService: Profile sync note: $e');
+        debugPrint('FirestoreSyncService: root doc get error: $e');
+      }
+      final rootData = rootSnapshot?.data();
+
+      // 3. Profile Sync: check root doc 'profile' map or direct fields
+      Map<String, dynamic>? profileData;
+      if (rootData != null && rootData['profile'] is Map) {
+        profileData = Map<String, dynamic>.from(rootData['profile'] as Map);
+      } else if (rootData != null &&
+          (rootData['avatarUrl'] != null ||
+              rootData['bannerUrl'] != null ||
+              rootData['profileBannerUrl'] != null ||
+              rootData['bio'] != null ||
+              rootData['username'] != null)) {
+        profileData = Map<String, dynamic>.from(rootData);
       }
 
-      // 3. Favorites Sync (users/{uid}/favorites/top_five)
-      final favDocRef = userDocRef.collection('favorites').doc('top_five');
-      try {
-        final favSnapshot = await favDocRef.get();
-        if (favSnapshot.exists && favSnapshot.data() != null) {
-          final (topFive, allFavs) = favoritesFromMap(favSnapshot.data()!);
-          settingsNotifier?.syncFavoritesFromRemote(topFive, allFavs);
-        } else {
-          // Upload local favorites to Firestore
-          final localSettings = await _settingsRepo.getSettings();
-          await favDocRef.set(favoritesToMap(localSettings));
+      // If not present in root doc, check subcollection users/{uid}/profile/info
+      if (profileData == null) {
+        final profileDocRef = userDocRef.collection('profile').doc('info');
+        try {
+          final profileSnapshot = await profileDocRef.get();
+          if (profileSnapshot.exists && profileSnapshot.data() != null) {
+            profileData = profileSnapshot.data()!;
+          }
+        } catch (e) {
+          debugPrint('FirestoreSyncService: Profile subcollection get note: $e');
         }
-      } catch (e) {
-        debugPrint('FirestoreSyncService: Favorites sync note: $e');
+      }
+
+      if (profileData != null && profileData.isNotEmpty) {
+        final remoteSettings = profileFromMap(profileData);
+        await _settingsRepo.saveSettings(remoteSettings);
+        settingsNotifier?.syncFromRemote(remoteSettings);
+      } else {
+        // Only upload local settings to Firestore if NO remote profile existed
+        final localSettings = await _settingsRepo.getSettings();
+        await syncUserProfile(localSettings, uid: uid);
+      }
+
+      // 4. Favorites Sync: check root doc 'favorites' map or direct list fields
+      Map<String, dynamic>? favData;
+      if (rootData != null && rootData['favorites'] is Map) {
+        favData = Map<String, dynamic>.from(rootData['favorites'] as Map);
+      } else if (rootData != null &&
+          (rootData['topFiveIds'] != null ||
+              rootData['favoriteSeriesIds'] != null ||
+              rootData['favoriteShowIds'] != null)) {
+        favData = Map<String, dynamic>.from(rootData);
+      }
+
+      // If not present in root doc, check subcollection users/{uid}/favorites/top_five
+      if (favData == null) {
+        final favDocRef = userDocRef.collection('favorites').doc('top_five');
+        try {
+          final favSnapshot = await favDocRef.get();
+          if (favSnapshot.exists && favSnapshot.data() != null) {
+            favData = favSnapshot.data()!;
+          }
+        } catch (e) {
+          debugPrint('FirestoreSyncService: Favorites subcollection get note: $e');
+        }
+      }
+
+      if (favData != null && favData.isNotEmpty) {
+        final (topFive, allFavs) = favoritesFromMap(favData);
+        settingsNotifier?.syncFavoritesFromRemote(topFive, allFavs);
+      } else {
+        // Only upload local favorites to Firestore if NO remote favorites existed
+        final localSettings = await _settingsRepo.getSettings();
+        await syncFavorites(localSettings, uid: uid);
       }
 
       // 4. Watchlist Sync (users/{uid}/watchlist/{seriesId})
@@ -201,6 +263,35 @@ class FirestoreSyncService {
 
     final userDocRef = firestore.collection('users').doc(uid);
 
+    // Root user document listener (profile & favorites)
+    _userDocSubscription = userDocRef.snapshots().listen(
+      (docSnap) async {
+        if (_isSyncingDown || !docSnap.exists || docSnap.data() == null) return;
+        final data = docSnap.data()!;
+        _isSyncingDown = true;
+        try {
+          if (data['profile'] is Map) {
+            final remoteSettings =
+                profileFromMap(Map<String, dynamic>.from(data['profile'] as Map));
+            await _settingsRepo.saveSettings(remoteSettings);
+            settingsNotifier?.syncFromRemote(remoteSettings);
+          }
+          if (data['favorites'] is Map) {
+            final (topFive, allFavs) =
+                favoritesFromMap(Map<String, dynamic>.from(data['favorites'] as Map));
+            settingsNotifier?.syncFavoritesFromRemote(topFive, allFavs);
+          }
+        } catch (e) {
+          debugPrint('FirestoreSyncService: user doc live listener error: $e');
+        } finally {
+          _isSyncingDown = false;
+        }
+      },
+      onError: (e) {
+        debugPrint('FirestoreSyncService: user doc subscription error: $e');
+      },
+    );
+
     // Watchlist listener
     _watchlistSubscription = userDocRef.collection('watchlist').snapshots().listen(
       (querySnap) async {
@@ -238,7 +329,7 @@ class FirestoreSyncService {
       },
     );
 
-    // Profile listener
+    // Profile listener (subcollection mirror)
     _profileSubscription =
         userDocRef.collection('profile').doc('info').snapshots().listen(
       (docSnap) async {
@@ -259,7 +350,7 @@ class FirestoreSyncService {
       },
     );
 
-    // Favorites listener
+    // Favorites listener (subcollection mirror)
     _favoritesSubscription =
         userDocRef.collection('favorites').doc('top_five').snapshots().listen(
       (docSnap) async {
@@ -287,7 +378,7 @@ class FirestoreSyncService {
     String? uid,
   }) async {
     final firestore = _firestore;
-    final effectiveUid = uid ?? _activeUid;
+    final effectiveUid = uid ?? _resolvedUid;
     if (firestore == null || effectiveUid == null || effectiveUid.trim().isEmpty) {
       return;
     }
@@ -310,7 +401,7 @@ class FirestoreSyncService {
   /// Removes an individual show from `users/{uid}/watchlist/{seriesId}`.
   Future<void> deleteTrackedShow(int showId, {String? uid}) async {
     final firestore = _firestore;
-    final effectiveUid = uid ?? _activeUid;
+    final effectiveUid = uid ?? _resolvedUid;
     if (firestore == null || effectiveUid == null || effectiveUid.trim().isEmpty) {
       return;
     }
@@ -327,41 +418,66 @@ class FirestoreSyncService {
     }
   }
 
-  /// Syncs user profile details to `users/{uid}/profile/info`.
+  /// Syncs user profile details to `users/{uid}` and `users/{uid}/profile/info`.
   Future<void> syncUserProfile(UserSettings settings, {String? uid}) async {
     final firestore = _firestore;
-    final effectiveUid = uid ?? _activeUid;
+    final effectiveUid = uid ?? _resolvedUid;
     if (firestore == null || effectiveUid == null || effectiveUid.trim().isEmpty) {
       return;
     }
 
     try {
-      final docRef = firestore
-          .collection('users')
-          .doc(effectiveUid)
-          .collection('profile')
-          .doc('info');
-      await docRef.set(userSettingsToMap(settings), SetOptions(merge: true));
+      final userDocRef = firestore.collection('users').doc(effectiveUid);
+      final profileMap = userSettingsToMap(settings);
+
+      // 1. Primary source of truth: root document users/{uid}
+      await userDocRef.set({
+        'uid': effectiveUid,
+        'profile': profileMap,
+        'avatarUrl': profileMap['avatarUrl'],
+        'avatarType': profileMap['avatarType'],
+        'avatarValue': profileMap['avatarValue'],
+        'bannerUrl': profileMap['bannerUrl'],
+        'profileBannerUrl': profileMap['profileBannerUrl'],
+        'profileBannerPath': profileMap['profileBannerPath'],
+        'bio': profileMap['bio'],
+        'displayName': profileMap['displayName'],
+        'username': profileMap['username'],
+        'updatedAt': DateTime.now().millisecondsSinceEpoch,
+      }, SetOptions(merge: true));
+
+      // 2. Subcollection mirror for full backward compatibility
+      final docRef = userDocRef.collection('profile').doc('info');
+      await docRef.set(profileMap, SetOptions(merge: true));
     } catch (e) {
       debugPrint('FirestoreSyncService: Error syncing profile: $e');
     }
   }
 
-  /// Syncs top 5 and favorites to `users/{uid}/favorites/top_five`.
+  /// Syncs top 5 and favorites to `users/{uid}` and `users/{uid}/favorites/top_five`.
   Future<void> syncFavorites(UserSettings settings, {String? uid}) async {
     final firestore = _firestore;
-    final effectiveUid = uid ?? _activeUid;
+    final effectiveUid = uid ?? _resolvedUid;
     if (firestore == null || effectiveUid == null || effectiveUid.trim().isEmpty) {
       return;
     }
 
     try {
-      final docRef = firestore
-          .collection('users')
-          .doc(effectiveUid)
-          .collection('favorites')
-          .doc('top_five');
-      await docRef.set(favoritesToMap(settings), SetOptions(merge: true));
+      final userDocRef = firestore.collection('users').doc(effectiveUid);
+      final favMap = favoritesToMap(settings);
+
+      // 1. Primary source of truth: root document users/{uid}
+      await userDocRef.set({
+        'uid': effectiveUid,
+        'favorites': favMap,
+        'topFiveIds': favMap['topFiveIds'],
+        'favoriteSeriesIds': favMap['favoriteSeriesIds'],
+        'updatedAt': DateTime.now().millisecondsSinceEpoch,
+      }, SetOptions(merge: true));
+
+      // 2. Subcollection mirror for full backward compatibility
+      final docRef = userDocRef.collection('favorites').doc('top_five');
+      await docRef.set(favMap, SetOptions(merge: true));
     } catch (e) {
       debugPrint('FirestoreSyncService: Error syncing favorites: $e');
     }
@@ -483,15 +599,27 @@ class FirestoreSyncService {
   }
 
   static Map<String, dynamic> userSettingsToMap(UserSettings settings) {
+    final bannerPathFilename = settings.profileBannerPath != null
+        ? LocalStorageUtils.extractFilename(settings.profileBannerPath!)
+        : null;
+    final avatarValueNormalized = settings.avatarType == AvatarType.localFile &&
+            settings.avatarValue != null
+        ? LocalStorageUtils.extractFilename(settings.avatarValue!)
+        : settings.avatarValue;
+
     return {
       'displayName': settings.displayName,
       'username': settings.username,
       'bio': settings.bio,
       'avatarId': settings.avatarId,
       'avatarType': settings.avatarType.name,
-      'avatarValue': settings.avatarValue,
+      'avatarValue': avatarValueNormalized,
+      'avatarUrl':
+          settings.avatarType == AvatarType.networkUrl ? settings.avatarValue : null,
       'profileBannerUrl': settings.profileBannerUrl,
-      'profileBannerPath': settings.profileBannerPath,
+      'bannerUrl': settings.profileBannerUrl,
+      'profileBannerPath': bannerPathFilename,
+      'bannerPath': bannerPathFilename,
       'followers': settings.followers,
       'following': settings.following,
       'followersCount': settings.followersCount,
@@ -514,9 +642,28 @@ class FirestoreSyncService {
     UserSettings? fallback,
   }) {
     final base = fallback ?? UserSettings.defaultSettings;
+    final map = Map<String, dynamic>.from(data);
+
+    if (map['bannerUrl'] != null && map['profileBannerUrl'] == null) {
+      map['profileBannerUrl'] = map['bannerUrl'];
+    }
+    if (map['bannerPath'] != null && map['profileBannerPath'] == null) {
+      map['profileBannerPath'] = map['bannerPath'];
+    }
+    if (map['avatarUrl'] != null && map['avatarValue'] == null) {
+      map['avatarValue'] = map['avatarUrl'];
+      map['avatarType'] = AvatarType.networkUrl.name;
+    }
+    if (map['topFiveIds'] != null && map['favoriteShowIds'] == null) {
+      map['favoriteShowIds'] = map['topFiveIds'];
+    }
+    if (map['favoriteSeriesIds'] != null && map['favoritedShowIds'] == null) {
+      map['favoritedShowIds'] = map['favoriteSeriesIds'];
+    }
+
     return UserSettings.fromJson({
       ...base.toJson(),
-      ...data,
+      ...map,
     });
   }
 
@@ -524,7 +671,9 @@ class FirestoreSyncService {
     return {
       'favoriteShowIds': settings.favoriteShowIds,
       'topFiveFavorites': settings.favoriteShowIds,
+      'topFiveIds': settings.favoriteShowIds,
       'favoritedShowIds': settings.favoritedShowIds,
+      'favoriteSeriesIds': settings.favoritedShowIds,
       'updatedAt': DateTime.now().millisecondsSinceEpoch,
     };
   }
@@ -532,8 +681,9 @@ class FirestoreSyncService {
   static (List<int> topFive, List<int> allFavorites) favoritesFromMap(
     Map<String, dynamic> data,
   ) {
-    final rawTop = data['favoriteShowIds'] ?? data['topFiveFavorites'];
-    final rawAll = data['favoritedShowIds'];
+    final rawTop =
+        data['topFiveIds'] ?? data['favoriteShowIds'] ?? data['topFiveFavorites'];
+    final rawAll = data['favoriteSeriesIds'] ?? data['favoritedShowIds'];
     final topFive = (rawTop is List)
         ? rawTop.whereType<num>().map((e) => e.toInt()).toList()
         : <int>[];

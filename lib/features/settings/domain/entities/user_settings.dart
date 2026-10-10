@@ -387,10 +387,17 @@ class UserSettings {
       return defaultSettings.ratingDistribution;
     }
 
-    final avatarType = AvatarType.fromString(json['avatarType'] as String?);
+    var avatarType = AvatarType.fromString(json['avatarType'] as String?);
+    final avatarUrl = json['avatarUrl'] as String?;
+    if (avatarUrl != null &&
+        (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) &&
+        json['avatarType'] == null) {
+      avatarType = AvatarType.networkUrl;
+    }
     final avatarId =
         json['avatarId'] as String? ?? defaultSettings.avatarId;
     final avatarValue = json['avatarValue'] as String? ??
+        avatarUrl ??
         (avatarType == AvatarType.preset ? avatarId : null);
 
     String parseBio(dynamic raw) {
@@ -413,8 +420,8 @@ class UserSettings {
       avatarId: avatarId,
       avatarType: avatarType,
       avatarValue: avatarValue,
-      profileBannerUrl: json['profileBannerUrl'] as String?,
-      profileBannerPath: json['profileBannerPath'] as String?,
+      profileBannerUrl: (json['bannerUrl'] ?? json['profileBannerUrl']) as String?,
+      profileBannerPath: (json['bannerPath'] ?? json['profileBannerPath']) as String?,
       language: json['language'] as String? ?? defaultSettings.language,
       streamingRegion:
           json['streamingRegion'] as String? ?? defaultSettings.streamingRegion,
@@ -430,8 +437,10 @@ class UserSettings {
           json['reminderHour'] as int? ?? defaultSettings.reminderHour,
       reminderMinute:
           json['reminderMinute'] as int? ?? defaultSettings.reminderMinute,
-      favoriteShowIds: parseFavorites(json['favoriteShowIds'] ?? json['topFiveFavorites']),
-      favoritedShowIds: parseFavorites(json['favoritedShowIds']),
+      favoriteShowIds: parseFavorites(
+          json['topFiveIds'] ?? json['favoriteShowIds'] ?? json['topFiveFavorites']),
+      favoritedShowIds: parseFavorites(
+          json['favoriteSeriesIds'] ?? json['favoritedShowIds']),
       following: parseStringList(json['following']),
       followers: parseStringList(json['followers']),
       ratingDistribution: parseDistribution(json['ratingDistribution']),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../core/di/providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
@@ -36,6 +37,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: TrackingStatus.values.length, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _triggerCloudSync();
+    });
+  }
+
+  void _triggerCloudSync() {
+    final user = ref.read(authControllerProvider).user;
+    if (user != null) {
+      ref.read(firestoreSyncServiceProvider).syncUser(
+        user.uid,
+        trackingController: ref.read(trackingControllerProvider.notifier),
+        settingsNotifier: ref.read(settingsControllerProvider.notifier),
+      );
+    }
   }
 
   @override
@@ -80,7 +95,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           onAction: () => ref.refresh(trackingControllerProvider),
         ),
         data: (trackingState) {
-          return NestedScrollView(
+          return RefreshIndicator(
+            color: AppColors.primary,
+            backgroundColor: AppColors.surface,
+            onRefresh: () async {
+              final user = ref.read(authControllerProvider).user;
+              if (user != null) {
+                await ref.read(firestoreSyncServiceProvider).syncUser(
+                  user.uid,
+                  trackingController: ref.read(trackingControllerProvider.notifier),
+                  settingsNotifier: ref.read(settingsControllerProvider.notifier),
+                );
+              }
+            },
+            child: NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
                 // Profile Header, Favorites & Ratings
@@ -397,8 +425,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 );
               }).toList(),
             ),
-          );
-        },
+          ),
+        );
+      },
       ),
     );
   }

@@ -188,5 +188,52 @@ void main() {
 
       expect(syncService.activeUid, isNull);
     });
+
+    test('supports bannerUrl, avatarUrl, topFiveIds, and favoriteSeriesIds aliases', () {
+      final remoteMap = {
+        'displayName': 'Maria',
+        'username': 'maria_cine',
+        'bio': 'Cinema lover',
+        'avatarUrl': 'https://image.tmdb.org/avatar.jpg',
+        'bannerUrl': 'https://image.tmdb.org/banner.jpg',
+        'topFiveIds': [101, 102, 103],
+        'favoriteSeriesIds': [101, 102, 103, 104],
+      };
+
+      final restoredProfile = FirestoreSyncService.profileFromMap(remoteMap);
+      expect(restoredProfile.displayName, 'Maria');
+      expect(restoredProfile.username, 'maria_cine');
+      expect(restoredProfile.profileBannerUrl, 'https://image.tmdb.org/banner.jpg');
+      expect(restoredProfile.avatarValue, 'https://image.tmdb.org/avatar.jpg');
+      expect(restoredProfile.avatarType, AvatarType.networkUrl);
+
+      final (topFive, allFavs) = FirestoreSyncService.favoritesFromMap(remoteMap);
+      expect(topFive, [101, 102, 103]);
+      expect(allFavs, [101, 102, 103, 104]);
+    });
+
+    test('extracts relative filenames for local file avatar and banner when serializing', () {
+      const settings = UserSettings(
+        displayName: 'Test',
+        username: 'test',
+        bio: '',
+        avatarId: 'tv_retro',
+        avatarType: AvatarType.localFile,
+        avatarValue: '/data/user/0/com.seriolab.app/cache/avatar_custom.jpg',
+        profileBannerPath: '/data/user/0/com.seriolab.app/cache/banner_custom.jpg',
+        language: 'pt',
+        streamingRegion: 'PT',
+        hideSpoilersForUnwatched: false,
+        groupSpecialEpisodes: false,
+        episodeReleaseReminders: false,
+        reminderHour: 20,
+        reminderMinute: 0,
+      );
+
+      final map = FirestoreSyncService.userSettingsToMap(settings);
+      expect(map['avatarValue'], 'avatar_custom.jpg');
+      expect(map['profileBannerPath'], 'banner_custom.jpg');
+      expect(map['bannerPath'], 'banner_custom.jpg');
+    });
   });
 }

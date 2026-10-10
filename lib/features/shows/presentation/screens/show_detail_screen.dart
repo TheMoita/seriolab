@@ -354,9 +354,6 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 10),
-                _WatchTrailerButton(show: show),
-
                 // Episode Progress Indicator for tracked shows
                 if (tracked != null && show.totalEpisodeCount > 0) ...[
                   () {
@@ -1947,7 +1944,7 @@ class _BackdropTrailerButton extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E2230).withValues(alpha: 0.85),
+                color: const Color(0xFF0D0F17).withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: const Color(0xFF7C5CFC),
@@ -1985,144 +1982,6 @@ class _BackdropTrailerButton extends ConsumerWidget {
         );
       },
       orElse: () => const SizedBox.shrink(),
-    );
-  }
-}
-
-class _WatchTrailerButton extends ConsumerWidget {
-  const _WatchTrailerButton({required this.show});
-
-  final ShowDetails show;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final trailerAsync = ref.watch(showTrailerProvider(show.id));
-    final settings = ref.watch(settingsControllerProvider);
-
-    return trailerAsync.when(
-      loading: () => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E2230).withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: const Color(0xFF7C5CFC).withValues(alpha: 0.4),
-            width: 1.2,
-          ),
-        ),
-        child: const Center(
-          child: SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Color(0xFF7C5CFC),
-            ),
-          ),
-        ),
-      ),
-      error: (_, _) => _buildDisabledButton(
-        tooltip: 'Trailer indisponível',
-      ),
-      data: (trailerKey) {
-        final hasTrailer = trailerKey != null && trailerKey.isNotEmpty;
-        if (!hasTrailer) {
-          return _buildDisabledButton(
-            tooltip: 'Trailer indisponível',
-          );
-        }
-
-        return SizedBox(
-          width: double.infinity,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                TrailerDialog.show(
-                  context,
-                  youtubeVideoKey: trailerKey,
-                  title: show.displayTitle(
-                    showOriginal: settings.showOriginalTitles,
-                  ),
-                );
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: Ink(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 13,
-                  horizontal: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E2230).withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF7C5CFC),
-                    width: 1.2,
-                  ),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.play_arrow_rounded,
-                      color: Color(0xFF7C5CFC),
-                      size: 20,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Ver Trailer',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDisabledButton({required String tooltip}) {
-    return Tooltip(
-      message: tooltip,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E2230).withValues(alpha: 0.35),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: const Color(0xFF7C5CFC).withValues(alpha: 0.25),
-            width: 1.2,
-          ),
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.play_disabled_rounded,
-              color: AppColors.textMuted,
-              size: 20,
-            ),
-            SizedBox(width: 8),
-            Text(
-              'Trailer indisponível',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textMuted,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

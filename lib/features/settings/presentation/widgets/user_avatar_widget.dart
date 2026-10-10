@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/local_storage_utils.dart';
 import '../../domain/entities/user_settings.dart';
 import 'seriolab_avatar_view.dart';
 
@@ -108,22 +109,37 @@ class UserAvatarWidget extends StatelessWidget {
       );
     }
 
-    final file = File(path);
-    bool exists = false;
-    try {
-      exists = file.existsSync();
-    } catch (_) {
-      exists = false;
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return _buildNetworkUrlAvatar(context, path, fallbackId, activeBorderColor);
     }
 
-    if (!exists) {
-      return SeriolabAvatarView(
-        avatarId: fallbackId,
-        size: size,
-        borderWidth: borderWidth,
-        showGlow: showGlow,
-      );
+    final file = LocalStorageUtils.resolveFile(path);
+    if (file != null && file.existsSync()) {
+      return _buildImageCircle(file, fallbackId, activeBorderColor);
     }
+
+    return FutureBuilder<File?>(
+      future: LocalStorageUtils.resolveFileAsync(path),
+      builder: (context, snapshot) {
+        final resolved = snapshot.data;
+        if (resolved != null && resolved.existsSync()) {
+          return _buildImageCircle(resolved, fallbackId, activeBorderColor);
+        }
+        return SeriolabAvatarView(
+          avatarId: fallbackId,
+          size: size,
+          borderWidth: borderWidth,
+          showGlow: showGlow,
+        );
+      },
+    );
+  }
+
+  Widget _buildImageCircle(
+    File file,
+    String fallbackId,
+    Color activeBorderColor,
+  ) {
 
     return Container(
       width: size,
