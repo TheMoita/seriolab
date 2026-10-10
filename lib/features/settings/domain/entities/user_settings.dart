@@ -253,7 +253,7 @@ class UserSettings {
   static const UserSettings defaultSettings = UserSettings(
     displayName: 'Afonso Dias',
     username: 'afonsodias',
-    bio: 'Maratonista de séries e entusiasta de ficção científica & drama.',
+    bio: '',
     avatarId: 'tv_retro',
     avatarType: AvatarType.preset,
     avatarValue: 'tv_retro',
@@ -368,11 +368,23 @@ class UserSettings {
     final avatarValue = json['avatarValue'] as String? ??
         (avatarType == AvatarType.preset ? avatarId : null);
 
+    String parseBio(dynamic raw) {
+      if (raw is String) {
+        final trimmed = raw.trim();
+        if (trimmed == 'Maratonista de séries e entusiasta de ficção científica & drama.' ||
+            trimmed.startsWith('Membro Seriolab via')) {
+          return '';
+        }
+        return trimmed;
+      }
+      return '';
+    }
+
     return UserSettings(
       displayName:
           json['displayName'] as String? ?? defaultSettings.displayName,
       username: json['username'] as String? ?? defaultSettings.username,
-      bio: json['bio'] as String? ?? defaultSettings.bio,
+      bio: parseBio(json['bio']),
       avatarId: avatarId,
       avatarType: avatarType,
       avatarValue: avatarValue,

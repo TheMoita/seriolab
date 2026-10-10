@@ -190,4 +190,57 @@ void main() {
     expect(find.text('Início'), findsOneWidget);
     expect(find.text('Perfil'), findsOneWidget);
   });
+
+  testWidgets(
+      'Profile displays empty bio action and RatingsBreakdown empty state',
+      (WidgetTester tester) async {
+    final inMemoryRepo = InMemoryTrackingRepository();
+    final testRepo = ShowRepositoryImpl(
+      remote: MockShowRemoteDataSource(latency: Duration.zero),
+      isUsingMockData: true,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          trackingRepositoryProvider.overrideWithValue(inMemoryRepo),
+          showRepositoryProvider.overrideWithValue(testRepo),
+          demoSeedingEnabledProvider.overrideWithValue(false),
+        ],
+        child: const SeriesApp(home: MainScreen()),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    // Navigate to Profile tab
+    await tester.tap(find.text('Perfil'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Bio is empty by default -> "Adicionar biografia" is shown
+    expect(find.text('Adicionar biografia'), findsOneWidget);
+
+    // Tap "Adicionar biografia" -> opens EditProfileSheet
+    await tester.tap(find.text('Adicionar biografia'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Editar Perfil'), findsOneWidget);
+    await tester.tap(find.text('Cancelar'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Scroll down to RatingsBreakdownSection
+    await tester.drag(find.byType(NestedScrollView), const Offset(0, -600));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Verify RatingsBreakdownSection displays 0-ratings state
+    expect(find.text('RATINGS BREAKDOWN'), findsOneWidget);
+    expect(find.text('Média: —'), findsOneWidget);
+    expect(find.text('(0)'), findsOneWidget);
+    expect(find.text('Ainda não avaliaste nenhuma série'), findsOneWidget);
+  });
 }

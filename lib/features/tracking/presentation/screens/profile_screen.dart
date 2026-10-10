@@ -9,6 +9,7 @@ import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../settings/presentation/screens/settings_screen.dart';
+import '../../../settings/presentation/widgets/edit_profile_sheet.dart';
 import '../../../shows/presentation/providers/show_providers.dart';
 import '../../../shows/presentation/screens/show_detail_screen.dart';
 import '../../domain/entities/tracking_entities.dart';
@@ -155,6 +156,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     style: const TextStyle(
                                       fontSize: 12,
                                       color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ] else ...[
+                                const SizedBox(height: 6),
+                                InkWell(
+                                  onTap: () => EditProfileSheet.show(context),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.add_circle_outline_rounded,
+                                          size: 13,
+                                          color: AppColors.textMuted.withValues(alpha: 0.8),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          'Adicionar biografia',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColors.textMuted.withValues(alpha: 0.8),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),

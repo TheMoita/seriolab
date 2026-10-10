@@ -55,7 +55,35 @@ class SettingsNotifier extends Notifier<UserSettings> {
   }
 
   Future<void> _loadFromStorage(SettingsRepository repo) async {
-    final saved = await repo.getSettings();
+    var saved = await repo.getSettings();
+    try {
+      final trackingRepo = ref.read(trackingRepositoryProvider);
+      final snapshot = await trackingRepo.load();
+      final hasRealRatings = snapshot.shows.any(
+        (s) => s.overallUserRating != null && s.overallUserRating! > 0,
+      );
+      if (!hasRealRatings && saved.totalRatingsCount > 0) {
+        saved = saved.copyWith(
+          ratingDistribution: UserSettings.defaultRatingDistribution,
+        );
+        await repo.saveSettings(saved);
+      } else if (hasRealRatings) {
+        final actualDist =
+            Map<String, int>.from(UserSettings.defaultRatingDistribution);
+        for (final show in snapshot.shows) {
+          if (show.overallUserRating != null && show.overallUserRating! > 0) {
+            final clamped = show.overallUserRating!.clamp(0.5, 10.0);
+            final key = ((clamped * 2).round() / 2).toStringAsFixed(1);
+            if (actualDist.containsKey(key)) {
+              actualDist[key] = (actualDist[key] ?? 0) + 1;
+            }
+          }
+        }
+        saved = saved.copyWith(ratingDistribution: actualDist);
+        await repo.saveSettings(saved);
+      }
+    } catch (_) {}
+
     if (!_initialized) {
       _initialized = true;
       state = saved;
@@ -271,5 +299,11 @@ class SettingsNotifier extends Notifier<UserSettings> {
       map[oldKey] = prev - 1;
       await update((current) => current.copyWith(ratingDistribution: map));
     }
+  }
+
+  Future<void> resetRatingDistribution() async {
+    await update((current) => current.copyWith(
+          ratingDistribution: UserSettings.defaultRatingDistribution,
+        ));
   }
 }

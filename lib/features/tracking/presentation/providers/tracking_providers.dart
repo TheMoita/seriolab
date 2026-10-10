@@ -283,11 +283,19 @@ class TrackingController extends AsyncNotifier<TrackingState> {
   /// Stops tracking the show and erases its watched history.
   Future<void> removeShow(int showId) => _serial(() async {
         final current = _current;
+        final existing = current.show(showId);
+        final prevRating = existing?.overallUserRating;
         await _repo.removeShow(showId);
         state = AsyncData(current.copyWith(
           shows: {...current.shows}..remove(showId),
           watched: {...current.watched}..remove(showId),
         ));
+        if (prevRating != null) {
+          final oldHistogramScore = prevRating.clamp(0.5, 10.0);
+          await ref
+              .read(settingsControllerProvider.notifier)
+              .removeRating(oldHistogramScore);
+        }
       });
 
   /// Sets or clears favorite flag in tracking storage.

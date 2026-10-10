@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../settings/domain/entities/user_settings.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
+import '../providers/tracking_providers.dart';
 
-/// Letterboxd-inspired 19-bar rating breakdown chart (1.0 to 10.0 with half-points).
+/// Letterboxd-inspired 20-bar rating breakdown chart (0.5 to 10.0 with half-points).
 class RatingsBreakdownSection extends ConsumerStatefulWidget {
   const RatingsBreakdownSection({super.key});
 
@@ -17,6 +20,7 @@ class RatingsBreakdownSection extends ConsumerStatefulWidget {
 class _RatingsBreakdownSectionState
     extends ConsumerState<RatingsBreakdownSection> {
   double? _selectedScore;
+  Timer? _dismissTimer;
 
   static const List<double> _allScores = [
     0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5,
@@ -24,11 +28,79 @@ class _RatingsBreakdownSectionState
   ];
 
   @override
+  void dispose() {
+    _dismissTimer?.cancel();
+    super.dispose();
+  }
+
+  void _handleTouch(double localX, double totalWidth) {
+    if (totalWidth <= 0) return;
+    _dismissTimer?.cancel();
+    final fraction = (localX / totalWidth).clamp(0.0, 0.9999);
+    final index =
+        (fraction * _allScores.length).floor().clamp(0, _allScores.length - 1);
+    final score = _allScores[index];
+    if (_selectedScore != score) {
+      setState(() {
+        _selectedScore = score;
+      });
+    }
+  }
+
+  void _onFingerLift() {
+    _dismissTimer?.cancel();
+    _dismissTimer = Timer(const Duration(seconds: 1), () {
+      if (mounted) {
+        setState(() {
+          _selectedScore = null;
+        });
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final trackingState = ref.watch(trackingControllerProvider).value;
     final settings = ref.watch(settingsControllerProvider);
-    final distribution = settings.ratingDistribution;
-    final totalCount = settings.totalRatingsCount;
-    final average = settings.averageRating;
+
+    Map<String, int> distribution;
+    int totalCount;
+    double average;
+
+    if (trackingState != null) {
+      final ratedShows = trackingState.shows.values
+          .where((s) => s.overallUserRating != null && s.overallUserRating! > 0)
+          .toList();
+
+      if (ratedShows.isEmpty) {
+        distribution = UserSettings.defaultRatingDistribution;
+        totalCount = 0;
+        average = 0.0;
+        if (settings.totalRatingsCount > 0) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(settingsControllerProvider.notifier).resetRatingDistribution();
+          });
+        }
+      } else {
+        distribution =
+            Map<String, int>.from(UserSettings.defaultRatingDistribution);
+        var sum = 0.0;
+        for (final show in ratedShows) {
+          final clamped = show.overallUserRating!.clamp(0.5, 10.0);
+          final key = ((clamped * 2).round() / 2).toStringAsFixed(1);
+          if (distribution.containsKey(key)) {
+            distribution[key] = (distribution[key] ?? 0) + 1;
+            sum += clamped;
+          }
+        }
+        totalCount = ratedShows.length;
+        average = totalCount > 0 ? (sum / totalCount) : 0.0;
+      }
+    } else {
+      distribution = settings.ratingDistribution;
+      totalCount = settings.totalRatingsCount;
+      average = settings.averageRating;
+    }
 
     // Find peak count for scale
     var maxCount = 1;
@@ -68,7 +140,7 @@ class _RatingsBreakdownSectionState
                   const SizedBox(width: 4),
                   Text(
                     totalCount == 0
-                        ? 'Média: N/A'
+                        ? 'Média: —'
                         : 'Média: ${average.toStringAsFixed(1)} ★',
                     style: const TextStyle(
                       fontSize: 13,
@@ -106,27 +178,75 @@ class _RatingsBreakdownSectionState
                 _buildInspectionBanner(distribution, totalCount),
                 const SizedBox(height: 14),
 
-                // 20-Bar Histogram
-                SizedBox(
-                  height: 94,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: _allScores.map((score) {
-                      final key = score.toStringAsFixed(1);
-                      final count = distribution[key] ?? 0;
-                      final isSelected = _selectedScore == score;
+                // 20-Bar Histogram with Touch & Drag Scrubbing
+                if (totalCount == 0) ...[
+                  SizedBox(
+                    height: 94,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              'Avalia séries nos detalhes para gerar o teu gráfico',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color:
+                                    AppColors.textMuted.withValues(alpha: 0.7),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 1.5,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppColors.outline.withValues(alpha: 0.8),
+                            borderRadius: BorderRadius.circular(1),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else ...[
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTapDown: (details) => _handleTouch(
+                            details.localPosition.dx, constraints.maxWidth),
+                        onTapUp: (_) => _onFingerLift(),
+                        onHorizontalDragStart: (details) => _handleTouch(
+                            details.localPosition.dx, constraints.maxWidth),
+                        onHorizontalDragUpdate: (details) => _handleTouch(
+                            details.localPosition.dx, constraints.maxWidth),
+                        onHorizontalDragEnd: (_) => _onFingerLift(),
+                        onHorizontalDragCancel: () => _onFingerLift(),
+                        child: SizedBox(
+                          height: 94,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: _allScores.map((score) {
+                              final key = score.toStringAsFixed(1);
+                              final count = distribution[key] ?? 0;
+                              final isSelected = _selectedScore == score;
 
-                      return Expanded(
-                        child: _buildBarColumn(
-                          score: score,
-                          count: count,
-                          maxCount: maxCount,
-                          isSelected: isSelected,
+                              return Expanded(
+                                child: _buildBarColumn(
+                                  score: score,
+                                  count: count,
+                                  maxCount: maxCount,
+                                  isSelected: isSelected,
+                                ),
+                              );
+                            }).toList(),
+                          ),
                         ),
                       );
-                    }).toList(),
+                    },
                   ),
-                ),
+                ],
                 const SizedBox(height: 8),
 
                 // X-Axis Axis labels (0.5, 3, 5, 7, 10)
@@ -142,17 +262,18 @@ class _RatingsBreakdownSectionState
   Widget _buildInspectionBanner(Map<String, int> distribution, int total) {
     if (total == 0) {
       return const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.bar_chart_rounded,
-            size: 14,
+            size: 15,
             color: AppColors.textMuted,
           ),
           SizedBox(width: 6),
           Text(
-            'Nenhuma série avaliada até ao momento',
+            'Ainda não avaliaste nenhuma série',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 12,
               color: AppColors.textMuted,
               fontWeight: FontWeight.w500,
             ),
@@ -164,29 +285,31 @@ class _RatingsBreakdownSectionState
     if (_selectedScore != null) {
       final key = _selectedScore!.toStringAsFixed(1);
       final count = distribution[key] ?? 0;
-      final percent = total > 0 ? ((count / total) * 100).toStringAsFixed(1) : '0';
+      final percent =
+          total > 0 ? ((count / total) * 100).toStringAsFixed(1) : '0';
+      final seriesLabel = count == 1 ? 'série' : 'séries';
 
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: const Color(0xFF00E054).withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(8),
+          color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: const Color(0xFF00E054).withValues(alpha: 0.5),
-            width: 0.8,
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
+            width: 0.9,
           ),
         ),
         child: Row(
           children: [
             const Icon(
               Icons.star_rounded,
-              size: 15,
-              color: Color(0xFF00E054),
+              size: 16,
+              color: Color(0xFF38BDF8),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                '$key / 10 ★  •  $count ${count == 1 ? 'avaliação' : 'avaliações'} ($percent%)',
+                '★ $key — $count $seriesLabel ($percent%)',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -195,7 +318,10 @@ class _RatingsBreakdownSectionState
               ),
             ),
             InkWell(
-              onTap: () => setState(() => _selectedScore = null),
+              onTap: () {
+                _dismissTimer?.cancel();
+                setState(() => _selectedScore = null);
+              },
               child: const Icon(
                 Icons.close_rounded,
                 size: 14,
@@ -216,7 +342,7 @@ class _RatingsBreakdownSectionState
         ),
         SizedBox(width: 6),
         Text(
-          'Toca numa barra para ver a contagem de séries',
+          'Desliza sobre o gráfico para ver as notas',
           style: TextStyle(
             fontSize: 11,
             color: AppColors.textMuted,
@@ -236,71 +362,58 @@ class _RatingsBreakdownSectionState
     const maxHeight = 88.0;
     final ratio = maxCount > 0 ? (count / maxCount) : 0.0;
     final fillHeight = count == 0
-        ? 2.0
+        ? (isSelected ? 8.0 : 2.0)
         : math.max(6.0, ratio * maxHeight);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        setState(() {
-          _selectedScore = isSelected ? null : score;
-        });
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 1.5),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOutCubic,
-              height: fillHeight,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
-                gradient: isSelected
-                    ? const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [AppColors.secondary, AppColors.primary],
-                      )
-                    : LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: count > 0
-                            ? [
-                                AppColors.primary,
-                                AppColors.primary.withValues(alpha: 0.6),
-                              ]
-                            : [
-                                AppColors.outline,
-                                AppColors.outline,
-                              ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 1.5),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOutCubic,
+            height: fillHeight,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(3)),
+              gradient: isSelected
+                  ? const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xFF38BDF8), Color(0xFF7C5CFC)],
+                    )
+                  : LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: count > 0
+                          ? [
+                              AppColors.primary,
+                              AppColors.primary.withValues(alpha: 0.6),
+                            ]
+                          : [
+                              AppColors.outline,
+                              AppColors.outline,
+                            ],
+                    ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                        blurRadius: 8,
+                        spreadRadius: 1,
                       ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: AppColors.secondary.withValues(alpha: 0.6),
-                          blurRadius: 6,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : null,
-              ),
+                    ]
+                  : null,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildXAxisLabels() {
-    // 19 scores total:
-    // index 0 -> 1.0
-    // index 4 -> 3.0
-    // index 8 -> 5.0
-    // index 12 -> 7.0
-    // index 18 -> 10.0
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: const [

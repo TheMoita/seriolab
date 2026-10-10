@@ -15,6 +15,7 @@ void main() {
       const settings = UserSettings.defaultSettings;
       expect(settings.displayName, 'Afonso Dias');
       expect(settings.username, 'afonsodias');
+      expect(settings.bio, '');
       expect(settings.language, 'pt');
       expect(settings.streamingRegion, 'PT');
       expect(settings.showOriginalTitles, isFalse);
@@ -83,6 +84,20 @@ void main() {
       expect(reconstructed.reminderHour, 9);
       expect(reconstructed.reminderMinute, 30);
       expect(reconstructed.formattedReminderTime, '09:30');
+    });
+
+    test('fromJson cleans legacy placeholder bio strings', () {
+      final jsonWithOldBio = {
+        'bio': 'Maratonista de séries e entusiasta de ficção científica & drama.',
+      };
+      final parsed = UserSettings.fromJson(jsonWithOldBio);
+      expect(parsed.bio, '');
+
+      final jsonWithGoogleBio = {
+        'bio': 'Membro Seriolab via Google.',
+      };
+      final parsedGoogle = UserSettings.fromJson(jsonWithGoogleBio);
+      expect(parsedGoogle.bio, '');
     });
 
     test('copyWith updates specified fields only', () {

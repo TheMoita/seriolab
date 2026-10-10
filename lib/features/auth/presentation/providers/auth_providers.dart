@@ -208,9 +208,7 @@ class AuthController extends Notifier<AuthState> {
       await notifier.updateProfile(
         displayName: displayName,
         username: username,
-        bio: current.bio.isEmpty
-            ? 'Membro Seriolab via ${user.provider.label}.'
-            : current.bio,
+        bio: current.bio,
         avatarId: current.avatarId,
       );
     } catch (_) {}
