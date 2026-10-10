@@ -9,6 +9,9 @@
         android:label="Seriolab"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
+        android:allowBackup="true"
+        android:fullBackupContent="true"
+        android:hasFragileUserData="true"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"

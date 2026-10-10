@@ -57,8 +57,43 @@ void main() {
     expect(find.text('A Tua Avaliação'), findsOneWidget);
     expect(find.text('Registar / Avaliar Episódio'), findsOneWidget);
 
+    // Toggle watched state
+    await tester.tap(find.text('Marcar como Visto'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('Episódio Visto'), findsOneWidget);
+
+    // Scroll down to community reviews section
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -700));
+    await tester.pump(const Duration(milliseconds: 100));
+
     // Verify Community reviews section
     expect(find.text('Comunidade'), findsOneWidget);
+
+    // Verify empty state is displayed initially
+    expect(
+      find.text(
+        'Ainda não existem comentários para este episódio. Sê o primeiro a partilhar a tua opinião!',
+      ),
+      findsOneWidget,
+    );
+
+    // Verify comment input bar
+    expect(find.text('Deixar um comentário'), findsOneWidget);
+    expect(find.text('Contém Spoilers'), findsOneWidget);
+    expect(find.text('Comentar'), findsOneWidget);
+
+    // Add a comment with spoiler
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Escreve a tua opinião sobre o episódio...'),
+      'Reviravolta chocante no final!',
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(find.text('Contém Spoilers'));
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(find.text('Comentar'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
 
     // Verify spoiler warning card in community section
     expect(find.text('Aviso de Spoiler — Toca para ver'), findsOneWidget);
@@ -69,17 +104,6 @@ void main() {
       warnIfMissed: false,
     );
     await tester.pump();
-
-    // Verify comment input bar
-    expect(find.text('Deixar um comentário'), findsOneWidget);
-    expect(find.text('Contém Spoilers'), findsOneWidget);
-    expect(find.text('Comentar'), findsOneWidget);
-
-    // Toggle watched state
-    await tester.tap(find.text('Marcar como Visto'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
-
-    expect(find.text('Episódio Visto'), findsOneWidget);
+    expect(find.text('Reviravolta chocante no final!'), findsOneWidget);
   });
 }

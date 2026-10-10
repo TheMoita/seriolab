@@ -29,54 +29,7 @@ class EpisodeReviewRepositoryImpl implements EpisodeReviewRepository {
             .toList();
       }
     } catch (_) {}
-
-    // Return default seed community reviews for lively community discussion
-    final now = DateTime.now();
-    final epKey = EpisodeReviewModel.buildKey(seriesId, seasonNumber, episodeNumber);
-    return [
-      EpisodeReviewModel(
-        id: 'seed_1_$epKey',
-        episodeKeyString: epKey,
-        userId: 'marta_s',
-        username: 'martas',
-        userDisplayName: 'Marta Santos',
-        userAvatarId: 'popcorn',
-        rating: 9.0,
-        comment:
-            'Que episódio fantástico! A cinematografia e a realização estiveram a um nível cinematográfico.',
-        containsSpoilers: false,
-        createdAt: now.subtract(const Duration(days: 2, hours: 4)),
-        likesCount: 14,
-      ),
-      EpisodeReviewModel(
-        id: 'seed_2_$epKey',
-        episodeKeyString: epKey,
-        userId: 'diogo_f',
-        username: 'diogof',
-        userDisplayName: 'Diogo Ferreira',
-        userAvatarId: 'film_roll',
-        rating: 8.5,
-        comment:
-            'O desfecho deste episódio deixou-me boquiaberto! Não estava nada à espera que aquela decisão fosse mudar o rumo da história desta maneira.',
-        containsSpoilers: true,
-        createdAt: now.subtract(const Duration(days: 1, hours: 8)),
-        likesCount: 9,
-      ),
-      EpisodeReviewModel(
-        id: 'seed_3_$epKey',
-        episodeKeyString: epKey,
-        userId: 'bea_l',
-        username: 'bealima',
-        userDisplayName: 'Beatriz Lima',
-        userAvatarId: 'clapper',
-        rating: 8.0,
-        comment:
-            'Muito bom desenvolvimento emocional dos protagonistas. O ritmo funcionou lindamente.',
-        containsSpoilers: false,
-        createdAt: now.subtract(const Duration(hours: 15)),
-        likesCount: 5,
-      ),
-    ];
+    return const [];
   }
 
   @override

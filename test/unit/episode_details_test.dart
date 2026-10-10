@@ -85,12 +85,9 @@ void main() {
       );
     });
 
-    test('getReviews returns default seed reviews when storage empty', () async {
+    test('getReviews returns empty list when storage empty', () async {
       final reviews = await reviewRepo.getReviews(100088, 1, 1);
-      expect(reviews, isNotEmpty);
-      expect(reviews.length, greaterThanOrEqualTo(3));
-      expect(reviews.first.comment, isNotEmpty);
-      expect(reviews.any((r) => r.containsSpoilers), isTrue);
+      expect(reviews, isEmpty);
     });
 
     test('addReview persists and prepends new review', () async {

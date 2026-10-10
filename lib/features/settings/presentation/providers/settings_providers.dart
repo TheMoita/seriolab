@@ -61,6 +61,8 @@ class SettingsNotifier extends Notifier<UserSettings> {
       final snapshot = await trackingRepo.load();
       final hasRealRatings = snapshot.shows.any(
         (s) => s.overallUserRating != null && s.overallUserRating! > 0,
+      ) || snapshot.episodes.any(
+        (e) => e.userRating != null && e.userRating! > 0,
       );
       if (!hasRealRatings && saved.totalRatingsCount > 0) {
         saved = saved.copyWith(
@@ -73,6 +75,15 @@ class SettingsNotifier extends Notifier<UserSettings> {
         for (final show in snapshot.shows) {
           if (show.overallUserRating != null && show.overallUserRating! > 0) {
             final clamped = show.overallUserRating!.clamp(0.5, 10.0);
+            final key = ((clamped * 2).round() / 2).toStringAsFixed(1);
+            if (actualDist.containsKey(key)) {
+              actualDist[key] = (actualDist[key] ?? 0) + 1;
+            }
+          }
+        }
+        for (final ep in snapshot.episodes) {
+          if (ep.userRating != null && ep.userRating! > 0) {
+            final clamped = ep.userRating!.clamp(0.5, 10.0);
             final key = ((clamped * 2).round() / 2).toStringAsFixed(1);
             if (actualDist.containsKey(key)) {
               actualDist[key] = (actualDist[key] ?? 0) + 1;

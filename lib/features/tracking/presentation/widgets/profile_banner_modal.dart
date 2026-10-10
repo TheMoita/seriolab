@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
@@ -34,9 +38,21 @@ class ProfileBannerModal extends ConsumerWidget {
       );
 
       if (picked != null) {
+        String savedPath = picked.path;
+        if (!kIsWeb) {
+          try {
+            final docsDir = await getApplicationDocumentsDirectory();
+            final timestamp = DateTime.now().millisecondsSinceEpoch;
+            final targetFile =
+                File('${docsDir.path}/profile_banner_$timestamp.jpg');
+            final copied = await File(picked.path).copy(targetFile.path);
+            savedPath = copied.path;
+          } catch (_) {}
+        }
+
         await ref
             .read(settingsControllerProvider.notifier)
-            .setProfileBannerPath(picked.path);
+            .setProfileBannerPath(savedPath);
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -1250,7 +1250,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
             ),
             child: const Center(
               child: Text(
-                'Ainda não há comentários sobre este episódio.\nSê o primeiro a partilhar a tua opinião!',
+                'Ainda não existem comentários para este episódio. Sê o primeiro a partilhar a tua opinião!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,

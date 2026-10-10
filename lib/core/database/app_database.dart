@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// SQLite database holding all offline user data (tracked shows & episodes).
@@ -14,14 +17,56 @@ abstract final class AppDatabase {
   /// tests can use `sqflite_common_ffi` with an in-memory database.
   static Future<Database> open({DatabaseFactory? factory, String? path}) async {
     final dbFactory = factory ?? databaseFactory;
-    final dbPath =
-        path ?? p.join(await dbFactory.getDatabasesPath(), fileName);
+    String dbPath;
+    if (path != null) {
+      dbPath = path;
+    } else {
+      try {
+        final docsDir = await getApplicationDocumentsDirectory();
+        final docsPath = p.join(docsDir.path, fileName);
+
+        // Migrate legacy database from getDatabasesPath() if it exists and docsPath doesn't yet
+        try {
+          final legacyDir = await dbFactory.getDatabasesPath();
+          final legacyPath = p.join(legacyDir, fileName);
+          final legacyFile = File(legacyPath);
+          final docsFile = File(docsPath);
+          if (await legacyFile.exists() && !await docsFile.exists()) {
+            await docsFile.parent.create(recursive: true);
+            await legacyFile.copy(docsPath);
+
+            final legacyWal = File('$legacyPath-wal');
+            if (await legacyWal.exists()) {
+              await legacyWal.copy('$docsPath-wal');
+            }
+            final legacyShm = File('$legacyPath-shm');
+            if (await legacyShm.exists()) {
+              await legacyShm.copy('$docsPath-shm');
+            }
+            final legacyJournal = File('$legacyPath-journal');
+            if (await legacyJournal.exists()) {
+              await legacyJournal.copy('$docsPath-journal');
+            }
+          }
+        } catch (_) {}
+
+        dbPath = docsPath;
+      } catch (_) {
+        // Fallback to sqflite databases path (e.g. in environments where path_provider is unavailable)
+        dbPath = p.join(await dbFactory.getDatabasesPath(), fileName);
+      }
+    }
+
     return dbFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
         version: version,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
+        onDowngrade: (db, oldVersion, newVersion) async {
+          // Safe non-destructive downgrade handler to avoid dropping tables or throwing
+          // if an APK with a previous/different schema version is run.
+        },
       ),
     );
   }
