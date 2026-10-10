@@ -53,6 +53,7 @@ class TrackedShow {
     this.reviewText,
     this.hasSpoilers = false,
     this.loggedAt,
+    this.isFavorite = false,
   });
 
   final int showId;
@@ -69,6 +70,7 @@ class TrackedShow {
   final String? reviewText;
   final bool hasSpoilers;
   final DateTime? loggedAt;
+  final bool isFavorite;
 
   TrackedShow copyWith({
     String? name,
@@ -86,6 +88,7 @@ class TrackedShow {
     bool? hasSpoilers,
     DateTime? loggedAt,
     bool clearLoggedAt = false,
+    bool? isFavorite,
   }) =>
       TrackedShow(
         showId: showId,
@@ -105,6 +108,7 @@ class TrackedShow {
             clearReviewText ? null : (reviewText ?? this.reviewText),
         hasSpoilers: hasSpoilers ?? this.hasSpoilers,
         loggedAt: clearLoggedAt ? null : (loggedAt ?? this.loggedAt),
+        isFavorite: isFavorite ?? this.isFavorite,
       );
 }
 

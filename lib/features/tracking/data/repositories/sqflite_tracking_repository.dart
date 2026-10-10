@@ -105,6 +105,7 @@ class SqfliteTrackingRepository implements TrackingRepository {
         'review_text': s.reviewText,
         'has_spoilers': s.hasSpoilers ? 1 : 0,
         'logged_at': s.loggedAt?.millisecondsSinceEpoch,
+        'is_favorite': s.isFavorite ? 1 : 0,
       };
 
   static TrackedShow _showFromRow(Map<String, Object?> r) => TrackedShow(
@@ -124,6 +125,7 @@ class SqfliteTrackingRepository implements TrackingRepository {
         loggedAt: r['logged_at'] != null
             ? DateTime.fromMillisecondsSinceEpoch(r['logged_at']! as int)
             : null,
+        isFavorite: (r['is_favorite'] as int?) == 1,
       );
 
   static WatchedEpisode _episodeFromRow(Map<String, Object?> r) =>

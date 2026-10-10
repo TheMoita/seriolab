@@ -200,6 +200,7 @@ class ShowDetails {
     this.reviewText,
     this.hasSpoilers = false,
     this.loggedAt,
+    this.isFavorite = false,
   });
 
   final int id;
@@ -238,6 +239,9 @@ class ShowDetails {
 
   /// Date the log was recorded.
   final DateTime? loggedAt;
+
+  /// Whether the show is marked as favorite by the user.
+  final bool isFavorite;
 
   /// Localized title fallback to [name].
   String get title => name;
@@ -329,6 +333,7 @@ class ShowDetails {
     bool? hasSpoilers,
     DateTime? loggedAt,
     bool clearLoggedAt = false,
+    bool? isFavorite,
   }) =>
       ShowDetails(
         id: id ?? this.id,
@@ -360,6 +365,7 @@ class ShowDetails {
             clearReviewText ? null : (reviewText ?? this.reviewText),
         hasSpoilers: hasSpoilers ?? this.hasSpoilers,
         loggedAt: clearLoggedAt ? null : (loggedAt ?? this.loggedAt),
+        isFavorite: isFavorite ?? this.isFavorite,
       );
 }
 

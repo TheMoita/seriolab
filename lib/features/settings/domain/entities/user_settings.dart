@@ -148,6 +148,7 @@ class UserSettings {
     required this.reminderMinute,
     this.showOriginalTitles = false,
     this.favoriteShowIds = const [],
+    this.favoritedShowIds = const [],
     this.ratingDistribution = defaultRatingDistribution,
   });
 
@@ -193,8 +194,15 @@ class UserSettings {
   final int reminderMinute;
 
   // Favorites & Ratings Breakdown
-  final List<int> favoriteShowIds;
+  final List<int> favoriteShowIds; // Top 5 series slots (up to 5)
+  final List<int> favoritedShowIds; // All series favorited by the user
   final Map<String, int> ratingDistribution;
+
+  /// Ordered list of IDs for the Top 5.
+  List<int> get topFiveFavorites => favoriteShowIds;
+
+  /// Whether a specific show has been favorited by the user.
+  bool isFavorite(int showId) => favoritedShowIds.contains(showId);
 
   TimeOfDay get reminderTime =>
       TimeOfDay(hour: reminderHour, minute: reminderMinute);
@@ -258,6 +266,7 @@ class UserSettings {
     reminderHour: 20,
     reminderMinute: 0,
     favoriteShowIds: [],
+    favoritedShowIds: [],
     ratingDistribution: defaultRatingDistribution,
   );
 
@@ -282,6 +291,7 @@ class UserSettings {
     int? reminderHour,
     int? reminderMinute,
     List<int>? favoriteShowIds,
+    List<int>? favoritedShowIds,
     Map<String, int>? ratingDistribution,
   }) {
     return UserSettings(
@@ -308,6 +318,7 @@ class UserSettings {
       reminderHour: reminderHour ?? this.reminderHour,
       reminderMinute: reminderMinute ?? this.reminderMinute,
       favoriteShowIds: favoriteShowIds ?? this.favoriteShowIds,
+      favoritedShowIds: favoritedShowIds ?? this.favoritedShowIds,
       ratingDistribution: ratingDistribution ?? this.ratingDistribution,
     );
   }
@@ -331,6 +342,7 @@ class UserSettings {
       'reminderHour': reminderHour,
       'reminderMinute': reminderMinute,
       'favoriteShowIds': favoriteShowIds,
+      'favoritedShowIds': favoritedShowIds,
       'ratingDistribution': ratingDistribution,
     };
   }
@@ -381,7 +393,8 @@ class UserSettings {
           json['reminderHour'] as int? ?? defaultSettings.reminderHour,
       reminderMinute:
           json['reminderMinute'] as int? ?? defaultSettings.reminderMinute,
-      favoriteShowIds: parseFavorites(json['favoriteShowIds']),
+      favoriteShowIds: parseFavorites(json['favoriteShowIds'] ?? json['topFiveFavorites']),
+      favoritedShowIds: parseFavorites(json['favoritedShowIds']),
       ratingDistribution: parseDistribution(json['ratingDistribution']),
     );
   }

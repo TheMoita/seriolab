@@ -7,6 +7,7 @@ import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../shows/domain/entities/show.dart';
 import '../../../shows/presentation/providers/show_providers.dart';
 import '../../../shows/presentation/screens/show_detail_screen.dart';
+import '../../domain/entities/tracking_entities.dart';
 import '../providers/tracking_providers.dart';
 
 /// Renders the user's top 5 favorite TV series in a sleek horizontal row
@@ -83,7 +84,8 @@ class TopFavoritesSection extends ConsumerWidget {
                             )
                           : _EmptySlotTile(
                               rank: index + 1,
-                              onTap: () => _openAddFavoriteSheet(context),
+                              onTap: () =>
+                                  _openAddFavoriteSheet(context, targetSlot: index),
                             ),
                     ),
                   );
@@ -109,7 +111,7 @@ class TopFavoritesSection extends ConsumerWidget {
     );
   }
 
-  void _openAddFavoriteSheet(BuildContext context) {
+  void _openAddFavoriteSheet(BuildContext context, {int? targetSlot}) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -117,7 +119,7 @@ class TopFavoritesSection extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => const _AddFavoriteShowSheet(),
+      builder: (_) => _AddFavoriteShowSheet(targetSlot: targetSlot),
     );
   }
 
@@ -196,16 +198,25 @@ class TopFavoritesSection extends ConsumerWidget {
                 ),
                 ListTile(
                   leading: const Icon(
+                    Icons.swap_vert_rounded,
+                    color: AppColors.secondary,
+                  ),
+                  title: const Text('Mudar Posição / Reordenar'),
+                  subtitle: const Text('Mover para outro slot (1 a 5)'),
+                  onTap: () {
+                    Navigator.pop(modalCtx);
+                    _showReorderDialog(context, ref, index);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
                     Icons.swap_horiz_rounded,
                     color: AppColors.primary,
                   ),
                   title: const Text('Substituir por outra série'),
                   onTap: () {
                     Navigator.pop(modalCtx);
-                    ref
-                        .read(settingsControllerProvider.notifier)
-                        .removeFavoriteShow(showId);
-                    _openAddFavoriteSheet(context);
+                    _openAddFavoriteSheet(context, targetSlot: index);
                   },
                 ),
                 ListTile(
@@ -220,7 +231,7 @@ class TopFavoritesSection extends ConsumerWidget {
                   onTap: () {
                     ref
                         .read(settingsControllerProvider.notifier)
-                        .removeFavoriteShow(showId);
+                        .removeTopFiveSlot(index);
                     Navigator.pop(modalCtx);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -229,6 +240,107 @@ class TopFavoritesSection extends ConsumerWidget {
                       ),
                     );
                   },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showReorderDialog(
+    BuildContext context,
+    WidgetRef ref,
+    int currentIndex,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (reorderCtx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.outline,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const Text(
+                  'Mover para nova posição:',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(5, (targetIdx) {
+                    final isCurrent = targetIdx == currentIndex;
+                    return SizedBox(
+                      width: 52,
+                      height: 52,
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          backgroundColor: isCurrent
+                              ? AppColors.primary
+                              : AppColors.surfaceHigh,
+                          foregroundColor:
+                              isCurrent ? Colors.white : AppColors.textPrimary,
+                          side: BorderSide(
+                            color: isCurrent
+                                ? AppColors.primary
+                                : AppColors.outline,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: isCurrent
+                            ? null
+                            : () {
+                                Navigator.pop(reorderCtx);
+                                ref
+                                    .read(settingsControllerProvider.notifier)
+                                    .reorderTopFive(currentIndex, targetIdx);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Série movida para a posição #${targetIdx + 1}.',
+                                    ),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                        child: Text(
+                          '#${targetIdx + 1}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: isCurrent
+                                ? Colors.white
+                                : AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
                 ),
               ],
             ),
@@ -404,9 +516,11 @@ class _EmptySlotTile extends StatelessWidget {
   }
 }
 
-/// Modal allowing selection of a show to add to Top 5.
+/// Modal allowing selection of a show to add to Top 5 or a specific slot.
 class _AddFavoriteShowSheet extends ConsumerStatefulWidget {
-  const _AddFavoriteShowSheet();
+  const _AddFavoriteShowSheet({this.targetSlot});
+
+  final int? targetSlot;
 
   @override
   ConsumerState<_AddFavoriteShowSheet> createState() =>
@@ -423,6 +537,26 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
     super.dispose();
   }
 
+  void _onSelectShow(int showId) {
+    if (widget.targetSlot != null) {
+      ref
+          .read(settingsControllerProvider.notifier)
+          .setTopFiveSlot(widget.targetSlot!, showId);
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Série colocada na posição #${widget.targetSlot! + 1} do Top 5.',
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ref.read(settingsControllerProvider.notifier).addFavoriteShow(showId);
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final trackingState = ref.watch(trackingControllerProvider).value;
@@ -435,7 +569,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
     return SafeArea(
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
+          maxHeight: MediaQuery.of(context).size.height * 0.82,
         ),
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
         child: Column(
@@ -455,9 +589,11 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Adicionar aos Favoritos',
-                  style: TextStyle(
+                Text(
+                  widget.targetSlot != null
+                      ? 'Escolher para o Top 5 (#${widget.targetSlot! + 1})'
+                      : 'Adicionar aos Favoritos',
+                  style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
@@ -506,6 +642,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
                       trackedShows,
                       trendingAsync.value ?? [],
                       currentFavorites,
+                      settings.favoritedShowIds,
                     ),
             ),
           ],
@@ -576,17 +713,23 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
               trailing: isAlreadyFavorite
                   ? const Chip(
                       label: Text('No Top 5',
-                          style: TextStyle(fontSize: 10, color: AppColors.secondary)),
+                          style: TextStyle(
+                              fontSize: 10, color: AppColors.secondary)),
                     )
-                  : IconButton(
-                      icon: const Icon(Icons.add_circle_outline_rounded,
-                          color: AppColors.primary),
-                      onPressed: () {
-                        ref
-                            .read(settingsControllerProvider.notifier)
-                            .addFavoriteShow(show.id);
-                        Navigator.of(context).pop();
-                      },
+                  : FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        visualDensity: VisualDensity.compact,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () => _onSelectShow(show.id),
+                      child: Text(
+                        widget.targetSlot != null ? 'Escolher' : 'Adicionar',
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w700),
+                      ),
                     ),
             );
           },
@@ -598,12 +741,172 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
   Widget _buildSuggestedList(
     BuildContext context,
     WidgetRef ref,
-    List<dynamic> tracked,
+    List<TrackedShow> tracked,
     List<ShowSummary> trending,
     List<int> currentFavorites,
+    List<int> favoritedShowIds,
   ) {
     return ListView(
       children: [
+        // 1. User's Favorited Series (Heart icon)
+        if (favoritedShowIds.isNotEmpty) ...[
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 6),
+            child: Text(
+              'AS TUAS SÉRIES FAVORITAS',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.primary,
+                letterSpacing: 1.1,
+              ),
+            ),
+          ),
+          ...favoritedShowIds.map((favId) {
+            final isAlreadyFavorite = currentFavorites.contains(favId);
+            return Consumer(
+              builder: (ctx, ref, _) {
+                final showAsync = ref.watch(showDetailsProvider(favId));
+                return showAsync.when(
+                  data: (show) {
+                    final showOriginal = ref.watch(
+                      settingsControllerProvider
+                          .select((s) => s.showOriginalTitles),
+                    );
+                    final title = show.displayTitle(showOriginal: showOriginal);
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: AppNetworkImage(
+                        imageUrl: show.posterUrl ?? show.backdropUrl,
+                        fallbackImageUrl: show.backdropUrl,
+                        title: title,
+                        width: 36,
+                        height: 52,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      title: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '${show.year ?? ''} • Favorita ❤️',
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                      trailing: isAlreadyFavorite
+                          ? const Text(
+                              'No Top 5',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.secondary,
+                              ),
+                            )
+                          : FilledButton(
+                              onPressed: () => _onSelectShow(show.id),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                visualDensity: VisualDensity.compact,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: Text(
+                                widget.targetSlot != null
+                                    ? 'Escolher'
+                                    : 'Adicionar',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
+                );
+              },
+            );
+          }),
+          const SizedBox(height: 12),
+        ],
+
+        // 2. User's Tracked Series (Completed / Watching)
+        if (tracked.isNotEmpty) ...[
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 6),
+            child: Text(
+              'SÉRIES NA TUA LISTA',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textMuted,
+                letterSpacing: 1.1,
+              ),
+            ),
+          ),
+          ...tracked.map((trackedShow) {
+            final isAlreadyFavorite =
+                currentFavorites.contains(trackedShow.showId);
+            return ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: AppNetworkImage(
+                imageUrl: trackedShow.posterUrl,
+                title: trackedShow.name,
+                width: 36,
+                height: 52,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              title: Text(
+                trackedShow.name,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              subtitle: Text(
+                trackedShow.status.label,
+                style: const TextStyle(
+                    fontSize: 12, color: AppColors.textSecondary),
+              ),
+              trailing: isAlreadyFavorite
+                  ? const Text(
+                      'No Top 5',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.secondary,
+                      ),
+                    )
+                  : FilledButton(
+                      onPressed: () => _onSelectShow(trackedShow.showId),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        visualDensity: VisualDensity.compact,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        widget.targetSlot != null ? 'Escolher' : 'Adicionar',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+            );
+          }),
+          const SizedBox(height: 12),
+        ],
+
+        // 3. Trending Suggestions
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 6),
           child: Text(
@@ -612,6 +915,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
               fontSize: 11,
               fontWeight: FontWeight.w800,
               color: AppColors.textMuted,
+              letterSpacing: 1.1,
             ),
           ),
         ),
@@ -654,12 +958,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
                     ),
                   )
                 : FilledButton(
-                    onPressed: () {
-                      ref
-                          .read(settingsControllerProvider.notifier)
-                          .addFavoriteShow(show.id);
-                      Navigator.of(context).pop();
-                    },
+                    onPressed: () => _onSelectShow(show.id),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       visualDensity: VisualDensity.compact,
@@ -667,8 +966,13 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('Adicionar',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                    child: Text(
+                      widget.targetSlot != null ? 'Escolher' : 'Adicionar',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
           );
         }),

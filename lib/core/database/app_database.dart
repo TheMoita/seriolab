@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 /// SQLite database holding all offline user data (tracked shows & episodes).
 abstract final class AppDatabase {
   static const String fileName = 'series_app.db';
-  static const int version = 3;
+  static const int version = 4;
 
   static const String trackedShows = 'tracked_shows';
   static const String watchedEpisodes = 'watched_episodes';
@@ -43,7 +43,8 @@ abstract final class AppDatabase {
           overall_user_rating REAL,
           review_text TEXT,
           has_spoilers INTEGER NOT NULL DEFAULT 0,
-          logged_at INTEGER
+          logged_at INTEGER,
+          is_favorite INTEGER NOT NULL DEFAULT 0
         )''')
       ..execute('''
         CREATE TABLE $watchedEpisodes (
@@ -115,6 +116,13 @@ abstract final class AppDatabase {
       try {
         await db.execute(
           'ALTER TABLE $watchedEpisodes ADD COLUMN logged_at INTEGER',
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 4) {
+      try {
+        await db.execute(
+          'ALTER TABLE $trackedShows ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0',
         );
       } catch (_) {}
     }

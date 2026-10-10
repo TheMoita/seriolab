@@ -1,8 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:series_app/core/di/providers.dart';
 import 'package:series_app/features/settings/data/repositories/settings_repository_impl.dart';
+import 'package:series_app/features/settings/data/repositories/user_profile_repository_impl.dart';
 import 'package:series_app/features/settings/domain/entities/user_settings.dart';
 import 'package:series_app/features/settings/presentation/providers/settings_providers.dart';
+import 'package:series_app/features/shows/domain/entities/episode.dart';
+import 'package:series_app/features/shows/domain/entities/show.dart';
 import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
 
 void main() {
@@ -276,6 +280,142 @@ void main() {
         directContainer.read(settingsControllerProvider).hasCustomBanner,
         isFalse,
       );
+    });
+  });
+
+  group('UserProfileRepository and Top 5 selection', () {
+    const show1 = ShowDetails(
+      id: 1399,
+      name: 'Game of Thrones',
+      overview: 'Winter is coming',
+      tagline: 'You win or you die',
+      genres: [],
+      rating: 8.4,
+      voteCount: 20000,
+      popularity: 100.0,
+      status: ShowStatus.ended,
+      networks: ['HBO'],
+      firstAirDate: null,
+      lastAirDate: null,
+      episodeRuntime: 60,
+      seasons: [],
+      cast: [],
+      originalLanguage: 'en',
+      originCountries: ['US'],
+    );
+
+    const show2 = ShowDetails(
+      id: 1396,
+      name: 'Breaking Bad',
+      overview: 'Chemistry teacher',
+      tagline: 'Change the equation',
+      genres: [],
+      rating: 8.9,
+      voteCount: 25000,
+      popularity: 120.0,
+      status: ShowStatus.ended,
+      networks: ['AMC'],
+      firstAirDate: null,
+      lastAirDate: null,
+      episodeRuntime: 47,
+      seasons: [],
+      cast: [],
+      originalLanguage: 'en',
+      originCountries: ['US'],
+    );
+
+    const show3 = ShowDetails(
+      id: 66732,
+      name: 'Stranger Things',
+      overview: 'Upside Down',
+      tagline: 'Every ending has a beginning',
+      genres: [],
+      rating: 8.6,
+      voteCount: 18000,
+      popularity: 95.0,
+      status: ShowStatus.returning,
+      networks: ['Netflix'],
+      firstAirDate: null,
+      lastAirDate: null,
+      episodeRuntime: 50,
+      seasons: [],
+      cast: [],
+      originalLanguage: 'en',
+      originCountries: ['US'],
+    );
+
+    test('UserProfileRepositoryImpl manages favorites and Top 5 slots', () async {
+      final trackingRepo = InMemoryTrackingRepository();
+      final settingsRepo = SettingsRepositoryImpl(trackingRepo);
+      final profileRepo = UserProfileRepositoryImpl(settingsRepo);
+
+      // Initially empty
+      var settings = await settingsRepo.getSettings();
+      expect(settings.favoritedShowIds, isEmpty);
+      expect(settings.favoriteShowIds, isEmpty);
+      expect(settings.topFiveFavorites, isEmpty);
+
+      // Toggle favorite
+      await profileRepo.toggleFavorite(show1);
+      settings = await settingsRepo.getSettings();
+      expect(settings.isFavorite(show1.id), isTrue);
+      expect(settings.favoritedShowIds.contains(show1.id), isTrue);
+
+      await profileRepo.toggleFavorite(show1);
+      settings = await settingsRepo.getSettings();
+      expect(settings.isFavorite(show1.id), isFalse);
+      expect(settings.favoritedShowIds, isEmpty);
+
+      // Set Top 5 slots
+      await profileRepo.setTopFiveSlot(0, show1);
+      await profileRepo.setTopFiveSlot(1, show2);
+      await profileRepo.setTopFiveSlot(2, show3);
+      settings = await settingsRepo.getSettings();
+      expect(settings.favoriteShowIds, [1399, 1396, 66732]);
+
+      // Reorder Top 5
+      await profileRepo.reorderTopFive(0, 2);
+      settings = await settingsRepo.getSettings();
+      expect(settings.favoriteShowIds, [1396, 66732, 1399]);
+
+      // Remove slot
+      await profileRepo.removeTopFiveSlot(1);
+      settings = await settingsRepo.getSettings();
+      expect(settings.favoriteShowIds, [1396, 1399]);
+    });
+
+    test('SettingsNotifier toggleFavorite and Top 5 slot methods work in Riverpod', () async {
+      final trackingRepo = InMemoryTrackingRepository();
+      final container = ProviderContainer(
+        overrides: [
+          trackingRepositoryProvider.overrideWithValue(trackingRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(settingsControllerProvider.notifier);
+
+      // Toggle favorite
+      final res1 = await notifier.toggleFavorite(show1);
+      expect(res1, isTrue);
+      expect(container.read(settingsControllerProvider).isFavorite(show1.id), isTrue);
+
+      final res2 = await notifier.toggleFavorite(show1);
+      expect(res2, isFalse);
+      expect(container.read(settingsControllerProvider).isFavorite(show1.id), isFalse);
+
+      // Set Top 5 slot
+      await notifier.setTopFiveSlot(0, show1);
+      await notifier.setTopFiveSlot(1, show2);
+      expect(container.read(settingsControllerProvider).favoriteShowIds, [1399, 1396]);
+
+      // Move show1 from slot 0 to slot 1 (replacement / move)
+      await notifier.setTopFiveSlot(1, show1);
+      expect(container.read(settingsControllerProvider).favoriteShowIds.contains(1399), isTrue);
+
+      // Remove slot
+      await notifier.removeTopFiveSlot(0);
+      expect(container.read(settingsControllerProvider).favoriteShowIds.length, lessThanOrEqualTo(1));
     });
   });
 }

@@ -1,14 +1,41 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/providers.dart';
+import '../../../shows/domain/entities/show.dart';
+import '../../../tracking/presentation/providers/tracking_providers.dart';
 import '../../data/repositories/settings_repository_impl.dart';
+import '../../data/repositories/user_profile_repository_impl.dart';
 import '../../domain/entities/user_settings.dart';
 import '../../domain/repositories/settings_repository.dart';
+import '../../domain/repositories/user_profile_repository.dart';
 
 /// Provider for the settings repository.
 final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
   final trackingRepo = ref.watch(trackingRepositoryProvider);
   return SettingsRepositoryImpl(trackingRepo);
+});
+
+/// Provider for the user profile repository (favorites and Top 5).
+final userProfileRepositoryProvider = Provider<UserProfileRepository>((ref) {
+  final settingsRepo = ref.watch(settingsRepositoryProvider);
+  return UserProfileRepositoryImpl(settingsRepo);
+});
+
+/// Loads the user's top 5 favorite shows with full details.
+final topFiveFavoritesProvider = FutureProvider<List<ShowDetails>>((ref) async {
+  final settings = ref.watch(settingsControllerProvider);
+  final ids = settings.favoriteShowIds;
+  if (ids.isEmpty) return const [];
+
+  final showRepo = ref.watch(showRepositoryProvider);
+  final results = <ShowDetails>[];
+  for (final id in ids) {
+    try {
+      final show = await showRepo.getShowDetails(id);
+      results.add(show);
+    } catch (_) {}
+  }
+  return results;
 });
 
 /// Riverpod controller that manages and persists app & user settings.
@@ -145,6 +172,68 @@ class SettingsNotifier extends Notifier<UserSettings> {
     await update((current) => current.copyWith(favoriteShowIds: showIds));
   }
 
+  /// Toggles whether [series] is marked as a favorite.
+  /// Also updates tracking storage offline SQLite data.
+  Future<bool> toggleFavorite(SeriesModel series) async {
+    final list = List<int>.from(state.favoritedShowIds);
+    final isFav = list.contains(series.id);
+    final nextFav = !isFav;
+    if (nextFav) {
+      if (!list.contains(series.id)) {
+        list.add(series.id);
+      }
+    } else {
+      list.remove(series.id);
+    }
+    await update((current) => current.copyWith(favoritedShowIds: list));
+
+    try {
+      final tracking = ref.read(trackingControllerProvider.notifier);
+      await tracking.setIsFavorite(series, nextFav);
+    } catch (_) {}
+
+    return nextFav;
+  }
+
+  /// Sets [series] (or showId) into a specific slot [index] (0 to 4) of the Top 5.
+  /// If the series was already in another slot, it is moved to [index].
+  Future<void> setTopFiveSlot(int index, dynamic series) async {
+    if (index < 0 || index >= 5) return;
+    final int showId = series is int
+        ? series
+        : (series is ShowSummary ? series.id : (series as ShowDetails).id);
+    final list = List<int>.from(state.favoriteShowIds);
+    list.remove(showId);
+    if (index < list.length) {
+      list[index] = showId;
+    } else {
+      list.add(showId);
+    }
+    final clamped = list.length > 5 ? list.sublist(0, 5) : list;
+    await setFavoriteShows(clamped);
+  }
+
+  /// Removes the series located at Top 5 slot [index].
+  Future<void> removeTopFiveSlot(int index) async {
+    final list = List<int>.from(state.favoriteShowIds);
+    if (index >= 0 && index < list.length) {
+      list.removeAt(index);
+      await setFavoriteShows(list);
+    }
+  }
+
+  /// Reorders the Top 5 from [oldIndex] to [newIndex].
+  Future<void> reorderTopFive(int oldIndex, int newIndex) async {
+    final list = List<int>.from(state.favoriteShowIds);
+    if (oldIndex >= 0 && oldIndex < list.length) {
+      final item = list.removeAt(oldIndex);
+      final targetIndex = newIndex.clamp(0, list.length);
+      list.insert(targetIndex, item);
+      final clamped = list.length > 5 ? list.sublist(0, 5) : list;
+      await setFavoriteShows(clamped);
+    }
+  }
+
   Future<void> addFavoriteShow(int showId) async {
     final list = List<int>.from(state.favoriteShowIds);
     if (!list.contains(showId) && list.length < 5) {
@@ -159,13 +248,7 @@ class SettingsNotifier extends Notifier<UserSettings> {
   }
 
   Future<void> reorderFavoriteShows(int oldIndex, int newIndex) async {
-    final list = List<int>.from(state.favoriteShowIds);
-    if (oldIndex < list.length && newIndex <= list.length) {
-      final item = list.removeAt(oldIndex);
-      final insertIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
-      list.insert(insertIndex, item);
-      await setFavoriteShows(list);
-    }
+    await reorderTopFive(oldIndex, newIndex);
   }
 
   Future<void> recordRating(double newScore, {double? oldScore}) async {

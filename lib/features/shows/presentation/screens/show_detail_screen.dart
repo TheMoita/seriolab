@@ -80,6 +80,11 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
           expandedHeight: 280,
           pinned: true,
           backgroundColor: AppColors.background,
+          actions: [
+            _FavoriteHeartButton(show: show),
+            _ShowDetailOptionsMenu(show: show),
+            const SizedBox(width: 8),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             background: Stack(
               fit: StackFit.expand,
@@ -1509,3 +1514,382 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
     }
   }
 }
+
+/// Animated heart icon button for marking series as favorite.
+class _FavoriteHeartButton extends ConsumerStatefulWidget {
+  const _FavoriteHeartButton({required this.show});
+
+  final ShowDetails show;
+
+  @override
+  ConsumerState<_FavoriteHeartButton> createState() =>
+      _FavoriteHeartButtonState();
+}
+
+class _FavoriteHeartButtonState extends ConsumerState<_FavoriteHeartButton> {
+  double _scale = 1.0;
+
+  void _triggerBounce() {
+    setState(() => _scale = 1.35);
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (mounted) setState(() => _scale = 1.0);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = ref.watch(settingsControllerProvider);
+    final tracking = ref.watch(trackingControllerProvider).value;
+    final tracked = tracking?.show(widget.show.id);
+    final isFavorite =
+        settings.isFavorite(widget.show.id) || (tracked?.isFavorite ?? false);
+
+    return AnimatedScale(
+      scale: _scale,
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOutBack,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.45),
+          shape: BoxShape.circle,
+        ),
+        child: IconButton(
+          icon: Icon(
+            isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+            color: isFavorite ? const Color(0xFFEF4444) : Colors.white,
+            size: 22,
+          ),
+          tooltip:
+              isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos',
+          onPressed: () async {
+            _triggerBounce();
+            final nowFav = await ref
+                .read(settingsControllerProvider.notifier)
+                .toggleFavorite(widget.show);
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  nowFav
+                      ? 'Adicionaste "${widget.show.title}" às favoritas ❤️'
+                      : 'Removeste "${widget.show.title}" das favoritas.',
+                ),
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Options menu on top bar providing Top 5 selection.
+class _ShowDetailOptionsMenu extends ConsumerWidget {
+  const _ShowDetailOptionsMenu({required this.show});
+
+  final ShowDetails show;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsControllerProvider);
+    final isInTopFive = settings.favoriteShowIds.contains(show.id);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.45),
+        shape: BoxShape.circle,
+      ),
+      child: PopupMenuButton<String>(
+        icon:
+            const Icon(Icons.more_vert_rounded, color: Colors.white, size: 22),
+        color: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: AppColors.outline),
+        ),
+        onSelected: (value) {
+          if (value == 'top5') {
+            _showTopFiveSlotPicker(context, ref, show);
+          }
+        },
+        itemBuilder: (context) => [
+          PopupMenuItem<String>(
+            value: 'top5',
+            child: Row(
+              children: [
+                Icon(
+                  isInTopFive ? Icons.star_rounded : Icons.star_border_rounded,
+                  color: AppColors.secondary,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  isInTopFive ? 'Gerir no Top 5' : 'Adicionar ao Top 5',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Modal bottom sheet allowing selection of a Top 5 slot (1 to 5).
+void _showTopFiveSlotPicker(
+  BuildContext context,
+  WidgetRef ref,
+  ShowDetails show,
+) {
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: AppColors.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (modalCtx) {
+      return Consumer(
+        builder: (ctx, ref, _) {
+          final settings = ref.watch(settingsControllerProvider);
+          final favoriteIds = settings.favoriteShowIds;
+          final currentSlotIndex = favoriteIds.indexOf(show.id);
+
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.outline,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Selecionar Posição no Top 5',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            currentSlotIndex != -1
+                                ? 'Atualmente na posição #${currentSlotIndex + 1}'
+                                : 'Escolhe em que posição colocar esta série',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(modalCtx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // 5 Slots List
+                  Column(
+                    children: List.generate(5, (index) {
+                      final isOccupied = index < favoriteIds.length;
+                      final occupiedId = isOccupied ? favoriteIds[index] : null;
+                      final isCurrentShow = occupiedId == show.id;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () async {
+                            Navigator.pop(modalCtx);
+                            await ref
+                                .read(settingsControllerProvider.notifier)
+                                .setTopFiveSlot(index, show);
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Série "${show.title}" colocada na posição #${index + 1} do Top 5.',
+                                ),
+                                duration: const Duration(seconds: 2),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isCurrentShow
+                                  ? AppColors.primary.withValues(alpha: 0.15)
+                                  : AppColors.surfaceHigh,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isCurrentShow
+                                    ? AppColors.primary
+                                    : AppColors.outline,
+                                width: isCurrentShow ? 1.5 : 0.8,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isCurrentShow
+                                        ? AppColors.primary
+                                        : AppColors.surface,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    '#${index + 1}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                      color: isCurrentShow
+                                          ? Colors.white
+                                          : AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: isOccupied
+                                      ? (isCurrentShow
+                                          ? Text(
+                                              '${show.title} (Posição Atual)',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.primary,
+                                              ),
+                                            )
+                                          : _OccupiedSlotTitle(
+                                              showId: occupiedId!,
+                                            ))
+                                      : const Text(
+                                          'Slot Vazio (+)',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textMuted,
+                                          ),
+                                        ),
+                                ),
+                                if (isCurrentShow)
+                                  TextButton(
+                                    onPressed: () async {
+                                      Navigator.pop(modalCtx);
+                                      await ref
+                                          .read(settingsControllerProvider
+                                              .notifier)
+                                          .removeTopFiveSlot(index);
+                                      if (!context.mounted) return;
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Removida do Top 5.'),
+                                          duration: Duration(seconds: 2),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    },
+                                    child: const Text(
+                                      'Remover',
+                                      style: TextStyle(
+                                        color: AppColors.danger,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  Text(
+                                    isOccupied ? 'Substituir' : 'Atribuir',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: isOccupied
+                                          ? AppColors.textSecondary
+                                          : AppColors.primary,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+class _OccupiedSlotTitle extends ConsumerWidget {
+  const _OccupiedSlotTitle({required this.showId});
+
+  final int showId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final showAsync = ref.watch(showDetailsProvider(showId));
+    return showAsync.when(
+      data: (s) => Text(
+        '${s.title} (Substituir)',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textSecondary,
+        ),
+      ),
+      loading: () => const Text(
+        'A carregar...',
+        style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+      ),
+      error: (_, _) => Text(
+        'Série #$showId',
+        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+      ),
+    );
+  }
+}
+

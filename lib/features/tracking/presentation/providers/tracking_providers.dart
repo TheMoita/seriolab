@@ -84,6 +84,7 @@ class TrackingController extends AsyncNotifier<TrackingState> {
       reviewText: existing?.reviewText ?? show.reviewText,
       hasSpoilers: existing?.hasSpoilers ?? show.hasSpoilers,
       loggedAt: existing?.loggedAt ?? show.loggedAt,
+      isFavorite: existing?.isFavorite ?? show.isFavorite,
     );
   }
 
@@ -266,6 +267,7 @@ class TrackingController extends AsyncNotifier<TrackingState> {
           reviewText: existing?.reviewText,
           hasSpoilers: existing?.hasSpoilers ?? false,
           loggedAt: existing?.loggedAt,
+          isFavorite: existing?.isFavorite ?? false,
         );
         await _repo.upsertShow(tracked);
         state = AsyncData(
@@ -286,6 +288,47 @@ class TrackingController extends AsyncNotifier<TrackingState> {
           shows: {...current.shows}..remove(showId),
           watched: {...current.watched}..remove(showId),
         ));
+      });
+
+  /// Sets or clears favorite flag in tracking storage.
+  Future<void> setIsFavorite(ShowDetails show, bool isFavorite) =>
+      _serial(() async {
+        final current = _current;
+        final existing = current.show(show.id);
+        final now = _now();
+        if (existing != null) {
+          final updated = existing.copyWith(
+            isFavorite: isFavorite,
+            updatedAt: now,
+          );
+          await _repo.upsertShow(updated);
+          state = AsyncData(current.copyWith(
+            shows: {...current.shows, show.id: updated},
+          ));
+        } else if (isFavorite) {
+          final tracked = _snapshot(show, TrackingStatus.watchlist).copyWith(
+            isFavorite: true,
+          );
+          await _repo.upsertShow(tracked);
+          state = AsyncData(current.copyWith(
+            shows: {...current.shows, show.id: tracked},
+          ));
+        }
+      });
+
+  /// Toggles favorite flag on this show in tracking storage.
+  Future<bool> toggleFavorite(ShowDetails show) => _serial(() async {
+        final current = _current;
+        final existing = current.show(show.id);
+        final nextVal = !(existing?.isFavorite ?? show.isFavorite);
+        final now = _now();
+        final tracked = (existing ?? _snapshot(show, TrackingStatus.watchlist))
+            .copyWith(isFavorite: nextVal, updatedAt: now);
+        await _repo.upsertShow(tracked);
+        state = AsyncData(current.copyWith(
+          shows: {...current.shows, show.id: tracked},
+        ));
+        return nextVal;
       });
 
   Future<void> toggleEpisode(ShowDetails show, Episode episode) =>
