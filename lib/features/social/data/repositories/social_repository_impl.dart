@@ -11,16 +11,18 @@ import '../../domain/repositories/social_repository.dart';
 /// with [SettingsRepository] and [TrackingRepository].
 class SocialRepositoryImpl implements SocialRepository {
   SocialRepositoryImpl({
-    required SettingsRepository settingsRepo,
-    required TrackingRepository trackingRepo,
-    AuthService? authService,
-  })  : _settingsRepo = settingsRepo,
-        _trackingRepo = trackingRepo,
-        _authService = authService;
+    required this.settingsRepo,
+    required this.trackingRepo,
+    this.authService,
+  });
 
-  final SettingsRepository _settingsRepo;
-  final TrackingRepository _trackingRepo;
-  final AuthService? _authService;
+  final SettingsRepository settingsRepo;
+  final TrackingRepository trackingRepo;
+  final AuthService? authService;
+
+  SettingsRepository get _settingsRepo => settingsRepo;
+  TrackingRepository get _trackingRepo => trackingRepo;
+  AuthService? get _authService => authService;
 
   static const _socialUsersMetaKey = 'seriolab_social_users_state';
   static const _currentUserId = 'me';

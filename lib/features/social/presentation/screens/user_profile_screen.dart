@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
-import '../../../settings/domain/entities/user_settings.dart';
 import '../../../settings/presentation/widgets/user_avatar_widget.dart';
 import '../../../shows/presentation/screens/show_detail_screen.dart';
 import '../../../tracking/presentation/widgets/top_favorites_section.dart';

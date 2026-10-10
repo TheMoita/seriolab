@@ -8,7 +8,6 @@ import 'package:series_app/features/settings/presentation/providers/settings_pro
 import 'package:series_app/features/shows/domain/entities/show.dart';
 import 'package:series_app/features/shows/presentation/providers/show_providers.dart';
 import 'package:series_app/features/social/data/repositories/social_repository_impl.dart';
-import 'package:series_app/features/social/domain/entities/user_profile.dart';
 import 'package:series_app/features/social/presentation/providers/social_providers.dart';
 import 'package:series_app/features/social/presentation/screens/user_profile_screen.dart';
 import 'package:series_app/features/social/presentation/widgets/follow_list_sheet.dart';
