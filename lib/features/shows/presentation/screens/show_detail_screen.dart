@@ -1150,19 +1150,31 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                     trailing: isCurrent
                         ? Icon(Icons.check_rounded, color: status.color)
                         : null,
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(modalCtx);
-                      ref
+                      final hadUnwatched = await ref
                           .read(trackingControllerProvider.notifier)
                           .setStatus(show, status);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Série marcada como "${status.label}"',
+                      if (!context.mounted) return;
+                      if (status == TrackingStatus.completed && hadUnwatched) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Marcaste a série como Terminada. Todos os episódios foram assinalados como vistos.',
+                            ),
+                            duration: Duration(seconds: 3),
                           ),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Série marcada como "${status.label}"',
+                            ),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
                     },
                   );
                 }),

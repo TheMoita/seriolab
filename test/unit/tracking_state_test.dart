@@ -1,6 +1,11 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:series_app/core/di/providers.dart';
+import 'package:series_app/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
+import 'package:series_app/features/shows/data/repositories/show_repository_impl.dart';
 import 'package:series_app/features/shows/domain/entities/episode.dart';
 import 'package:series_app/features/shows/domain/entities/show.dart';
+import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
 import 'package:series_app/features/tracking/domain/entities/tracking_entities.dart';
 import 'package:series_app/features/tracking/domain/entities/tracking_state.dart';
 import 'package:series_app/features/tracking/presentation/providers/tracking_providers.dart';
@@ -176,6 +181,102 @@ void main() {
       expect(show.reviewText, 'Uma obra-prima contemporânea.');
       expect(show.hasSpoilers, isFalse);
       expect(show.loggedAt, logDate);
+    });
+  });
+
+  group('TrackingController batch episode marking on completed status', () {
+    test('marking status as completed marks all episodes watched, updates stats and progress', () async {
+      final inMemoryRepo = InMemoryTrackingRepository();
+      final testRepo = ShowRepositoryImpl(
+        remote: MockShowRemoteDataSource(latency: Duration.zero),
+        isUsingMockData: true,
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          trackingRepositoryProvider.overrideWithValue(inMemoryRepo),
+          showRepositoryProvider.overrideWithValue(testRepo),
+          demoSeedingEnabledProvider.overrideWithValue(false),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      // Wait for trackingController to build
+      await container.read(trackingControllerProvider.future);
+
+      final notifier = container.read(trackingControllerProvider.notifier);
+      final showDetails = await testRepo.getShowDetails(1396); // Breaking Bad
+      expect(showDetails.totalEpisodeCount, greaterThan(0));
+
+      // Initially no episodes are watched
+      expect(container.read(trackingControllerProvider).value!.watchedFor(1396), isEmpty);
+      expect(container.read(trackingControllerProvider).value!.stats.episodesWatched, 0);
+
+      // 1. Mark as completed
+      final hadUnwatched = await notifier.setStatus(showDetails, TrackingStatus.completed);
+      expect(hadUnwatched, isTrue);
+
+      final stateAfter = container.read(trackingControllerProvider).value!;
+      final watchedEpisodes = stateAfter.watchedFor(1396);
+      expect(watchedEpisodes.length, showDetails.totalEpisodeCount);
+      expect(stateAfter.watchedRegularCount(1396), showDetails.totalEpisodeCount);
+      expect(stateAfter.progress(1396), 1.0);
+      expect(stateAfter.show(1396)?.status, TrackingStatus.completed);
+
+      // Stats should reflect all watched episodes
+      final stats = stateAfter.stats;
+      expect(stats.episodesWatched, showDetails.totalEpisodeCount);
+      expect(stats.minutesWatched, greaterThan(0));
+      expect(stats.hoursWatched, greaterThan(0));
+
+      // 2. Marking as completed again returns false (all were already watched)
+      final hadUnwatchedSecond = await notifier.setStatus(showDetails, TrackingStatus.completed);
+      expect(hadUnwatchedSecond, isFalse);
+
+      // 3. Changing to watching keeps all episodes watched
+      await notifier.setStatus(showDetails, TrackingStatus.watching);
+      final stateWatching = container.read(trackingControllerProvider).value!;
+      expect(stateWatching.show(1396)?.status, TrackingStatus.watching);
+      expect(stateWatching.watchedFor(1396).length, showDetails.totalEpisodeCount);
+      expect(stateWatching.stats.episodesWatched, showDetails.totalEpisodeCount);
+
+      // 4. Changing to watchlist keeps all episodes watched
+      await notifier.setStatus(showDetails, TrackingStatus.watchlist);
+      final stateWatchlist = container.read(trackingControllerProvider).value!;
+      expect(stateWatchlist.show(1396)?.status, TrackingStatus.watchlist);
+      expect(stateWatchlist.watchedFor(1396).length, showDetails.totalEpisodeCount);
+    });
+
+    test('setSummaryStatus with completed marks all episodes watched', () async {
+      final inMemoryRepo = InMemoryTrackingRepository();
+      final testRepo = ShowRepositoryImpl(
+        remote: MockShowRemoteDataSource(latency: Duration.zero),
+        isUsingMockData: true,
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          trackingRepositoryProvider.overrideWithValue(inMemoryRepo),
+          showRepositoryProvider.overrideWithValue(testRepo),
+          demoSeedingEnabledProvider.overrideWithValue(false),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(trackingControllerProvider.future);
+      final notifier = container.read(trackingControllerProvider.notifier);
+
+      final showWithEpisodes = await testRepo.getShowWithEpisodes(95396); // Severance
+      final summary = showWithEpisodes.show.toSummary();
+
+      final hadUnwatched = await notifier.setSummaryStatus(summary, TrackingStatus.completed);
+      expect(hadUnwatched, isTrue);
+
+      final state = container.read(trackingControllerProvider).value!;
+      expect(state.watchedFor(95396).length, showWithEpisodes.episodes.length);
+      expect(state.watchedRegularCount(95396), showWithEpisodes.episodes.length);
+      expect(state.progress(95396), 1.0);
+      expect(state.show(95396)?.status, TrackingStatus.completed);
     });
   });
 }

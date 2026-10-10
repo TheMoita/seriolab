@@ -88,39 +88,194 @@ class TrackingController extends AsyncNotifier<TrackingState> {
   }
 
   /// Adds the show to a list, or moves it between lists.
-  Future<void> setStatus(ShowDetails show, TrackingStatus status) =>
+  ///
+  /// When marked as [TrackingStatus.completed], all episodes across all seasons
+  /// of the show are automatically marked as watched in batch.
+  /// Returns `true` if there were previously unwatched episodes.
+  Future<bool> setStatus(ShowDetails show, TrackingStatus status) =>
       _serial(() async {
         final current = _current;
-        final tracked =
-            _snapshot(show, status, existing: current.show(show.id));
-        await _repo.upsertShow(tracked);
-        state = AsyncData(
-          current.copyWith(shows: {...current.shows, show.id: tracked}),
+        final now = _now();
+        var hadUnwatched = false;
+        var watchedMap = current.watchedFor(show.id);
+
+        if (status == TrackingStatus.completed) {
+          List<Episode> episodes = const [];
+          try {
+            final showWithEpisodes =
+                await ref.read(showRepositoryProvider).getShowWithEpisodes(show.id);
+            episodes = showWithEpisodes.episodes;
+          } catch (e) {
+            debugPrint('Failed to load show episodes for completed status: $e');
+          }
+
+          final items = <WatchedEpisode>[];
+          final newWatchedMap = {...watchedMap};
+
+          if (episodes.isNotEmpty) {
+            for (final e in episodes) {
+              final existing = watchedMap[e.key];
+              if (existing == null) {
+                hadUnwatched = true;
+              }
+              final updated = WatchedEpisode(
+                showId: show.id,
+                key: e.key,
+                runtime: existing?.runtime ??
+                    ((e.runtime != null && e.runtime! > 0)
+                        ? e.runtime!
+                        : (show.episodeRuntime > 0 ? show.episodeRuntime : 45)),
+                watchedAt: existing?.watchedAt ?? now,
+                userRating: existing?.userRating,
+                reviewText: existing?.reviewText,
+                hasSpoilers: existing?.hasSpoilers ?? false,
+                loggedAt: existing?.loggedAt,
+              );
+              items.add(updated);
+              newWatchedMap[e.key] = updated;
+            }
+          } else if (show.regularSeasons.isNotEmpty) {
+            for (final s in show.regularSeasons) {
+              for (var i = 1; i <= s.episodeCount; i++) {
+                final key = EpisodeKey(s.seasonNumber, i);
+                final existing = watchedMap[key];
+                if (existing == null) {
+                  hadUnwatched = true;
+                }
+                final updated = WatchedEpisode(
+                  showId: show.id,
+                  key: key,
+                  runtime: existing?.runtime ??
+                      (show.episodeRuntime > 0 ? show.episodeRuntime : 45),
+                  watchedAt: existing?.watchedAt ?? now,
+                  userRating: existing?.userRating,
+                  reviewText: existing?.reviewText,
+                  hasSpoilers: existing?.hasSpoilers ?? false,
+                  loggedAt: existing?.loggedAt,
+                );
+                items.add(updated);
+                newWatchedMap[key] = updated;
+              }
+            }
+          }
+
+          if (items.isNotEmpty) {
+            await _repo.markWatched(items);
+            watchedMap = newWatchedMap;
+          }
+        }
+
+        final existing = current.show(show.id);
+        final effectiveAiredCount = (status == TrackingStatus.completed &&
+                show.totalEpisodeCount > 0)
+            ? show.totalEpisodeCount
+            : (existing?.airedEpisodeCount ?? show.airedEpisodeCount);
+
+        final tracked = _snapshot(show, status, existing: existing).copyWith(
+          airedEpisodeCount: effectiveAiredCount,
         );
+        await _repo.upsertShow(tracked);
+
+        state = AsyncData(
+          current.copyWith(
+            shows: {...current.shows, show.id: tracked},
+            watched: {...current.watched, show.id: watchedMap},
+          ),
+        );
+
+        return hadUnwatched;
       });
 
   /// Quick status change from a summary card without waiting for full details.
-  Future<void> setSummaryStatus(ShowSummary show, TrackingStatus status) =>
+  ///
+  /// When marked as [TrackingStatus.completed], all episodes across all seasons
+  /// of the show are automatically marked as watched in batch.
+  /// Returns `true` if there were previously unwatched episodes.
+  Future<bool> setSummaryStatus(ShowSummary show, TrackingStatus status) =>
       _serial(() async {
         final current = _current;
         final existing = current.show(show.id);
         final now = _now();
+        var hadUnwatched = false;
+        var watchedMap = current.watchedFor(show.id);
+
+        ShowDetails? details;
+        if (status == TrackingStatus.completed) {
+          try {
+            final showWithEpisodes =
+                await ref.read(showRepositoryProvider).getShowWithEpisodes(show.id);
+            details = showWithEpisodes.show;
+            final episodes = showWithEpisodes.episodes;
+
+            final items = <WatchedEpisode>[];
+            final newWatchedMap = {...watchedMap};
+
+            for (final e in episodes) {
+              final existingWatched = watchedMap[e.key];
+              if (existingWatched == null) {
+                hadUnwatched = true;
+              }
+              final updated = WatchedEpisode(
+                showId: show.id,
+                key: e.key,
+                runtime: existingWatched?.runtime ??
+                    ((e.runtime != null && e.runtime! > 0)
+                        ? e.runtime!
+                        : (details.episodeRuntime > 0
+                            ? details.episodeRuntime
+                            : (existing?.episodeRuntime ?? 45))),
+                watchedAt: existingWatched?.watchedAt ?? now,
+                userRating: existingWatched?.userRating,
+                reviewText: existingWatched?.reviewText,
+                hasSpoilers: existingWatched?.hasSpoilers ?? false,
+                loggedAt: existingWatched?.loggedAt,
+              );
+              items.add(updated);
+              newWatchedMap[e.key] = updated;
+            }
+
+            if (items.isNotEmpty) {
+              await _repo.markWatched(items);
+              watchedMap = newWatchedMap;
+            }
+          } catch (e) {
+            debugPrint(
+                'Failed to load show episodes for summary completed status: $e');
+          }
+        }
+
         final tracked = TrackedShow(
           showId: show.id,
           name: show.name,
           posterUrl: show.posterUrl,
           status: status,
-          airedEpisodeCount: existing?.airedEpisodeCount ?? 0,
-          episodeRuntime: existing?.episodeRuntime ?? 45,
-          showStatus: existing?.showStatus ?? ShowStatus.returning,
-          network: existing?.network,
+          airedEpisodeCount: (status == TrackingStatus.completed &&
+                  details != null &&
+                  details.totalEpisodeCount > 0)
+              ? details.totalEpisodeCount
+              : (details?.airedEpisodeCount ??
+                  (existing?.airedEpisodeCount ?? 0)),
+          episodeRuntime:
+              details?.episodeRuntime ?? (existing?.episodeRuntime ?? 45),
+          showStatus: details?.status ??
+              (existing?.showStatus ?? ShowStatus.returning),
+          network: details?.primaryNetwork ?? existing?.network,
           addedAt: existing?.addedAt ?? now,
           updatedAt: now,
+          overallUserRating: existing?.overallUserRating,
+          reviewText: existing?.reviewText,
+          hasSpoilers: existing?.hasSpoilers ?? false,
+          loggedAt: existing?.loggedAt,
         );
         await _repo.upsertShow(tracked);
         state = AsyncData(
-          current.copyWith(shows: {...current.shows, show.id: tracked}),
+          current.copyWith(
+            shows: {...current.shows, show.id: tracked},
+            watched: {...current.watched, show.id: watchedMap},
+          ),
         );
+
+        return hadUnwatched;
       });
 
   /// Stops tracking the show and erases its watched history.

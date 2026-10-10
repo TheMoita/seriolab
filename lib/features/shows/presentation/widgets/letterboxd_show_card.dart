@@ -143,17 +143,30 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                     trailing: current?.status == status
                         ? Icon(Icons.check_rounded, color: status.color, size: 20)
                         : null,
-                    onTap: () {
+                    onTap: () async {
                       Navigator.of(ctx).pop();
-                      tracking.setSummaryStatus(widget.show, status);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '$displayTitle marcada como "${status.label}"',
+                      final hadUnwatched =
+                          await tracking.setSummaryStatus(widget.show, status);
+                      if (!context.mounted) return;
+                      if (status == TrackingStatus.completed && hadUnwatched) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Marcaste a série como Terminada. Todos os episódios foram assinalados como vistos.',
+                            ),
+                            duration: Duration(seconds: 3),
                           ),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '$displayTitle marcada como "${status.label}"',
+                            ),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
                     },
                   ),
                 if (current != null) ...[
