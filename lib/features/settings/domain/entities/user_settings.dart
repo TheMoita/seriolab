@@ -149,6 +149,8 @@ class UserSettings {
     this.showOriginalTitles = false,
     this.favoriteShowIds = const [],
     this.favoritedShowIds = const [],
+    this.following = const [],
+    this.followers = const [],
     this.ratingDistribution = defaultRatingDistribution,
   });
 
@@ -167,6 +169,14 @@ class UserSettings {
       (profileBannerPath != null && profileBannerPath!.trim().isNotEmpty);
 
   String get effectiveAvatarValue => avatarValue ?? avatarId;
+
+  // Social Connections & Counters
+  final List<String> following;
+  final List<String> followers;
+
+  int get followingCount => following.length;
+  int get followersCount => followers.length;
+  bool isFollowing(String userId) => following.contains(userId);
 
   // Content & Language
   final String language; // 'pt-PT', 'pt-BR', 'en-US', 'es-ES' or 'pt', 'en', 'es'
@@ -267,6 +277,8 @@ class UserSettings {
     reminderMinute: 0,
     favoriteShowIds: [],
     favoritedShowIds: [],
+    following: [],
+    followers: [],
     ratingDistribution: defaultRatingDistribution,
   );
 
@@ -292,6 +304,8 @@ class UserSettings {
     int? reminderMinute,
     List<int>? favoriteShowIds,
     List<int>? favoritedShowIds,
+    List<String>? following,
+    List<String>? followers,
     Map<String, int>? ratingDistribution,
   }) {
     return UserSettings(
@@ -319,6 +333,8 @@ class UserSettings {
       reminderMinute: reminderMinute ?? this.reminderMinute,
       favoriteShowIds: favoriteShowIds ?? this.favoriteShowIds,
       favoritedShowIds: favoritedShowIds ?? this.favoritedShowIds,
+      following: following ?? this.following,
+      followers: followers ?? this.followers,
       ratingDistribution: ratingDistribution ?? this.ratingDistribution,
     );
   }
@@ -343,6 +359,8 @@ class UserSettings {
       'reminderMinute': reminderMinute,
       'favoriteShowIds': favoriteShowIds,
       'favoritedShowIds': favoritedShowIds,
+      'following': following,
+      'followers': followers,
       'ratingDistribution': ratingDistribution,
     };
   }
@@ -353,6 +371,13 @@ class UserSettings {
         return raw.whereType<num>().map((e) => e.toInt()).toList();
       }
       return defaultSettings.favoriteShowIds;
+    }
+
+    List<String> parseStringList(dynamic raw) {
+      if (raw is List) {
+        return raw.map((e) => e.toString()).toList();
+      }
+      return const [];
     }
 
     Map<String, int> parseDistribution(dynamic raw) {
@@ -407,6 +432,8 @@ class UserSettings {
           json['reminderMinute'] as int? ?? defaultSettings.reminderMinute,
       favoriteShowIds: parseFavorites(json['favoriteShowIds'] ?? json['topFiveFavorites']),
       favoritedShowIds: parseFavorites(json['favoritedShowIds']),
+      following: parseStringList(json['following']),
+      followers: parseStringList(json['followers']),
       ratingDistribution: parseDistribution(json['ratingDistribution']),
     );
   }

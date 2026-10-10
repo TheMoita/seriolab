@@ -317,4 +317,28 @@ class SettingsNotifier extends Notifier<UserSettings> {
           ratingDistribution: UserSettings.defaultRatingDistribution,
         ));
   }
+
+  Future<void> followUser(String userId) async {
+    final list = List<String>.from(state.following);
+    if (!list.contains(userId)) {
+      list.add(userId);
+      await update((current) => current.copyWith(following: list));
+    }
+  }
+
+  Future<void> unfollowUser(String userId) async {
+    final list = List<String>.from(state.following);
+    if (list.contains(userId)) {
+      list.remove(userId);
+      await update((current) => current.copyWith(following: list));
+    }
+  }
+
+  Future<void> toggleFollowUser(String userId) async {
+    if (state.following.contains(userId)) {
+      await unfollowUser(userId);
+    } else {
+      await followUser(userId);
+    }
+  }
 }

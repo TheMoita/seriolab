@@ -13,12 +13,19 @@ import '../providers/tracking_providers.dart';
 /// Renders the user's top 5 favorite TV series in a sleek horizontal row
 /// with ranks (1 to 5), empty slot addition, and long-press management.
 class TopFavoritesSection extends ConsumerWidget {
-  const TopFavoritesSection({super.key});
+  const TopFavoritesSection({
+    super.key,
+    this.favoriteIds,
+    this.isEditable = true,
+  });
+
+  final List<int>? favoriteIds;
+  final bool isEditable;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsControllerProvider);
-    final favoriteIds = settings.favoriteShowIds;
+    final effectiveFavorites = favoriteIds ?? settings.favoriteShowIds;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -38,14 +45,15 @@ class TopFavoritesSection extends ConsumerWidget {
                   color: AppColors.textMuted,
                 ),
               ),
-              Text(
-                '${favoriteIds.length}/5 selecionadas',
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+              if (isEditable)
+                Text(
+                  '${effectiveFavorites.length}/5 selecionadas',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -61,8 +69,8 @@ class TopFavoritesSection extends ConsumerWidget {
 
               return Row(
                 children: List.generate(count, (index) {
-                  final hasShow = index < favoriteIds.length;
-                  final showId = hasShow ? favoriteIds[index] : null;
+                  final hasShow = index < effectiveFavorites.length;
+                  final showId = hasShow ? effectiveFavorites[index] : null;
 
                   return Padding(
                     padding: EdgeInsets.only(
@@ -73,19 +81,23 @@ class TopFavoritesSection extends ConsumerWidget {
                       height: cardHeight,
                       child: hasShow
                           ? _FavoriteSlotTile(
-                              rank: index + 1,
                               showId: showId!,
-                              onLongPress: () => _showManageFavoriteSheet(
-                                context,
-                                ref,
-                                showId,
-                                index,
-                              ),
+                              onLongPress: isEditable
+                                  ? () => _showManageFavoriteSheet(
+                                        context,
+                                        ref,
+                                        showId,
+                                        index,
+                                      )
+                                  : null,
                             )
                           : _EmptySlotTile(
-                              rank: index + 1,
-                              onTap: () =>
-                                  _openAddFavoriteSheet(context, targetSlot: index),
+                              onTap: isEditable
+                                  ? () => _openAddFavoriteSheet(
+                                        context,
+                                        targetSlot: index,
+                                      )
+                                  : null,
                             ),
                     ),
                   );
@@ -93,12 +105,14 @@ class TopFavoritesSection extends ConsumerWidget {
               );
             },
           ),
-          if (favoriteIds.isEmpty) ...[
+          if (effectiveFavorites.isEmpty) ...[
             const SizedBox(height: 10),
-            const Center(
+            Center(
               child: Text(
-                'Ainda não selecionaste as tuas séries favoritas',
-                style: TextStyle(
+                isEditable
+                    ? 'Ainda não selecionaste as tuas séries favoritas'
+                    : 'Ainda não selecionou séries favoritas',
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textMuted,
@@ -353,21 +367,19 @@ class TopFavoritesSection extends ConsumerWidget {
 
 class _FavoriteSlotTile extends ConsumerWidget {
   const _FavoriteSlotTile({
-    required this.rank,
     required this.showId,
-    required this.onLongPress,
+    this.onLongPress,
   });
 
-  final int rank;
   final int showId;
-  final VoidCallback onLongPress;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final showAsync = ref.watch(showDetailsProvider(showId));
 
     return InkWell(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(8),
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute<void>(
@@ -389,12 +401,12 @@ class _FavoriteSlotTile extends ConsumerWidget {
                 ),
               ),
               fit: BoxFit.cover,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
             ),
             loading: () => Container(
               decoration: BoxDecoration(
                 color: AppColors.surfaceHigh,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: const Center(
                 child: SizedBox(
@@ -410,7 +422,7 @@ class _FavoriteSlotTile extends ConsumerWidget {
             error: (_, _) => Container(
               decoration: BoxDecoration(
                 color: AppColors.surfaceHigh,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: const Center(
                 child: Icon(Icons.tv_rounded, color: AppColors.textMuted),
@@ -420,34 +432,10 @@ class _FavoriteSlotTile extends ConsumerWidget {
           // Subtle border outline
           Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: AppColors.outline.withValues(alpha: 0.8),
-                width: 0.8,
-              ),
-            ),
-          ),
-          // Discreet Rank Badge in Top-Left Corner
-          Positioned(
-            top: 4,
-            left: 4,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.75),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.8),
-                  width: 0.8,
-                ),
-              ),
-              child: Text(
-                '$rank',
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                ),
+                color: const Color(0xFF232938),
+                width: 1.0,
               ),
             ),
           ),
@@ -459,56 +447,38 @@ class _FavoriteSlotTile extends ConsumerWidget {
 
 class _EmptySlotTile extends StatelessWidget {
   const _EmptySlotTile({
-    required this.rank,
-    required this.onTap,
+    this.onTap,
   });
 
-  final int rank;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(8),
       onTap: onTap,
-      child: CustomPaint(
-        painter: _DashedRRectPainter(
-          color: AppColors.outline,
-          strokeWidth: 1.2,
-          radius: 10,
-          dashPattern: const [4, 4],
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(10),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: const Color(0xFF232938),
+            width: 1.2,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                ),
-                child: const Icon(
-                  Icons.add_rounded,
-                  color: AppColors.primary,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '#$rank',
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textMuted,
-                ),
-              ),
-            ],
+        ),
+        child: Center(
+          child: Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.surfaceHigh.withValues(alpha: 0.6),
+            ),
+            child: const Icon(
+              Icons.add_rounded,
+              color: AppColors.textMuted,
+              size: 18,
+            ),
           ),
         ),
       ),
