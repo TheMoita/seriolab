@@ -101,11 +101,35 @@ class SettingsNotifier extends Notifier<UserSettings> {
     }
   }
 
+  Future<void> syncFromRemote(UserSettings remote) async {
+    _initialized = true;
+    state = remote;
+    await _repo.saveSettings(remote);
+  }
+
+  Future<void> syncFavoritesFromRemote(
+    List<int> topFive,
+    List<int> allFavorites,
+  ) async {
+    _initialized = true;
+    final updated = state.copyWith(
+      favoriteShowIds: topFive,
+      favoritedShowIds: allFavorites,
+    );
+    state = updated;
+    await _repo.saveSettings(updated);
+  }
+
   Future<void> update(UserSettings Function(UserSettings current) updater) async {
     _initialized = true;
     final updated = updater(state);
     state = updated;
     await _repo.saveSettings(updated);
+    try {
+      final sync = ref.read(firestoreSyncServiceProvider);
+      sync.syncUserProfile(updated);
+      sync.syncFavorites(updated);
+    } catch (_) {}
   }
 
   Future<void> updateProfile({

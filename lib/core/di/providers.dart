@@ -7,6 +7,7 @@ import '../../features/shows/data/datasources/tmdb_api_client.dart';
 import '../../features/shows/data/datasources/tmdb_remote_data_source.dart';
 import '../../features/shows/data/repositories/show_repository_impl.dart';
 import '../../features/shows/domain/repositories/show_repository.dart';
+import '../../features/tracking/data/services/firestore_sync_service.dart';
 import '../../features/tracking/data/repositories/in_memory_tracking_repository.dart';
 import '../../features/tracking/domain/repositories/tracking_repository.dart';
 import '../config/app_config.dart';
@@ -73,6 +74,16 @@ final showRepositoryProvider = Provider<ShowRepository>((ref) {
 /// implementation; defaults to in-memory (tests / fallback).
 final trackingRepositoryProvider =
     Provider<TrackingRepository>((ref) => InMemoryTrackingRepository());
+
+/// Firestore cloud sync service ensuring persistent cross-session & cross-install state.
+final firestoreSyncServiceProvider = Provider<FirestoreSyncService>((ref) {
+  final trackingRepo = ref.watch(trackingRepositoryProvider);
+  final settingsRepo = ref.watch(settingsRepositoryProvider);
+  return FirestoreSyncService(
+    trackingRepo: trackingRepo,
+    settingsRepo: settingsRepo,
+  );
+});
 
 /// Whether to pre-populate a demo profile on first launch.
 final demoSeedingEnabledProvider = Provider<bool>(

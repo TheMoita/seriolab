@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/providers.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
+import '../../../tracking/presentation/providers/tracking_providers.dart';
 import '../../data/services/firebase_auth_service.dart';
 import '../../data/services/local_auth_service.dart';
 import '../../domain/auth_exception.dart';
@@ -79,6 +81,8 @@ class AuthController extends Notifier<AuthState> {
         state = state.copyWith(user: user, clearUser: user == null);
         if (user != null) {
           _syncUserToProfile(user);
+        } else {
+          _stopFirestoreSync();
         }
       }
     });
@@ -88,6 +92,11 @@ class AuthController extends Notifier<AuthState> {
     });
 
     final initialUser = service.currentUser;
+    if (initialUser != null) {
+      Future.microtask(() {
+        _triggerFirestoreSync(initialUser.uid);
+      });
+    }
     return AuthState(user: initialUser);
   }
 
@@ -185,6 +194,7 @@ class AuthController extends Notifier<AuthState> {
   Future<void> signOut() async {
     state = state.copyWith(isLoading: true);
     try {
+      _stopFirestoreSync();
       await _service.signOut();
     } finally {
       state = const AuthState(
@@ -211,6 +221,28 @@ class AuthController extends Notifier<AuthState> {
         bio: current.bio,
         avatarId: current.avatarId,
       );
+    } catch (_) {}
+    _triggerFirestoreSync(user.uid);
+  }
+
+  void _triggerFirestoreSync(String uid) {
+    try {
+      final syncService = ref.read(firestoreSyncServiceProvider);
+      final trackingController = ref.read(trackingControllerProvider.notifier);
+      final settingsNotifier = ref.read(settingsControllerProvider.notifier);
+      syncService.syncUser(
+        uid,
+        trackingController: trackingController,
+        settingsNotifier: settingsNotifier,
+      );
+    } catch (e) {
+      debugPrint('AuthController: Firestore sync trigger note: $e');
+    }
+  }
+
+  void _stopFirestoreSync() {
+    try {
+      ref.read(firestoreSyncServiceProvider).stopSync();
     } catch (_) {}
   }
 }

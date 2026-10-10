@@ -8,6 +8,7 @@ import '../../../shows/domain/entities/episode.dart';
 import '../../../shows/domain/entities/show.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../data/demo_data_seeder.dart';
+import '../../data/services/firestore_sync_service.dart';
 import '../../domain/entities/tracking_entities.dart';
 import '../../domain/entities/tracking_state.dart';
 import '../../domain/repositories/tracking_repository.dart';
@@ -38,6 +39,11 @@ class TrackingController extends AsyncNotifier<TrackingState> {
   TrackingRepository get _repo => ref.read(trackingRepositoryProvider);
   DateTime _now() => ref.read(clockProvider)();
   TrackingState get _current => state.value ?? TrackingState.empty;
+  FirestoreSyncService get _sync => ref.read(firestoreSyncServiceProvider);
+
+  void syncFromRemote(TrackingSnapshot snapshot) {
+    state = AsyncData(TrackingState.fromSnapshot(snapshot));
+  }
 
   @override
   Future<TrackingState> build() async {
@@ -184,6 +190,11 @@ class TrackingController extends AsyncNotifier<TrackingState> {
           ),
         );
 
+        _sync.syncTrackedShow(
+          tracked,
+          watchedEpisodes: watchedMap.values.toList(),
+        );
+
         return hadUnwatched;
       });
 
@@ -277,6 +288,11 @@ class TrackingController extends AsyncNotifier<TrackingState> {
           ),
         );
 
+        _sync.syncTrackedShow(
+          tracked,
+          watchedEpisodes: watchedMap.values.toList(),
+        );
+
         return hadUnwatched;
       });
 
@@ -290,6 +306,7 @@ class TrackingController extends AsyncNotifier<TrackingState> {
           shows: {...current.shows}..remove(showId),
           watched: {...current.watched}..remove(showId),
         ));
+        _sync.deleteTrackedShow(showId);
         if (prevRating != null) {
           final oldHistogramScore = prevRating.clamp(0.5, 10.0);
           await ref
@@ -313,6 +330,10 @@ class TrackingController extends AsyncNotifier<TrackingState> {
           state = AsyncData(current.copyWith(
             shows: {...current.shows, show.id: updated},
           ));
+          _sync.syncTrackedShow(
+            updated,
+            watchedEpisodes: current.watchedFor(show.id).values.toList(),
+          );
         } else if (isFavorite) {
           final tracked = _snapshot(show, TrackingStatus.watchlist).copyWith(
             isFavorite: true,
@@ -321,6 +342,10 @@ class TrackingController extends AsyncNotifier<TrackingState> {
           state = AsyncData(current.copyWith(
             shows: {...current.shows, show.id: tracked},
           ));
+          _sync.syncTrackedShow(
+            tracked,
+            watchedEpisodes: current.watchedFor(show.id).values.toList(),
+          );
         }
       });
 
@@ -336,6 +361,10 @@ class TrackingController extends AsyncNotifier<TrackingState> {
         state = AsyncData(current.copyWith(
           shows: {...current.shows, show.id: tracked},
         ));
+        _sync.syncTrackedShow(
+          tracked,
+          watchedEpisodes: current.watchedFor(show.id).values.toList(),
+        );
         return nextVal;
       });
 
@@ -400,6 +429,11 @@ class TrackingController extends AsyncNotifier<TrackingState> {
           shows: {...current.shows, show.id: tracked},
           watched: {...current.watched, show.id: watchedMap},
         ));
+
+        _sync.syncTrackedShow(
+          tracked,
+          watchedEpisodes: watchedMap.values.toList(),
+        );
       });
 
   /// Sets or removes an episode rating, review, and log metadata.
@@ -451,6 +485,11 @@ class TrackingController extends AsyncNotifier<TrackingState> {
             watched: {...current.watched, show.id: watchedMap},
           ));
 
+          _sync.syncTrackedShow(
+            tracked,
+            watchedEpisodes: watchedMap.values.toList(),
+          );
+
           if (rating != null) {
             final newHistogramScore = rating.clamp(0.5, 10.0);
             final oldHistogramScore = prevRating?.clamp(0.5, 10.0);
@@ -477,6 +516,14 @@ class TrackingController extends AsyncNotifier<TrackingState> {
             state = AsyncData(current.copyWith(
               watched: {...current.watched, show.id: watchedMap},
             ));
+
+            final existing = current.show(show.id);
+            if (existing != null) {
+              _sync.syncTrackedShow(
+                existing,
+                watchedEpisodes: watchedMap.values.toList(),
+              );
+            }
 
             if (prevRating != null) {
               final oldHistogramScore = prevRating.clamp(1.0, 10.0);
@@ -520,6 +567,11 @@ class TrackingController extends AsyncNotifier<TrackingState> {
             shows: {...current.shows, show.id: tracked},
           ));
 
+          _sync.syncTrackedShow(
+            tracked,
+            watchedEpisodes: current.watchedFor(show.id).values.toList(),
+          );
+
           if (rating != null) {
             final newHistogramScore = rating.clamp(0.5, 10.0);
             final oldHistogramScore = prevRating?.clamp(0.5, 10.0);
@@ -544,6 +596,11 @@ class TrackingController extends AsyncNotifier<TrackingState> {
             state = AsyncData(current.copyWith(
               shows: {...current.shows, show.id: tracked},
             ));
+
+            _sync.syncTrackedShow(
+              tracked,
+              watchedEpisodes: current.watchedFor(show.id).values.toList(),
+            );
 
             if (prevRating != null) {
               final oldHistogramScore = prevRating.clamp(1.0, 10.0);
