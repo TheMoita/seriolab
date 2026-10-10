@@ -7,6 +7,7 @@ import 'package:series_app/features/main/presentation/screens/main_screen.dart';
 import 'package:series_app/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
 import 'package:series_app/features/shows/data/repositories/show_repository_impl.dart';
 import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
+import 'package:series_app/features/shows/presentation/screens/show_detail_screen.dart';
 import 'package:series_app/main.dart';
 
 void main() {
@@ -242,5 +243,44 @@ void main() {
     expect(find.text('Média: —'), findsOneWidget);
     expect(find.text('(0)'), findsOneWidget);
     expect(find.text('Ainda não avaliaste nenhuma série'), findsOneWidget);
+  });
+
+  testWidgets(
+      'ShowDetailScreen rating cards render single star icon and clean typography',
+      (WidgetTester tester) async {
+    final inMemoryRepo = InMemoryTrackingRepository();
+    final testRepo = ShowRepositoryImpl(
+      remote: MockShowRemoteDataSource(latency: Duration.zero),
+      isUsingMockData: true,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          trackingRepositoryProvider.overrideWithValue(inMemoryRepo),
+          showRepositoryProvider.overrideWithValue(testRepo),
+        ],
+        child: const MaterialApp(
+          home: ShowDetailScreen(showId: 1396),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    // Verify Community Card
+    expect(find.text('COMUNIDADE'), findsOneWidget);
+    expect(find.byIcon(Icons.star_rounded), findsWidgets);
+    expect(find.text('8.9'), findsNWidgets(2)); // Backdrop pill and Community rating card
+
+    // Verify User Rating Card (unrated state)
+    expect(find.text('A TUA AVALIAÇÃO'), findsOneWidget);
+    expect(find.byIcon(Icons.star_border), findsOneWidget);
+    expect(find.text('Avaliar Série'), findsOneWidget);
+
+    // Verify that neither rating card contains a duplicate '★' text character
+    expect(find.text('8.9 ★'), findsNothing);
+    expect(find.text('★ Rate Show'), findsNothing);
   });
 }

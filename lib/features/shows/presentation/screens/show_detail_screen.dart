@@ -961,8 +961,8 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                           const SizedBox(width: 3),
                           Text(
                             episode.userRating != null
-                                ? '${episode.userRating!.toStringAsFixed(1)} ★'
-                                : '★ Registo',
+                                ? episode.userRating!.toStringAsFixed(1)
+                                : 'Registo',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
@@ -1009,7 +1009,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                           ),
                           SizedBox(width: 3),
                           Text(
-                            '★ Rate',
+                            'Avaliar',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -1279,12 +1279,12 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                         const Icon(
                           Icons.star_rounded,
                           size: 18,
-                          color: AppColors.secondary,
+                          color: Color(0xFF38BDF8),
                         ),
                         const SizedBox(width: 4),
                         Text(
                           show.rating > 0
-                              ? '${show.rating.toStringAsFixed(1)} ★'
+                              ? show.rating.toStringAsFixed(1)
                               : '—',
                           style: const TextStyle(
                             fontSize: 16,
@@ -1298,7 +1298,8 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                             '(${show.voteCount})',
                             style: const TextStyle(
                               fontSize: 11,
-                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textMuted,
                             ),
                           ),
                         ],
@@ -1327,7 +1328,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.0,
-                          color: Color(0xFF00E054),
+                          color: Color(0xFF38BDF8),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -1336,26 +1337,24 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                           Icon(
                             userRating != null
                                 ? Icons.star_rounded
-                                : Icons.star_outline_rounded,
+                                : Icons.star_border,
                             size: 18,
-                            color: userRating != null
-                                ? const Color(0xFF00E054)
-                                : AppColors.secondary,
+                            color: const Color(0xFF38BDF8),
                           ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               userRating != null
-                                  ? '${userRating.toStringAsFixed(1)} ★'
-                                  : '★ Rate Show',
+                                  ? userRating.toStringAsFixed(1)
+                                  : 'Avaliar Série',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: userRating != null ? 16 : 14,
                                 fontWeight: FontWeight.w800,
                                 color: userRating != null
-                                    ? const Color(0xFF00E054)
-                                    : AppColors.secondary,
+                                    ? AppColors.textPrimary
+                                    : const Color(0xFF38BDF8),
                               ),
                             ),
                           ),
