@@ -251,6 +251,52 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
       });
 
   @override
+  Future<EpisodeDetails> episode(
+    int showId,
+    int seasonNumber,
+    int episodeNumber, {
+    String? language,
+  }) =>
+      _respond(() {
+        final seed = _seed(showId);
+        final episodes = _episodesFor(seed, seasonNumber);
+        final ep = episodes.firstWhere(
+          (e) => e.episodeNumber == episodeNumber,
+          orElse: () => throw CatalogException(
+            'Episódio S${seasonNumber}E$episodeNumber não encontrado',
+            statusCode: 404,
+          ),
+        );
+        return EpisodeDetails(
+          episode: ep,
+          guestStars: const [
+            CastMember(
+              id: 991,
+              name: 'Participação Especial',
+              character: 'Personagem Convidado',
+            ),
+          ],
+          crew: [
+            CrewMember(
+              id: 992,
+              name: seed.networks.isNotEmpty
+                  ? seed.networks.first
+                  : 'Realizador Seriolab',
+              job: 'Director',
+              department: 'Directing',
+            ),
+            const CrewMember(
+              id: 993,
+              name: 'Argumentista Principal',
+              job: 'Writer',
+              department: 'Writing',
+            ),
+          ],
+          stillHighResUrl: seed.backdropUrl,
+        );
+      });
+
+  @override
   Future<List<String>> showBackdrops(int showId) => _respond(() {
         final seed = _seed(showId);
         final urls = <String>[];

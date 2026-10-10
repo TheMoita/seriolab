@@ -1,3 +1,4 @@
+import '../../domain/entities/episode.dart';
 import '../../domain/entities/genre.dart';
 import '../../domain/entities/show.dart';
 
@@ -15,6 +16,12 @@ abstract interface class ShowRemoteDataSource {
   Future<List<ShowSummary>> search(String query, {String? language});
   Future<ShowDetails> showDetails(int showId, {String? language});
   Future<SeasonDetails> season(int showId, int seasonNumber, {String? language});
+  Future<EpisodeDetails> episode(
+    int showId,
+    int seasonNumber,
+    int episodeNumber, {
+    String? language,
+  });
   Future<List<String>> showBackdrops(int showId);
 }
 

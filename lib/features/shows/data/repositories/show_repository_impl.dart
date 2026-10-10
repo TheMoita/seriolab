@@ -1,5 +1,6 @@
 import '../../../../core/config/app_config.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../domain/entities/episode.dart';
 import '../../domain/entities/genre.dart';
 import '../../domain/entities/show.dart';
 import '../../domain/repositories/show_repository.dart';
@@ -22,6 +23,7 @@ class ShowRepositoryImpl implements ShowRepository {
 
   final Map<int, Future<ShowDetails>> _details = {};
   final Map<(int, int), Future<SeasonDetails>> _seasons = {};
+  final Map<(int, int, int), Future<EpisodeDetails>> _episodes = {};
 
   /// Caches the in-flight future; evicts it on failure so retries work.
   Future<T> _cached<K, T>(
@@ -94,6 +96,20 @@ class ShowRepositoryImpl implements ShowRepository {
       );
 
   @override
+  Future<EpisodeDetails> getEpisodeDetails(
+    int showId,
+    int seasonNumber,
+    int episodeNumber, {
+    String? language,
+  }) =>
+      _cached(
+        _episodes,
+        (showId, seasonNumber, episodeNumber),
+        () => remote.episode(showId, seasonNumber, episodeNumber,
+            language: language),
+      );
+
+  @override
   Future<ShowWithEpisodes> getShowWithEpisodes(int showId,
       {String? language}) async {
     final show = await getShowDetails(showId, language: language);
@@ -154,9 +170,11 @@ class ShowRepositoryImpl implements ShowRepository {
     if (showId == null) {
       _details.clear();
       _seasons.clear();
+      _episodes.clear();
     } else {
       _details.remove(showId);
       _seasons.removeWhere((key, _) => key.$1 == showId);
+      _episodes.removeWhere((key, _) => key.$1 == showId);
     }
   }
 

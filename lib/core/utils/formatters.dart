@@ -10,9 +10,23 @@ abstract final class Formatters {
 
   static DateTime dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
-  static String fullDate(DateTime? d) => d == null ? '—' : _fullDate.format(d);
-  static String shortDate(DateTime? d) =>
-      d == null ? 'Data por anunciar' : _shortDate.format(d);
+  static String fullDate(DateTime? d) {
+    if (d == null) return '—';
+    try {
+      return _fullDate.format(d);
+    } catch (_) {
+      return '${d.day}/${d.month}/${d.year}';
+    }
+  }
+
+  static String shortDate(DateTime? d) {
+    if (d == null) return 'Data por anunciar';
+    try {
+      return _shortDate.format(d);
+    } catch (_) {
+      return '${d.day}/${d.month}/${d.year}';
+    }
+  }
   static String dayMonth(DateTime d) => _dayMonth.format(d);
 
   /// "Hoje", "Amanhã" or e.g. "Sexta-feira, 16 de outubro".
@@ -57,6 +71,29 @@ abstract final class Formatters {
 
   static String compactNumber(num value) =>
       NumberFormat.compact(locale: 'pt_PT').format(value);
+
+  /// Relative time, e.g. "agora mesmo", "há 2h", "ontem", "há 3 dias".
+  static String timeAgo(DateTime timestamp, {DateTime? now}) {
+    final current = now ?? DateTime.now();
+    final difference = current.difference(timestamp);
+
+    if (difference.inSeconds < 60) {
+      return 'agora mesmo';
+    } else if (difference.inMinutes < 60) {
+      return 'há ${difference.inMinutes}m';
+    } else if (difference.inHours < 24) {
+      return 'há ${difference.inHours}h';
+    } else if (difference.inDays == 1) {
+      return 'ontem';
+    } else if (difference.inDays < 7) {
+      return 'há ${difference.inDays} dias';
+    } else if (difference.inDays < 30) {
+      final weeks = (difference.inDays / 7).floor();
+      return weeks == 1 ? 'há 1 semana' : 'há $weeks semanas';
+    } else {
+      return shortDate(timestamp);
+    }
+  }
 
   static String _capitalize(String s) =>
       s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);

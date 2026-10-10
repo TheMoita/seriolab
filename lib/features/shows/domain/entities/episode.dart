@@ -211,3 +211,95 @@ class CastMember {
   final String character;
   final String? profileUrl;
 }
+
+@immutable
+class CrewMember {
+  const CrewMember({
+    required this.id,
+    required this.name,
+    required this.job,
+    this.department = '',
+    this.profileUrl,
+  });
+
+  factory CrewMember.fromTmdbJson(Map<String, dynamic> json) {
+    return CrewMember(
+      id: json['id'] is num ? (json['id'] as num).toInt() : 0,
+      name: json['name'] as String? ?? '',
+      job: json['job'] as String? ?? '',
+      department: json['department'] as String? ?? '',
+      profileUrl: TmdbMapper.image(json['profile_path'], size: 'w185'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'job': job,
+        'department': department,
+        'profile_path': profileUrl,
+      };
+
+  final int id;
+  final String name;
+  final String job;
+  final String department;
+  final String? profileUrl;
+}
+
+/// Full details of an episode including guest stars, crew, and high-res stills.
+@immutable
+class EpisodeDetails {
+  const EpisodeDetails({
+    required this.episode,
+    this.guestStars = const [],
+    this.crew = const [],
+    this.stillHighResUrl,
+  });
+
+  final Episode episode;
+  final List<CastMember> guestStars;
+  final List<CrewMember> crew;
+  final String? stillHighResUrl;
+
+  List<CrewMember> get directors => crew
+      .where((c) =>
+          c.job.toLowerCase().contains('director') ||
+          c.job.toLowerCase().contains('realizador') ||
+          c.department.toLowerCase().contains('directing'))
+      .toList();
+
+  List<CrewMember> get writers => crew
+      .where((c) =>
+          c.job.toLowerCase().contains('writer') ||
+          c.job.toLowerCase().contains('screenplay') ||
+          c.job.toLowerCase().contains('argumentista') ||
+          c.department.toLowerCase().contains('writing'))
+      .toList();
+
+  factory EpisodeDetails.fromTmdbJson(
+    Map<String, dynamic> json, {
+    required int showId,
+  }) {
+    final ep = Episode.fromTmdbJson(json, showId: showId);
+    final guests = (json['guest_stars'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(CastMember.fromTmdbJson)
+            .toList() ??
+        const [];
+    final crewList = (json['crew'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(CrewMember.fromTmdbJson)
+            .toList() ??
+        const [];
+    final stillHighRes = TmdbMapper.image(json['still_path'], size: 'w780') ??
+        TmdbMapper.image(json['still_path'], size: 'original');
+
+    return EpisodeDetails(
+      episode: ep,
+      guestStars: guests,
+      crew: crewList,
+      stillHighResUrl: stillHighRes,
+    );
+  }
+}

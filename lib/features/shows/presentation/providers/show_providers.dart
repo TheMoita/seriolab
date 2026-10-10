@@ -2,10 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/providers.dart';
 import '../../../tracking/presentation/providers/tracking_providers.dart';
+import '../../domain/entities/episode.dart';
 import '../../domain/entities/genre.dart';
 import '../../domain/entities/show.dart';
 
 typedef SeasonRef = ({int showId, int seasonNumber});
+typedef EpisodeRef = ({int showId, int seasonNumber, int episodeNumber});
 
 /// Trending shows for the Explore header
 final trendingShowsProvider =
@@ -96,6 +98,14 @@ final seasonDetailsProvider =
     FutureProvider.autoDispose.family<SeasonDetails, SeasonRef>(
   (ref, r) =>
       ref.watch(showRepositoryProvider).getSeason(r.showId, r.seasonNumber),
+);
+
+/// Episode details with guest stars, crew, and high-res stills
+final episodeDetailsProvider =
+    FutureProvider.autoDispose.family<EpisodeDetails, EpisodeRef>(
+  (ref, r) => ref
+      .watch(showRepositoryProvider)
+      .getEpisodeDetails(r.showId, r.seasonNumber, r.episodeNumber),
 );
 
 /// Show + all regular episodes (used for "next episode" on the profile)

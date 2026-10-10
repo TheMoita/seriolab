@@ -1,3 +1,4 @@
+import '../entities/episode.dart';
 import '../entities/genre.dart';
 import '../entities/show.dart';
 
@@ -37,6 +38,13 @@ abstract interface class ShowRepository {
 
   Future<SeasonDetails> getSeason(int showId, int seasonNumber,
       {String? language});
+
+  Future<EpisodeDetails> getEpisodeDetails(
+    int showId,
+    int seasonNumber,
+    int episodeNumber, {
+    String? language,
+  });
 
   /// Show details plus all regular-season episodes.
   Future<ShowWithEpisodes> getShowWithEpisodes(int showId, {String? language});

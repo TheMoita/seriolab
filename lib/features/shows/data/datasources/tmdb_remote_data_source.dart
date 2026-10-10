@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 
+import '../../domain/entities/episode.dart';
 import '../../domain/entities/genre.dart';
 import '../../domain/entities/show.dart';
 import '../models/tmdb_mapper.dart';
@@ -147,6 +148,45 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
       return TmdbMapper.season(json, showId: showId);
     } on TmdbException catch (e) {
       throw CatalogException(e.message, statusCode: e.statusCode);
+    }
+  }
+
+  @override
+  Future<EpisodeDetails> episode(
+    int showId,
+    int seasonNumber,
+    int episodeNumber, {
+    String? language,
+  }) async {
+    try {
+      final json = await apiClient.getEpisodeDetails(
+        showId,
+        seasonNumber,
+        episodeNumber,
+        language: language,
+      );
+      return EpisodeDetails.fromTmdbJson(json, showId: showId);
+    } on TmdbException catch (e) {
+      throw CatalogException(e.message, statusCode: e.statusCode);
+    } catch (e) {
+      // Fallback to season episodes list
+      try {
+        final seasonDetails =
+            await season(showId, seasonNumber, language: language);
+        final ep = seasonDetails.episodes.firstWhere(
+          (ep) => ep.episodeNumber == episodeNumber,
+          orElse: () => throw CatalogException(
+            'Episódio não encontrado',
+            statusCode: 404,
+          ),
+        );
+        return EpisodeDetails(
+          episode: ep,
+          stillHighResUrl: ep.stillUrl,
+        );
+      } catch (_) {
+        throw CatalogException('Falha ao carregar detalhes do episódio: $e');
+      }
     }
   }
 

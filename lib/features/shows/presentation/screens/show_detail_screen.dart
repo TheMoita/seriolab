@@ -13,6 +13,7 @@ import '../../domain/entities/show.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../providers/show_providers.dart';
 import '../widgets/rating_modal.dart';
+import 'episode_detail_screen.dart';
 
 class ShowDetailScreen extends ConsumerStatefulWidget {
   const ShowDetailScreen({super.key, required this.showId});
@@ -837,6 +838,19 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => EpisodeDetailScreen(
+                    seriesId: show.id,
+                    seasonNumber: episode.seasonNumber,
+                    episodeNumber: episode.episodeNumber,
+                    initialShow: show,
+                    initialEpisode: episode,
+                  ),
+                ),
+              );
+            },
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             leading: Container(

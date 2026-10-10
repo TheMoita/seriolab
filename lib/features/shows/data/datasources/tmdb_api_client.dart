@@ -251,6 +251,24 @@ class TmdbApiClient {
     );
   }
 
+  /// 4b. Episode Details: GET /tv/{series_id}/season/{season_number}/episode/{episode_number}
+  Future<Map<String, dynamic>> getEpisodeDetails(
+    int seriesId,
+    int seasonNumber,
+    int episodeNumber, {
+    String? language,
+    String? appendToResponse,
+  }) async {
+    return get(
+      '/tv/$seriesId/season/$seasonNumber/episode/$episodeNumber',
+      language: language,
+      queryParameters: {
+        if (appendToResponse != null && appendToResponse.isNotEmpty)
+          'append_to_response': appendToResponse,
+      },
+    );
+  }
+
   /// 5. Show Images & Backdrops: GET /tv/{series_id}/images
   Future<Map<String, dynamic>> getTvImages(
     int seriesId, {
