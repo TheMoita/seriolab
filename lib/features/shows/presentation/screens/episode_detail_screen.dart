@@ -92,6 +92,32 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
             loggedAt: result.loggedAt,
           );
 
+      if (result.reviewText != null && result.reviewText!.trim().isNotEmpty) {
+        final settings = ref.read(settingsControllerProvider);
+        final reviewModel = EpisodeReviewModel(
+          id: 'user_review_${DateTime.now().millisecondsSinceEpoch}',
+          episodeKeyString: EpisodeReviewModel.buildKey(
+            widget.seriesId,
+            widget.seasonNumber,
+            widget.episodeNumber,
+          ),
+          userId: settings.username.isNotEmpty ? settings.username : 'user',
+          username: settings.username.isNotEmpty ? settings.username : 'membro',
+          userDisplayName: settings.displayName.isNotEmpty
+              ? settings.displayName
+              : 'Membro Seriolab',
+          userAvatarId: settings.avatarId,
+          userAvatarType: settings.avatarType,
+          userAvatarValue: settings.avatarValue,
+          rating: result.rating,
+          comment: result.reviewText!.trim(),
+          containsSpoilers: result.hasSpoilers,
+          createdAt: result.loggedAt,
+        );
+        await ref.read(episodeReviewRepositoryProvider).addReview(reviewModel);
+        ref.invalidate(episodeReviewsProvider(_episodeRef));
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1302,7 +1328,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              '${review.rating!.toStringAsFixed(1)} ★',
+                              '★ ${review.rating!.toStringAsFixed(1)}',
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w900,
