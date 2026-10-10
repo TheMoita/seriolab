@@ -308,4 +308,124 @@ class TmdbApiClient {
       queryParameters: queryParameters,
     );
   }
+
+  /// 6. Show Videos (Trailers & Teasers): GET /tv/{series_id}/videos
+  Future<Map<String, dynamic>> getTvVideos(
+    int seriesId, {
+    String? language,
+  }) async {
+    return get(
+      '/tv/$seriesId/videos',
+      language: language,
+    );
+  }
+
+  /// Fetches the best YouTube trailer key for a TV series.
+  ///
+  /// Requests `/tv/{seriesId}/videos` with the configured [language].
+  /// Filters for:
+  /// - `site == 'YouTube'`
+  /// - `type == 'Trailer'` (with fallback to `'Teaser'`)
+  /// - `official == true` preferred
+  ///
+  /// Extracts the YouTube video `key`. If the call with the configured language
+  /// returns no trailer, automatically falls back to `language=en-US`.
+  Future<String?> fetchSeriesVideos(
+    int seriesId, {
+    String? language,
+  }) async {
+    final lang = language ?? defaultLanguage;
+
+    String? extractBestKey(Map<String, dynamic> response) {
+      final results = response['results'];
+      if (results is! List || results.isEmpty) return null;
+
+      final videos = results.whereType<Map<String, dynamic>>().where((v) {
+        final site = (v['site'] as String?)?.toLowerCase();
+        return site == 'youtube';
+      }).toList();
+
+      if (videos.isEmpty) return null;
+
+      // Priority 1: Official Trailer
+      final officialTrailer = videos.firstWhere(
+        (v) =>
+            v['type'] == 'Trailer' &&
+            (v['official'] == true || v['official'] == 1),
+        orElse: () => const {},
+      );
+      if (officialTrailer['key'] != null &&
+          (officialTrailer['key'] as String).trim().isNotEmpty) {
+        return (officialTrailer['key'] as String).trim();
+      }
+
+      // Priority 2: Any Trailer
+      final anyTrailer = videos.firstWhere(
+        (v) => v['type'] == 'Trailer',
+        orElse: () => const {},
+      );
+      if (anyTrailer['key'] != null &&
+          (anyTrailer['key'] as String).trim().isNotEmpty) {
+        return (anyTrailer['key'] as String).trim();
+      }
+
+      // Priority 3: Official Teaser
+      final officialTeaser = videos.firstWhere(
+        (v) =>
+            v['type'] == 'Teaser' &&
+            (v['official'] == true || v['official'] == 1),
+        orElse: () => const {},
+      );
+      if (officialTeaser['key'] != null &&
+          (officialTeaser['key'] as String).trim().isNotEmpty) {
+        return (officialTeaser['key'] as String).trim();
+      }
+
+      // Priority 4: Any Teaser
+      final anyTeaser = videos.firstWhere(
+        (v) => v['type'] == 'Teaser',
+        orElse: () => const {},
+      );
+      if (anyTeaser['key'] != null &&
+          (anyTeaser['key'] as String).trim().isNotEmpty) {
+        return (anyTeaser['key'] as String).trim();
+      }
+
+      // Priority 5: Any other YouTube video
+      for (final v in videos) {
+        final k = v['key'] as String?;
+        if (k != null && k.trim().isNotEmpty) return k.trim();
+      }
+
+      return null;
+    }
+
+    try {
+      final initialResponse = await getTvVideos(
+        seriesId,
+        language: lang,
+      );
+      final key = extractBestKey(initialResponse);
+      if (key != null) return key;
+    } on TmdbException {
+      // In case of error, proceed to fallback if applicable
+    } catch (_) {}
+
+    // Fallback to en-US if language was different
+    if (lang.toLowerCase() != 'en-us') {
+      try {
+        final enResponse = await getTvVideos(
+          seriesId,
+          language: 'en-US',
+        );
+        return extractBestKey(enResponse);
+      } on TmdbException {
+        return null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    return null;
+  }
 }

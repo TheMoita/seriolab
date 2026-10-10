@@ -310,4 +310,16 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
         }
         return urls;
       });
+
+  @override
+  Future<String?> seriesTrailer(int seriesId, {String? language}) =>
+      _respond(() {
+        return switch (seriesId) {
+          1396 => 'HhesaQXLuRY', // Breaking Bad trailer
+          95396 => 'xEQP4VVuyrY', // Severance trailer
+          100088 => 'uLtkt8BonwM', // The Last of Us trailer
+          70523 => 'rrwycJ08PSA', // Dark trailer
+          _ => 'dQw4w9WgXcQ',
+        };
+      });
 }

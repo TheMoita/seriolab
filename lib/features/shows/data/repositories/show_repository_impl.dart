@@ -181,4 +181,8 @@ class ShowRepositoryImpl implements ShowRepository {
   @override
   Future<List<String>> getShowBackdrops(int showId) =>
       remote.showBackdrops(showId);
+
+  @override
+  Future<String?> getSeriesTrailer(int seriesId, {String? language}) =>
+      remote.seriesTrailer(seriesId, language: language);
 }

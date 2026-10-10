@@ -157,5 +157,10 @@ void main() {
       expect(backdrops, isNotEmpty);
       expect(backdrops.first, startsWith('https://image.tmdb.org/t/p/w1280'));
     });
+
+    test('getSeriesTrailer returns YouTube key from repository', () async {
+      final trailerKey = await repository.getSeriesTrailer(1396); // Breaking Bad
+      expect(trailerKey, 'HhesaQXLuRY');
+    });
   });
 }

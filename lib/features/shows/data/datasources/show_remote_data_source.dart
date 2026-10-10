@@ -23,6 +23,7 @@ abstract interface class ShowRemoteDataSource {
     String? language,
   });
   Future<List<String>> showBackdrops(int showId);
+  Future<String?> seriesTrailer(int seriesId, {String? language});
 }
 
 class CatalogException implements Exception {

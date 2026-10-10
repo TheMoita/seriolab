@@ -134,3 +134,10 @@ final showBackdropsProvider =
   (ref, showId) =>
       ref.watch(showRepositoryProvider).getShowBackdrops(showId),
 );
+
+/// Official YouTube trailer video key for a show
+final showTrailerProvider =
+    FutureProvider.autoDispose.family<String?, int>(
+  (ref, showId) =>
+      ref.watch(showRepositoryProvider).getSeriesTrailer(showId),
+);

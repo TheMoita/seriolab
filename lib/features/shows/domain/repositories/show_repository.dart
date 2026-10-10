@@ -61,4 +61,7 @@ abstract interface class ShowRepository {
 
   /// High-resolution backdrops/wallpapers for the show.
   Future<List<String>> getShowBackdrops(int showId);
+
+  /// Official YouTube trailer video key for the show (or null if unavailable).
+  Future<String?> getSeriesTrailer(int seriesId, {String? language});
 }

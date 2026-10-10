@@ -50,6 +50,7 @@ dependencies:
   path_provider: ^2.1.5
   package_info_plus: ^10.2.2
   cloud_firestore: ^6.10.0
+  youtube_player_iframe: ^6.0.2
 
 dev_dependencies:
   flutter_test:

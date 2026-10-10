@@ -221,4 +221,8 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
       return const [];
     }
   }
+
+  @override
+  Future<String?> seriesTrailer(int seriesId, {String? language}) =>
+      apiClient.fetchSeriesVideos(seriesId, language: language);
 }

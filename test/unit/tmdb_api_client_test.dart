@@ -339,5 +339,92 @@ void main() {
       expect(popular.first.posterUrl,
           'https://image.tmdb.org/t/p/w500/hotd.jpg');
     });
+
+    test('seriesTrailer returns official YouTube trailer key', () async {
+      final mockHttp = MockClient((request) async {
+        return http.Response(
+          jsonEncode({
+            'id': 1399,
+            'results': [
+              {
+                'id': 'clip1',
+                'iso_639_1': 'pt',
+                'key': 'clip_key',
+                'name': 'Clip',
+                'site': 'YouTube',
+                'type': 'Clip',
+                'official': false,
+              },
+              {
+                'id': 'trailer1',
+                'iso_639_1': 'pt',
+                'key': 'pt_official_trailer',
+                'name': 'Trailer Oficial',
+                'site': 'YouTube',
+                'type': 'Trailer',
+                'official': true,
+              },
+            ],
+          }),
+          200,
+          headers: {'content-type': 'application/json; charset=utf-8'},
+        );
+      });
+
+      final apiClient = TmdbApiClient(
+        client: mockHttp,
+        apiKey: 'mock_valid_key_12345',
+        defaultLanguage: 'pt-PT',
+      );
+      final remote = TmdbRemoteDataSource(apiClient: apiClient);
+
+      final key = await remote.seriesTrailer(1399);
+      expect(key, 'pt_official_trailer');
+    });
+
+    test('seriesTrailer falls back to en-US if localized results are empty', () async {
+      final requestedLangs = <String?>[];
+      final mockHttp = MockClient((request) async {
+        final lang = request.url.queryParameters['language'];
+        requestedLangs.add(lang);
+        if (lang == 'pt-PT') {
+          return http.Response(
+            jsonEncode({'id': 1399, 'results': []}),
+            200,
+            headers: {'content-type': 'application/json; charset=utf-8'},
+          );
+        }
+        return http.Response(
+          jsonEncode({
+            'id': 1399,
+            'results': [
+              {
+                'id': 'en_trailer',
+                'iso_639_1': 'en',
+                'key': 'en_youtube_trailer_key',
+                'name': 'Official Trailer',
+                'site': 'YouTube',
+                'type': 'Trailer',
+                'official': true,
+              }
+            ],
+          }),
+          200,
+          headers: {'content-type': 'application/json; charset=utf-8'},
+        );
+      });
+
+      final apiClient = TmdbApiClient(
+        client: mockHttp,
+        apiKey: 'mock_valid_key_12345',
+        defaultLanguage: 'pt-PT',
+      );
+      final remote = TmdbRemoteDataSource(apiClient: apiClient);
+
+      final key = await remote.seriesTrailer(1399);
+      expect(key, 'en_youtube_trailer_key');
+      expect(requestedLangs, contains('pt-PT'));
+      expect(requestedLangs, contains('en-US'));
+    });
   });
 }
