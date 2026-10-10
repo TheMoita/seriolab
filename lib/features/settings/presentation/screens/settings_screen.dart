@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:package_info_plus/package_info_plus.dart';
+
 import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../auth/presentation/widgets/auth_gate.dart';
@@ -23,8 +25,16 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  late final Future<PackageInfo> _packageInfoFuture;
+
   // Simulated cache tracking that can be cleared dynamically
   bool _cacheCleared = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _packageInfoFuture = PackageInfo.fromPlatform();
+  }
 
   static const Map<String, String> _languages = {
     'pt-PT': 'Português (Portugal) 🇵🇹',
@@ -901,23 +911,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SettingsGroupCard(
             title: 'Sobre & Versão',
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                 child: Row(
                   children: [
-                    SeriolabLogo(
+                    const SeriolabLogo(
                       orientation: Axis.horizontal,
                       iconSize: 32,
                       fontSize: 20,
                     ),
-                    Spacer(),
-                    Text(
-                      'v1.0.0 (Build 1)',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.secondary,
-                      ),
+                    const Spacer(),
+                    FutureBuilder<PackageInfo>(
+                      future: _packageInfoFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final version = snapshot.data!.version;
+                          final buildNumber = snapshot.data!.buildNumber;
+                          final displayVersion = buildNumber.isNotEmpty
+                              ? 'v$version (build $buildNumber)'
+                              : 'v$version';
+                          return Text(
+                            displayVersion,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          );
+                        }
+                        return const Text(
+                          'v...',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
