@@ -233,9 +233,9 @@ class _WatchingListView extends StatelessWidget {
   Widget build(BuildContext context) {
     if (items.isEmpty) {
       return EmptyState(
-        icon: Icons.play_circle_outline_rounded,
-        title: 'Sem séries em andamento',
-        message: 'Não tens nenhuma série em andamento neste momento.',
+        icon: Icons.check_circle_outline_rounded,
+        title: 'Estás em dia!',
+        message: 'Nenhuma série com episódios pendentes para ver.',
         actionLabel: 'Explorar séries',
         onAction: onExploreTap,
       );

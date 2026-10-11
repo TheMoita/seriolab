@@ -51,7 +51,11 @@ class ScheduleController extends AsyncNotifier<ScheduleState> {
     if (trackingState == null) return const ScheduleState();
 
     final repo = ref.watch(scheduleRepositoryProvider);
-    final watching = await repo.getCurrentlyWatching(trackingState);
+    final rawWatching = await repo.getCurrentlyWatching(trackingState);
+    final watching = rawWatching
+        .where((item) =>
+            !item.isCaughtUp && item.nextEpisode != null && item.isAired)
+        .toList();
     final comingSoon = await repo.getComingSoon(trackingState);
 
     return ScheduleState(
@@ -66,7 +70,11 @@ class ScheduleController extends AsyncNotifier<ScheduleState> {
       final trackingState = ref.read(trackingControllerProvider).value;
       if (trackingState == null) return const ScheduleState();
 
-      final watching = await _repo.getCurrentlyWatching(trackingState);
+      final rawWatching = await _repo.getCurrentlyWatching(trackingState);
+      final watching = rawWatching
+          .where((item) =>
+              !item.isCaughtUp && item.nextEpisode != null && item.isAired)
+          .toList();
       final comingSoon = await _repo.getComingSoon(trackingState);
 
       return ScheduleState(

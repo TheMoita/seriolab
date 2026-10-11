@@ -1,5 +1,4 @@
 import 'package:series_app/core/utils/formatters.dart';
-import 'package:series_app/features/shows/domain/entities/episode.dart';
 import 'package:series_app/features/shows/domain/repositories/show_repository.dart';
 import 'package:series_app/features/tracking/domain/entities/tracking_entities.dart';
 import 'package:series_app/features/tracking/domain/entities/tracking_state.dart';
@@ -23,7 +22,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
     final watchingShows = trackingState.byStatus(TrackingStatus.watching);
     if (watchingShows.isEmpty) return const [];
 
-    final items = await Future.wait(
+    final results = await Future.wait(
       watchingShows.map((tracked) async {
         try {
           final showWithEpisodes =
@@ -31,60 +30,43 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
           final show = showWithEpisodes.show;
           final episodes = showWithEpisodes.episodes;
 
-          Episode? nextEp;
-          var isAired = false;
-          var isCaughtUp = false;
+          // 1. Calculate already aired/available episodes (air_date <= now)
+          final airedEpisodes =
+              episodes.where((ep) => ep.isAiredAt(now)).toList();
 
-          // 1. Look for first unwatched regular episode
-          for (final ep in episodes) {
-            if (!trackingState.isWatched(tracked.showId, ep.key)) {
-              nextEp = ep;
-              isAired = ep.isAiredAt(now);
-              break;
-            }
+          // 2. Compare with episodes marked as watched by user
+          final unwatchedAired = airedEpisodes
+              .where((ep) => !trackingState.isWatched(tracked.showId, ep.key))
+              .toList();
+
+          // 3. Strict Inclusion Criterion:
+          // A série SÓ é incluída se existir pelo menos 1 episódio já transmitido
+          // que ainda NÃO foi visto pelo utilizador (hasUnwatchedAiredEpisodes == true).
+          // Se todos os episódios emitidos já foram vistos (o utilizador está "em dia" / "caught up"):
+          // A série é EXCLUÍDA de "A Ver Atualmente".
+          if (unwatchedAired.isEmpty) {
+            return null;
           }
 
-          // 2. If all loaded episodes are watched, check nextEpisodeToAir
-          if (nextEp == null) {
-            final nextToAir = show.nextEpisodeToAir;
-            if (nextToAir != null) {
-              nextEp = nextToAir;
-              isAired = nextToAir.isAiredAt(now);
-            } else {
-              isCaughtUp = true;
-            }
-          }
-
+          final nextEp = unwatchedAired.first;
           return CurrentlyWatchingItem(
             trackedShow: tracked,
             showDetails: show,
             nextEpisode: nextEp,
-            isAired: isAired,
-            isCaughtUp: isCaughtUp,
+            isAired: true,
+            isCaughtUp: false,
           );
         } catch (_) {
-          return CurrentlyWatchingItem(
-            trackedShow: tracked,
-          );
+          return null;
         }
       }),
     );
 
-    final sorted = List.of(items);
-    sorted.sort((a, b) {
-      int rank(CurrentlyWatchingItem item) {
-        if (item.nextEpisode != null && item.isAired) return 0;
-        if (item.nextEpisode != null && !item.isAired) return 1;
-        if (item.isCaughtUp) return 2;
-        return 3;
-      }
+    final items = results.whereType<CurrentlyWatchingItem>().toList();
+    items.sort(
+        (a, b) => b.trackedShow.updatedAt.compareTo(a.trackedShow.updatedAt));
 
-      final rankDiff = rank(a).compareTo(rank(b));
-      if (rankDiff != 0) return rankDiff;
-      return b.trackedShow.updatedAt.compareTo(a.trackedShow.updatedAt);
-    });
-
-    return sorted;
+    return items;
   }
 
   @override
@@ -115,7 +97,8 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
         final cleanDate = Formatters.dateOnly(airDate);
         if (cleanDate.isBefore(today) || cleanDate.isAfter(until)) continue;
 
-        final key = '${up.showId}_${up.episode.seasonNumber}_${up.episode.episodeNumber}';
+        final key =
+            '${up.showId}_${up.episode.seasonNumber}_${up.episode.episodeNumber}';
         if (seenKeys.add(key)) {
           items.add(ComingSoonItem.fromUpcomingEpisode(up));
         }
@@ -142,7 +125,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
       final next = show.nextEpisodeToAir;
       if (next != null && next.airDate != null) {
         final cleanDate = Formatters.dateOnly(next.airDate!);
-        if (!cleanDate.isBefore(today) && !cleanDate.isAfter(until)) {
+        if (!cleanDate.isBefore(today)) {
           final key = '${show.id}_${next.seasonNumber}_${next.episodeNumber}';
           if (seenKeys.add(key)) {
             items.add(
@@ -170,7 +153,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
         final sDate = season.airDate;
         if (sDate != null) {
           final cleanDate = Formatters.dateOnly(sDate);
-          if (!cleanDate.isBefore(today) && !cleanDate.isAfter(until)) {
+          if (!cleanDate.isBefore(today)) {
             final key = '${show.id}_${season.seasonNumber}_1';
             if (seenKeys.add(key)) {
               items.add(
@@ -199,7 +182,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
       final firstAir = show.firstAirDate;
       if (firstAir != null) {
         final cleanDate = Formatters.dateOnly(firstAir);
-        if (!cleanDate.isBefore(today) && !cleanDate.isAfter(until)) {
+        if (!cleanDate.isBefore(today)) {
           final key = '${show.id}_1_1';
           if (seenKeys.add(key)) {
             items.add(
@@ -220,6 +203,43 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
           }
         }
       }
+    }
+
+    // 3. Specifically for watching shows that are caught up, check if they have scheduled future episodes
+    final watchingShows = trackingState.byStatus(TrackingStatus.watching);
+    for (final tracked in watchingShows) {
+      try {
+        final showWithEpisodes =
+            await showRepository.getShowWithEpisodes(tracked.showId);
+        final show = showWithEpisodes.show;
+        for (final ep in showWithEpisodes.episodes) {
+          final epDate = ep.airDate;
+          if (epDate == null) continue;
+          final cleanDate = Formatters.dateOnly(epDate);
+          if (!cleanDate.isBefore(today)) {
+            final key =
+                '${tracked.showId}_${ep.seasonNumber}_${ep.episodeNumber}';
+            if (seenKeys.add(key)) {
+              items.add(
+                ComingSoonItem(
+                  showId: tracked.showId,
+                  showName: show.name,
+                  airDate: epDate,
+                  seasonNumber: ep.seasonNumber,
+                  episodeNumber: ep.episodeNumber,
+                  episodeTitle: ep.name,
+                  posterUrl: show.posterUrl ?? tracked.posterUrl,
+                  backdropUrl: show.backdropUrl,
+                  network: show.primaryNetwork ?? tracked.network,
+                  episode: ep,
+                  isSeasonPremiere: ep.episodeNumber == 1,
+                  showDetails: show,
+                ),
+              );
+            }
+          }
+        }
+      } catch (_) {}
     }
 
     // Sort chronologically: closest to today first

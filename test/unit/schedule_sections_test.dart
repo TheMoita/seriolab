@@ -135,6 +135,43 @@ void main() {
       expect(item.isAired, isTrue);
     });
 
+    test('getCurrentlyWatching excludes caught-up shows where all aired episodes are watched', () async {
+      final tracked = TrackedShow(
+        showId: 95396,
+        name: 'Severance',
+        status: TrackingStatus.watching,
+        addedAt: fixedDate,
+        updatedAt: fixedDate,
+      );
+
+      final showWithEpisodes = await showRepo.getShowWithEpisodes(95396);
+      final airedEpisodes =
+          showWithEpisodes.episodes.where((ep) => ep.isAiredAt(fixedDate)).toList();
+
+      final watchedMap = <EpisodeKey, WatchedEpisode>{
+        for (final ep in airedEpisodes)
+          ep.key: WatchedEpisode(
+            showId: 95396,
+            key: ep.key,
+            runtime: 55,
+            watchedAt: fixedDate,
+          ),
+      };
+
+      final trackingState = TrackingState(
+        shows: {95396: tracked},
+        watched: {95396: watchedMap},
+      );
+
+      final watchingList = await scheduleRepo.getCurrentlyWatching(trackingState);
+      expect(watchingList, isEmpty);
+
+      // And future episodes are available in ComingSoon
+      final comingSoonList =
+          await scheduleRepo.getComingSoon(trackingState, windowDays: 60);
+      expect(comingSoonList.any((item) => item.showId == 95396), isTrue);
+    });
+
     test('getComingSoon returns future episodes sorted chronologically', () async {
       final tracked = TrackedShow(
         showId: 95396, // Severance has season 2 episodes in future in mock catalog
@@ -187,10 +224,10 @@ void main() {
 
       // Empty state for A Ver Atualmente is displayed by default
       expect(
-        find.text('Não tens nenhuma série em andamento neste momento.'),
+        find.text('Nenhuma série com episódios pendentes para ver.'),
         findsOneWidget,
       );
-      expect(find.text('Sem séries em andamento'), findsOneWidget);
+      expect(find.text('Estás em dia!'), findsOneWidget);
 
       // Tap on Brevemente tab
       await tester.tap(find.text('Brevemente'));
