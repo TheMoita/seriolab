@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/providers.dart';
+import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../tracking/presentation/providers/tracking_providers.dart';
 import '../../domain/entities/episode.dart';
 import '../../domain/entities/genre.dart';
@@ -12,25 +13,29 @@ typedef EpisodeRef = ({int showId, int seasonNumber, int episodeNumber});
 /// Trending shows for the Explore header
 final trendingShowsProvider =
     FutureProvider.autoDispose<List<ShowSummary>>((ref) {
-  return ref.watch(showRepositoryProvider).getTrending();
+  final settings = ref.watch(settingsControllerProvider);
+  return ref.watch(showRepositoryProvider).getTrending(language: settings.tmdbLanguageCode);
 });
 
 /// Popular shows this week for the Letterboxd-style Home screen
 final popularThisWeekProvider =
     FutureProvider.autoDispose<List<ShowSummary>>((ref) {
-  return ref.watch(showRepositoryProvider).getPopularThisWeek();
+  final settings = ref.watch(settingsControllerProvider);
+  return ref.watch(showRepositoryProvider).getPopularThisWeek(language: settings.tmdbLanguageCode);
 });
 
 /// Just premiered / new seasons for the Home screen carousel
 final justPremieredShowsProvider =
     FutureProvider.autoDispose<List<ShowSummary>>((ref) {
-  return ref.watch(showRepositoryProvider).getJustPremiered();
+  final settings = ref.watch(settingsControllerProvider);
+  return ref.watch(showRepositoryProvider).getJustPremiered(language: settings.tmdbLanguageCode);
 });
 
 /// Top rated TV shows of all time for the Home screen carousel
 final topRatedShowsProvider =
     FutureProvider.autoDispose<List<ShowSummary>>((ref) {
-  return ref.watch(showRepositoryProvider).getTopRated();
+  final settings = ref.watch(settingsControllerProvider);
+  return ref.watch(showRepositoryProvider).getTopRated(language: settings.tmdbLanguageCode);
 });
 
 /// Genre filter notifier

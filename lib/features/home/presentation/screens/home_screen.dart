@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/providers.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
+import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../shows/domain/entities/genre.dart';
 import '../../../shows/domain/entities/show.dart';
 import '../../../shows/presentation/providers/show_providers.dart';
@@ -41,6 +43,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = ref.watch(settingsControllerProvider);
+    final l10n = AppLocalizations.of(context, settingsLanguage: settings.language);
     final isMockForced = ref.watch(mockFallbackProvider);
     final popularAsync = ref.watch(popularThisWeekProvider);
     final premieredAsync = ref.watch(justPremieredShowsProvider);
@@ -70,9 +74,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   width: 0.8,
                 ),
               ),
-              child: const Text(
-                'TV SHOWS',
-                style: TextStyle(
+              child: Text(
+                l10n.tvShowsBadge,
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 8.5,
                   fontWeight: FontWeight.w700,
@@ -86,7 +90,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           if (widget.onExploreTap != null)
             IconButton(
               icon: const Icon(Icons.search_rounded, color: Colors.white70),
-              tooltip: 'Procurar',
+              tooltip: l10n.searchTooltip,
               onPressed: widget.onExploreTap,
             ),
         ],
@@ -99,34 +103,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
           children: [
             if (isMockForced) ...[
-              _buildMockBanner(),
+              _buildMockBanner(l10n),
               const SizedBox(height: 12),
             ],
 
             // Quick Minimalist Genre Filter Bar
-            _buildGenreFilterBar(),
+            _buildGenreFilterBar(l10n),
 
             const SizedBox(height: 20),
 
             // 1. POPULAR THIS WEEK (Main Featured Grid Section)
-            _buildPopularThisWeekSection(popularAsync),
+            _buildPopularThisWeekSection(popularAsync, l10n),
 
             const SizedBox(height: 32),
 
             // 2. JUST PREMIERED / NEW SEASONS (Horizontal Carousel)
             _buildHorizontalSection(
-              title: 'JUST PREMIERED / NOVAS TEMPORADAS',
-              subtitle: 'Episódios e estreias recentes em exibição',
+              title: l10n.justPremieredAndNewSeasons.toUpperCase(),
+              subtitle: l10n.justPremieredSubtitle,
               asyncValue: premieredAsync,
+              l10n: l10n,
             ),
 
             const SizedBox(height: 32),
 
             // 3. TOP RATED TV SHOWS (Horizontal Carousel)
             _buildHorizontalSection(
-              title: 'TOP RATED TV SHOWS',
-              subtitle: 'As séries e animes mais aclamados de sempre',
+              title: l10n.topRated.toUpperCase(),
+              subtitle: l10n.topRatedSubtitle,
               asyncValue: topRatedAsync,
+              l10n: l10n,
             ),
           ],
         ),
@@ -138,14 +144,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Minimalist Filter Bar
   // ---------------------------------------------------------------------------
 
-  Widget _buildGenreFilterBar() {
+  Widget _buildGenreFilterBar(AppLocalizations l10n) {
     final filters = <({String label, Genre? genre})>[
-      (label: 'Tudo', genre: null),
-      (label: 'Drama', genre: Genre.drama),
-      (label: 'Sci-Fi & Fantasia', genre: Genre.sciFiFantasy),
-      (label: 'Crime', genre: Genre.crime),
-      (label: 'Anime', genre: Genre.anime),
-      (label: 'Comédia', genre: Genre.comedy),
+      (label: l10n.all, genre: null),
+      (label: l10n.genreDrama, genre: Genre.drama),
+      (label: l10n.genreSciFi, genre: Genre.sciFiFantasy),
+      (label: l10n.genreCrime, genre: Genre.crime),
+      (label: l10n.genreAnime, genre: Genre.anime),
+      (label: l10n.genreComedy, genre: Genre.comedy),
     ];
 
     return SingleChildScrollView(
@@ -192,7 +198,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Section 1: POPULAR THIS WEEK (Letterboxd-style Poster Grid)
   // ---------------------------------------------------------------------------
 
-  Widget _buildPopularThisWeekSection(AsyncValue<List<ShowSummary>> asyncValue) {
+  Widget _buildPopularThisWeekSection(
+    AsyncValue<List<ShowSummary>> asyncValue,
+    AppLocalizations l10n,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -205,9 +214,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'POPULAR THIS WEEK',
-                  style: TextStyle(
+                Text(
+                  l10n.popularThisWeek.toUpperCase(),
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.6,
@@ -216,7 +225,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'As séries com maior tendência na comunidade',
+                  l10n.popularSubtitle,
                   style: TextStyle(
                     fontSize: 11,
                     color: AppColors.textSecondary.withValues(alpha: 0.8),
@@ -241,7 +250,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _showAllPopular ? 'Menos' : 'Ver todas',
+                      _showAllPopular ? l10n.seeLess : l10n.seeAll,
                       style: const TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,
@@ -275,15 +284,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             return EmptyState(
               icon: isMissingKey ? Icons.key_off_rounded : Icons.tv_off_rounded,
               title: isMissingKey
-                  ? 'Chave TMDB Não Configurada'
-                  : 'Não foi possível carregar as séries populares',
+                  ? l10n.tmdbKeyMissingTitle
+                  : l10n.failedToLoadPopular,
               message: isMissingKey
-                  ? 'Configura a tua TMDB_API_KEY no ficheiro .env na raiz do projeto para obteres dados em tempo real.'
+                  ? l10n.tmdbKeyMissingMessage
                   : errStr,
-              actionLabel: 'Tentar novamente',
+              actionLabel: l10n.retry,
               onAction: _refresh,
               secondaryActionLabel: isMissingKey
-                  ? 'Ativar Modo Demonstração (Mock)'
+                  ? l10n.enableDemoMode
                   : null,
               onSecondaryAction: isMissingKey
                   ? () {
@@ -301,12 +310,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     .toList();
 
             if (filtered.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Center(
                   child: Text(
-                    'Nenhuma série encontrada para o género selecionado.',
-                    style: TextStyle(color: AppColors.textSecondary),
+                    l10n.noShowsForGenre,
+                    style: const TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
               );
@@ -360,6 +369,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required String title,
     required String subtitle,
     required AsyncValue<List<ShowSummary>> asyncValue,
+    required AppLocalizations l10n,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -396,20 +406,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               InkWell(
                 borderRadius: BorderRadius.circular(4),
                 onTap: widget.onExploreTap,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Mais',
-                        style: TextStyle(
+                        l10n.seeAll,
+                        style: const TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,
                           color: AppColors.secondary,
                         ),
                       ),
-                      Icon(
+                      const Icon(
                         Icons.chevron_right_rounded,
                         size: 14,
                         color: AppColors.secondary,
@@ -452,8 +462,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Expanded(
                     child: Text(
                       isMissingKey
-                          ? 'A aguardar TMDB_API_KEY no .env'
-                          : 'Erro ao carregar: $err',
+                          ? l10n.waitingTmdbKey
+                          : l10n.failedToLoadWithMessage(err.toString()),
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
@@ -462,7 +472,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   TextButton(
                     onPressed: _refresh,
-                    child: const Text('Recarregar'),
+                    child: Text(l10n.retry),
                   ),
                 ],
               ),
@@ -476,12 +486,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     .toList();
 
             if (filtered.isEmpty) {
-              return const SizedBox(
+              return SizedBox(
                 height: 120,
                 child: Center(
                   child: Text(
-                    'Nenhuma série neste género.',
-                    style: TextStyle(color: AppColors.textSecondary),
+                    l10n.noShowsFound,
+                    style: const TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
               );
@@ -597,7 +607,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildMockBanner() {
+  Widget _buildMockBanner(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
@@ -613,10 +623,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             color: AppColors.primary,
           ),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Modo de demonstração ativo (dados locais mock).',
-              style: TextStyle(
+              l10n.demoModeActive,
+              style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,
               ),
@@ -632,9 +642,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text(
-              'Tentar API Real',
-              style: TextStyle(
+            child: Text(
+              l10n.tryLiveApi,
+              style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: AppColors.secondary,

@@ -9,9 +9,11 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/database/app_database.dart';
 import 'core/di/providers.dart';
+import 'core/l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/widgets/auth_gate.dart';
 import 'features/main/presentation/screens/splash_screen.dart';
+import 'features/settings/presentation/providers/settings_providers.dart';
 import 'features/tracking/data/repositories/in_memory_tracking_repository.dart';
 import 'features/tracking/data/repositories/sqflite_tracking_repository.dart';
 import 'features/tracking/domain/repositories/tracking_repository.dart';
@@ -58,7 +60,7 @@ Future<void> main() async {
   );
 }
 
-class SeriolabApp extends StatelessWidget {
+class SeriolabApp extends ConsumerWidget {
   const SeriolabApp({
     super.key,
     this.showSplash = false,
@@ -69,7 +71,10 @@ class SeriolabApp extends StatelessWidget {
   final Widget? home;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsControllerProvider);
+    final locale = _resolveLocale(settings.language);
+
     Widget resolveHome() {
       if (home != null) return home!;
       if (showSplash) return const SplashScreen();
@@ -80,7 +85,9 @@ class SeriolabApp extends StatelessWidget {
       title: 'Seriolab',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark(),
+      locale: locale,
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
@@ -89,9 +96,22 @@ class SeriolabApp extends StatelessWidget {
         Locale('pt', 'PT'),
         Locale('pt', 'BR'),
         Locale('en', 'US'),
+        Locale('es', 'ES'),
       ],
       home: resolveHome(),
     );
+  }
+
+  static Locale _resolveLocale(String language) {
+    if (language.contains('-')) {
+      final parts = language.split('-');
+      return Locale(parts[0], parts[1]);
+    }
+    return switch (language.toLowerCase()) {
+      'en' => const Locale('en', 'US'),
+      'es' => const Locale('es', 'ES'),
+      _ => const Locale('pt', 'PT'),
+    };
   }
 }
 
