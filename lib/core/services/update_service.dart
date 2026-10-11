@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
@@ -33,70 +35,6 @@ class AppUpdateInfo {
   final bool hasUpdate;
 }
 
-/// Helper class to parse and compare semantic version strings.
-class ParsedVersion implements Comparable<ParsedVersion> {
-  const ParsedVersion({
-    required this.numbers,
-    this.buildNumber,
-  });
-
-  final List<int> numbers;
-  final int? buildNumber;
-
-  factory ParsedVersion.parse(String raw) {
-    var s = raw.trim();
-    if (s.startsWith('v') || s.startsWith('V')) {
-      s = s.substring(1).trim();
-    }
-
-    int? build;
-    if (s.contains('+')) {
-      final plusIndex = s.indexOf('+');
-      final buildStr = s.substring(plusIndex + 1);
-      s = s.substring(0, plusIndex);
-      build = int.tryParse(buildStr);
-    } else if (s.contains('-')) {
-      final dashIndex = s.indexOf('-');
-      final dashStr = s.substring(dashIndex + 1);
-      s = s.substring(0, dashIndex);
-      build = int.tryParse(dashStr);
-    }
-
-    final segments = s.split('.');
-    final numbers = <int>[];
-    for (final seg in segments) {
-      final digitsOnly = seg.replaceAll(RegExp(r'[^\d]'), '');
-      if (digitsOnly.isNotEmpty) {
-        numbers.add(int.parse(digitsOnly));
-      } else {
-        numbers.add(0);
-      }
-    }
-    while (numbers.length < 3) {
-      numbers.add(0);
-    }
-
-    return ParsedVersion(numbers: numbers, buildNumber: build);
-  }
-
-  @override
-  int compareTo(ParsedVersion other) {
-    final maxLen = numbers.length > other.numbers.length
-        ? numbers.length
-        : other.numbers.length;
-    for (var i = 0; i < maxLen; i++) {
-      final num1 = i < numbers.length ? numbers[i] : 0;
-      final num2 = i < other.numbers.length ? other.numbers[i] : 0;
-      if (num1 != num2) {
-        return num1.compareTo(num2);
-      }
-    }
-    final b1 = buildNumber ?? 0;
-    final b2 = other.buildNumber ?? 0;
-    return b1.compareTo(b2);
-  }
-}
-
 typedef PackageInfoFetcher = Future<PackageInfo> Function();
 
 /// Service that checks for new GitHub releases and reports update status.
@@ -114,27 +52,98 @@ class UpdateService {
   final String owner;
   final String repo;
 
+  /// Compares [remoteTag] against [currentVersion] following SemVer rules:
+  /// - Strips leading 'v' / 'V'
+  /// - Strips any suffix following '+' or '-' (e.g. 'v1.0.15+15' -> '1.0.15')
+  /// - Splits by '.' into integer segments [major, minor, patch]
+  /// - Checks:
+  ///   - remote.major > current.major -> true
+  ///   - remote.major == current.major && remote.minor > current.minor -> true
+  ///   - remote.major == current.major && remote.minor == current.minor && remote.patch > current.patch -> true
+  ///   - otherwise -> false
+  static bool isUpdateAvailable(String currentVersion, String remoteTag) {
+    if (remoteTag.trim().isEmpty) return false;
+
+    List<int> parseSegments(String versionStr) {
+      var s = versionStr.trim();
+      if (s.startsWith('v') || s.startsWith('V')) {
+        s = s.substring(1).trim();
+      }
+
+      // Remove any suffix after '+' or '-'
+      if (s.contains('+')) {
+        s = s.split('+').first.trim();
+      }
+      if (s.contains('-')) {
+        s = s.split('-').first.trim();
+      }
+
+      final parts = s.split('.');
+      final numbers = <int>[];
+      for (final part in parts) {
+        final digits = part.replaceAll(RegExp(r'[^\d]'), '');
+        numbers.add(int.tryParse(digits) ?? 0);
+      }
+      while (numbers.length < 3) {
+        numbers.add(0);
+      }
+      return numbers;
+    }
+
+    final current = parseSegments(currentVersion);
+    final remote = parseSegments(remoteTag);
+
+    final currentMajor = current[0];
+    final currentMinor = current[1];
+    final currentPatch = current[2];
+
+    final remoteMajor = remote[0];
+    final remoteMinor = remote[1];
+    final remotePatch = remote[2];
+
+    if (remoteMajor > currentMajor) return true;
+    if (remoteMajor == currentMajor && remoteMinor > currentMinor) return true;
+    if (remoteMajor == currentMajor &&
+        remoteMinor == currentMinor &&
+        remotePatch > currentPatch) {
+      return true;
+    }
+
+    return false;
+  }
+
   /// Fetches the latest release from GitHub and compares it with the local app version.
   Future<AppUpdateInfo?> checkForUpdates() async {
     try {
       final packageInfo = await _packageInfoFetcher();
       final currentVersion = packageInfo.version;
-      final currentFullVersion = packageInfo.buildNumber.isNotEmpty
-          ? '${packageInfo.version}+${packageInfo.buildNumber}'
-          : packageInfo.version;
 
       final url = Uri.parse(
         'https://api.github.com/repos/$owner/$repo/releases/latest',
       );
+
+      final headers = <String, String>{
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'Seriolab-App',
+      };
+
+      // Support optional token if configured (e.g. during testing or private repositories)
+      try {
+        final envToken = dotenv.isInitialized ? dotenv.env['GITHUB_TOKEN'] : null;
+        if (envToken != null && envToken.isNotEmpty) {
+          headers['Authorization'] = 'Bearer $envToken';
+        }
+      } catch (_) {}
+
       final response = await _client.get(
         url,
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'Seriolab-App',
-        },
+        headers: headers,
       );
 
       if (response.statusCode != 200) {
+        debugPrint(
+          '[UpdateService] Resposta da API do GitHub retornou status ${response.statusCode}: ${response.body}',
+        );
         return null;
       }
 
@@ -166,10 +175,11 @@ class UpdateService {
         apkUrl = htmlUrl;
       }
 
-      final hasUpdate = isUpdateAvailable(
-        currentVersion: currentFullVersion,
-        latestVersion: tagName,
-      );
+      final hasUpdate = isUpdateAvailable(currentVersion, tagName);
+
+      debugPrint('[UpdateService] Versão local lida: $currentVersion');
+      debugPrint('[UpdateService] Tag recebida do GitHub: $tagName');
+      debugPrint('[UpdateService] Resultado da comparação booleana: $hasUpdate');
 
       final cleanLatestVersion =
           tagName.startsWith('v') || tagName.startsWith('V')
@@ -184,20 +194,10 @@ class UpdateService {
         releaseHtmlUrl: htmlUrl,
         hasUpdate: hasUpdate,
       );
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('[UpdateService] Erro ao verificar atualizações: $e\n$stack');
       return null;
     }
-  }
-
-  /// Compares [latestVersion] against [currentVersion] semantically.
-  static bool isUpdateAvailable({
-    required String currentVersion,
-    required String latestVersion,
-  }) {
-    if (latestVersion.isEmpty) return false;
-    final curr = ParsedVersion.parse(currentVersion);
-    final latest = ParsedVersion.parse(latestVersion);
-    return latest.compareTo(curr) > 0;
   }
 }
 

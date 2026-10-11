@@ -149,6 +149,20 @@ class UpdateBottomSheet extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 10),
+
+              // Description with dynamic versions
+              Center(
+                child: Text(
+                  'Uma nova versão (v${updateInfo.latestVersion}) está pronta para download. A tua versão atual é a v${updateInfo.currentVersion}.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
 
               // Changelog container

@@ -26,105 +26,78 @@ void main() {
   group('Semantic Version Comparison Tests', () {
     test('Correctly compares standard major, minor, patch versions', () {
       expect(
-        UpdateService.isUpdateAvailable(
-          currentVersion: '1.0.14',
-          latestVersion: '1.0.15',
-        ),
+        UpdateService.isUpdateAvailable('1.0.14', '1.0.15'),
         isTrue,
       );
 
       expect(
-        UpdateService.isUpdateAvailable(
-          currentVersion: '1.0.15',
-          latestVersion: '1.0.14',
-        ),
+        UpdateService.isUpdateAvailable('1.0.15', '1.0.14'),
         isFalse,
       );
 
       expect(
-        UpdateService.isUpdateAvailable(
-          currentVersion: '1.0.14',
-          latestVersion: '1.0.14',
-        ),
+        UpdateService.isUpdateAvailable('1.0.14', '1.0.14'),
         isFalse,
       );
 
       expect(
-        UpdateService.isUpdateAvailable(
-          currentVersion: '1.0.99',
-          latestVersion: '1.1.0',
-        ),
+        UpdateService.isUpdateAvailable('1.0.99', '1.1.0'),
         isTrue,
       );
 
       expect(
-        UpdateService.isUpdateAvailable(
-          currentVersion: '1.9.9',
-          latestVersion: '2.0.0',
-        ),
+        UpdateService.isUpdateAvailable('1.9.9', '2.0.0'),
         isTrue,
       );
     });
 
     test('Handles v-prefix and whitespace gracefully', () {
       expect(
-        UpdateService.isUpdateAvailable(
-          currentVersion: '1.0.14',
-          latestVersion: 'v1.0.15',
-        ),
+        UpdateService.isUpdateAvailable('1.0.14', 'v1.0.15'),
         isTrue,
       );
 
       expect(
-        UpdateService.isUpdateAvailable(
-          currentVersion: 'v1.0.15',
-          latestVersion: '1.0.15',
-        ),
+        UpdateService.isUpdateAvailable('v1.0.15', '1.0.15'),
         isFalse,
       );
 
       expect(
-        UpdateService.isUpdateAvailable(
-          currentVersion: ' 1.0.14 ',
-          latestVersion: ' v1.0.15 ',
-        ),
+        UpdateService.isUpdateAvailable(' 1.0.14 ', ' v1.0.15 '),
         isTrue,
       );
     });
 
-    test('Handles build numbers (+ or -) correctly', () {
+    test('Handles build numbers (+ or -) correctly by stripping suffix', () {
       expect(
-        UpdateService.isUpdateAvailable(
-          currentVersion: '1.0.14+14',
-          latestVersion: '1.0.14+15',
-        ),
+        UpdateService.isUpdateAvailable('1.0.14+14', '1.0.15+15'),
         isTrue,
       );
 
       expect(
-        UpdateService.isUpdateAvailable(
-          currentVersion: '1.0.14+15',
-          latestVersion: '1.0.14+14',
-        ),
+        UpdateService.isUpdateAvailable('1.0.15+15', '1.0.14+14'),
         isFalse,
       );
 
-      // Higher patch overrides lower build number
       expect(
-        UpdateService.isUpdateAvailable(
-          currentVersion: '1.0.14+99',
-          latestVersion: '1.0.15+1',
-        ),
+        UpdateService.isUpdateAvailable('1.0.14', 'v1.0.15+15'),
         isTrue,
+      );
+
+      expect(
+        UpdateService.isUpdateAvailable('1.0.14-beta', '1.0.15'),
+        isTrue,
+      );
+
+      expect(
+        UpdateService.isUpdateAvailable('1.0.14+14', '1.0.14'),
+        isFalse,
       );
     });
 
     test('Returns false for empty or invalid remote versions', () {
       expect(
-        UpdateService.isUpdateAvailable(
-          currentVersion: '1.0.14',
-          latestVersion: '',
-        ),
+        UpdateService.isUpdateAvailable('1.0.14', ''),
         isFalse,
       );
     });
@@ -263,6 +236,14 @@ void main() {
 
       // Verify version badge
       expect(find.text('v1.0.15'), findsOneWidget);
+
+      // Verify dynamic text with remote and current versions
+      expect(
+        find.text(
+          'Uma nova versão (v1.0.15) está pronta para download. A tua versão atual é a v1.0.14.',
+        ),
+        findsOneWidget,
+      );
 
       // Verify release notes
       expect(

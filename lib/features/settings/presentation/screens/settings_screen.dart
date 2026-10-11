@@ -40,19 +40,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     setState(() => _isCheckingUpdate = true);
 
     try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final currentVersion = packageInfo.version;
+
       final updateService = ref.read(updateServiceProvider);
       final updateInfo = await updateService.checkForUpdates();
       if (!mounted) return;
 
       if (updateInfo != null && updateInfo.hasUpdate) {
         await showUpdateBottomSheet(context, updateInfo);
-      } else {
-        final currentVersion = updateInfo?.currentVersion ?? '1.0.14';
+      } else if (updateInfo != null && !updateInfo.hasUpdate) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'O Seriolab está atualizado (v$currentVersion)',
+              'A aplicação já está na versão mais recente (v$currentVersion).',
               style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: AppColors.surfaceHigh,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: AppColors.outline, width: 0.8),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Não foi possível verificar atualizações de momento. Verifica a ligação à internet.',
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
             backgroundColor: AppColors.surfaceHigh,
             behavior: SnackBarBehavior.floating,
