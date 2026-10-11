@@ -15,6 +15,7 @@ import '../../domain/entities/episode.dart';
 import '../../domain/entities/show.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../providers/show_providers.dart';
+import '../widgets/episode_review_bottom_sheet.dart';
 import '../widgets/rating_modal.dart';
 import '../widgets/trailer_dialog.dart';
 import 'episode_detail_screen.dart';
@@ -1053,10 +1054,27 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                   tooltip:
                       isWatched ? 'Marcar como não visto' : 'Marcar como visto',
                   onPressed: isAired
-                      ? () {
-                          ref
+                      ? () async {
+                          final wasWatched = isWatched;
+                          await ref
                               .read(trackingControllerProvider.notifier)
                               .toggleEpisode(show, episode);
+                          if (!wasWatched && context.mounted) {
+                            final showOriginal = ref
+                                .read(settingsControllerProvider)
+                                .showOriginalTitles;
+                            showEpisodeRatingAndReviewSheet(
+                              context,
+                              show.id,
+                              episode.seasonNumber,
+                              episode.episodeNumber,
+                              episode.displayTitle(
+                                showOriginal: showOriginal,
+                              ),
+                              show: show,
+                              episode: episode,
+                            );
+                          }
                         }
                       : () {
                           ScaffoldMessenger.of(context).showSnackBar(

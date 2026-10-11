@@ -60,8 +60,15 @@ void main() {
     // Toggle watched state
     await tester.tap(find.text('Marcar como Visto'));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('Episódio Visto'), findsOneWidget);
+
+    // Dismiss the optional review bottom sheet to continue testing EpisodeDetailScreen
+    if (find.text('Agora não').evaluate().isNotEmpty) {
+      await tester.tap(find.text('Agora não'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+    }
 
     // Scroll down to community reviews section
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -700));

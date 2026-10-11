@@ -11,6 +11,7 @@ import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../shows/domain/entities/episode.dart';
 import '../../../shows/domain/entities/show.dart';
 import '../../../shows/presentation/screens/show_detail_screen.dart';
+import '../../../shows/presentation/widgets/episode_review_bottom_sheet.dart';
 import '../controllers/schedule_controller.dart';
 import '../../domain/entities/schedule_item.dart';
 
@@ -59,6 +60,18 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen>
           backgroundColor: AppColors.surfaceHigh,
           behavior: SnackBarBehavior.floating,
         ),
+      );
+
+      final showOriginal =
+          ref.read(settingsControllerProvider).showOriginalTitles;
+      showEpisodeRatingAndReviewSheet(
+        context,
+        show.id,
+        episode.seasonNumber,
+        episode.episodeNumber,
+        episode.displayTitle(showOriginal: showOriginal),
+        show: show,
+        episode: episode,
       );
     } catch (e) {
       if (!mounted) return;

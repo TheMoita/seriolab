@@ -14,6 +14,7 @@ import '../../domain/entities/episode_review_model.dart';
 import '../../domain/entities/show.dart';
 import '../providers/episode_review_providers.dart';
 import '../providers/show_providers.dart';
+import '../widgets/episode_review_bottom_sheet.dart';
 import '../widgets/rating_modal.dart';
 
 class EpisodeDetailScreen extends ConsumerStatefulWidget {
@@ -645,10 +646,26 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
             )
           : OutlinedButton.icon(
               onPressed: show != null
-                  ? () {
-                      ref
+                  ? () async {
+                      await ref
                           .read(trackingControllerProvider.notifier)
                           .toggleEpisode(show, episode);
+                      if (mounted) {
+                        final showOriginal = ref
+                            .read(settingsControllerProvider)
+                            .showOriginalTitles;
+                        showEpisodeRatingAndReviewSheet(
+                          context,
+                          widget.seriesId,
+                          widget.seasonNumber,
+                          widget.episodeNumber,
+                          episode.displayTitle(
+                            showOriginal: showOriginal,
+                          ),
+                          show: show,
+                          episode: episode,
+                        );
+                      }
                     }
                   : null,
               icon: const Icon(
