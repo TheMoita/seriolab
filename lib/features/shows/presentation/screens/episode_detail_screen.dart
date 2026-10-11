@@ -7,6 +7,11 @@ import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../settings/presentation/widgets/user_avatar_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../reports/domain/entities/report_model.dart';
+import '../../../reports/presentation/widgets/report_bottom_sheet.dart';
 import '../../../tracking/domain/entities/tracking_entities.dart';
 import '../../../tracking/presentation/providers/tracking_providers.dart';
 import '../../domain/entities/episode.dart';
@@ -41,6 +46,7 @@ class EpisodeDetailScreen extends ConsumerStatefulWidget {
 class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
   bool _synopsisSpoilerRevealed = false;
   final Set<String> _revealedCommentSpoilers = {};
+  final Set<String> _hiddenReportedComments = {};
   late final TextEditingController _commentController;
   bool _commentContainsSpoilers = false;
   bool _isSubmittingComment = false;
@@ -1191,11 +1197,20 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
 
   /// Community section with comments list and spoiler protection
   Widget _buildCommunitySection(List<EpisodeReviewModel> reviews) {
-    final ratedList = reviews.where((r) => r.rating != null);
+    final visibleReviews = reviews
+        .where((r) => !_hiddenReportedComments.contains(r.id))
+        .toList();
+    final ratedList = visibleReviews.where((r) => r.rating != null);
     final avgScore = ratedList.isNotEmpty
         ? ratedList.fold<double>(0.0, (acc, r) => acc + r.rating!) /
             ratedList.length
         : null;
+
+    final authUser = ref.watch(authControllerProvider).user;
+    final currentUserId = authUser?.uid ??
+        (Firebase.apps.isNotEmpty
+            ? FirebaseAuth.instance.currentUser?.uid
+            : null);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1223,7 +1238,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                     border: Border.all(color: AppColors.outline, width: 0.6),
                   ),
                   child: Text(
-                    '${reviews.length}',
+                    '${visibleReviews.length}',
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
@@ -1257,7 +1272,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
         ),
         const SizedBox(height: 14),
 
-        if (reviews.isEmpty)
+        if (visibleReviews.isEmpty)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
@@ -1282,12 +1297,14 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: reviews.length,
+            itemCount: visibleReviews.length,
             separatorBuilder: (context, _) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final review = reviews[index];
+              final review = visibleReviews[index];
               final isSpoilerProtected = review.containsSpoilers &&
                   !_revealedCommentSpoilers.contains(review.id);
+              final isOwnComment = currentUserId != null &&
+                  currentUserId == review.userId;
 
               return Container(
                 padding: const EdgeInsets.all(14),
@@ -1334,7 +1351,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                             ],
                           ),
                         ),
-                        if (review.rating != null)
+                        if (review.rating != null) ...[
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 7,
@@ -1353,6 +1370,63 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                                 color: RatingModal.letterboxdGreen,
                               ),
                             ),
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        if (!isOwnComment)
+                          PopupMenuButton<String>(
+                            icon: const Icon(
+                              Icons.more_vert_rounded,
+                              size: 18,
+                              color: AppColors.textMuted,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            tooltip: 'Opções do comentário',
+                            color: AppColors.surfaceHigh,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: const BorderSide(color: AppColors.outline),
+                            ),
+                            onSelected: (value) async {
+                              if (value == 'report') {
+                                final reported = await showReportBottomSheet(
+                                  context: context,
+                                  targetType: ReportTargetType.comment,
+                                  targetId: review.id,
+                                  reportedUserId: review.userId,
+                                  reportedUsername: review.username,
+                                );
+                                if (reported == true && mounted) {
+                                  setState(() {
+                                    _hiddenReportedComments.add(review.id);
+                                  });
+                                }
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem<String>(
+                                value: 'report',
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.flag_outlined,
+                                      size: 16,
+                                      color: AppColors.danger,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Denunciar comentário',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: AppColors.danger,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                       ],
                     ),

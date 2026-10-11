@@ -6,6 +6,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/seriolab_loader.dart';
+import '../../../reports/domain/entities/report_model.dart';
+import '../../../reports/presentation/widgets/report_bottom_sheet.dart';
 import '../../../settings/presentation/widgets/user_avatar_widget.dart';
 import '../../../shows/presentation/screens/show_detail_screen.dart';
 import '../../../tracking/presentation/widgets/top_favorites_section.dart';
@@ -286,12 +288,42 @@ class _UserProfileHeader extends ConsumerWidget {
 
                   const SizedBox(height: 16),
 
-                  // Dynamic Action Button (Seguir / A Seguir)
+                  // Dynamic Action Button (Seguir / A Seguir) and Options
                   if (!profile.isCurrentUser)
-                    _FollowActionButton(
-                      userId: profile.id,
-                      username: profile.handle,
-                      isFollowing: isFollowing,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _FollowActionButton(
+                          userId: profile.id,
+                          username: profile.handle,
+                          isFollowing: isFollowing,
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceHigh,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.outline),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.flag_outlined,
+                              size: 18,
+                              color: AppColors.textMuted,
+                            ),
+                            tooltip: 'Denunciar utilizador',
+                            onPressed: () {
+                              showReportBottomSheet(
+                                context: context,
+                                targetType: ReportTargetType.userProfile,
+                                targetId: profile.id,
+                                reportedUserId: profile.id,
+                                reportedUsername: profile.handle,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                 ],
               ),
@@ -314,6 +346,66 @@ class _UserProfileHeader extends ConsumerWidget {
             ),
           ),
         ),
+
+        // Options button (three dots) on top right of banner
+        if (!profile.isCurrentUser)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 12,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+              child: PopupMenuButton<String>(
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                tooltip: 'Mais opções',
+                color: AppColors.surfaceHigh,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: AppColors.outline),
+                ),
+                onSelected: (val) {
+                  if (val == 'report') {
+                    showReportBottomSheet(
+                      context: context,
+                      targetType: ReportTargetType.userProfile,
+                      targetId: profile.id,
+                      reportedUserId: profile.id,
+                      reportedUsername: profile.handle,
+                    );
+                  }
+                },
+                itemBuilder: (ctx) => [
+                  const PopupMenuItem<String>(
+                    value: 'report',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.flag_outlined,
+                          size: 16,
+                          color: AppColors.danger,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Denunciar utilizador',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.danger,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
 
         // Overlapping Avatar
         Positioned(
