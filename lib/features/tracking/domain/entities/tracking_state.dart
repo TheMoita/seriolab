@@ -20,6 +20,24 @@ class UserStats {
   double get daysWatched => minutesWatched / 1440;
   int get totalShows => showsByStatus.values.fold(0, (a, b) => a + b);
   int count(TrackingStatus s) => showsByStatus[s] ?? 0;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserStats &&
+          runtimeType == other.runtimeType &&
+          episodesWatched == other.episodesWatched &&
+          minutesWatched == other.minutesWatched &&
+          mapEquals(showsByStatus, other.showsByStatus);
+
+  @override
+  int get hashCode => Object.hash(
+        episodesWatched,
+        minutesWatched,
+        Object.hashAll(
+          showsByStatus.entries.map((e) => Object.hash(e.key, e.value)),
+        ),
+      );
 }
 
 /// Immutable, in-memory view of everything the user tracks.
@@ -121,4 +139,18 @@ class TrackingState {
     Map<int, Map<EpisodeKey, WatchedEpisode>>? watched,
   }) =>
       TrackingState(shows: shows ?? this.shows, watched: watched ?? this.watched);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TrackingState &&
+          runtimeType == other.runtimeType &&
+          mapEquals(shows, other.shows) &&
+          mapEquals(watched, other.watched);
+
+  @override
+  int get hashCode => Object.hash(
+        Object.hashAll(shows.entries.map((e) => Object.hash(e.key, e.value))),
+        Object.hashAll(watched.entries.map((e) => Object.hash(e.key, e.value))),
+      );
 }

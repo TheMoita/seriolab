@@ -15,6 +15,7 @@ import '../../../settings/presentation/widgets/edit_profile_sheet.dart';
 import '../../../shows/presentation/providers/show_providers.dart';
 import '../../../shows/presentation/screens/show_detail_screen.dart';
 import '../../domain/entities/tracking_entities.dart';
+import '../controllers/profile_controller.dart';
 import '../providers/tracking_providers.dart';
 import '../widgets/profile_banner_header.dart';
 import '../widgets/ratings_breakdown_section.dart';
@@ -64,9 +65,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final trackingAsync = ref.watch(trackingControllerProvider);
-    final stats = ref.watch(userStatsProvider);
+    final profileAsync = ref.watch(profileControllerProvider);
+    final stats = ref.watch(profileStatsProvider) ?? ref.watch(userStatsProvider);
     final settings = ref.watch(settingsControllerProvider);
     final authState = ref.watch(authControllerProvider);
+    final effectiveTracking = profileAsync.hasValue ? profileAsync : trackingAsync;
 
     return Scaffold(
       appBar: AppBar(
@@ -85,7 +88,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
         ],
       ),
-      body: trackingAsync.when(
+      body: effectiveTracking.when(
         loading: () => const Center(
           child: SeriolabLoader(),
         ),
@@ -391,11 +394,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 }
 
                 return ListView.builder(
+                  key: PageStorageKey('profile_tab_${status.name}'),
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                   itemCount: shows.length,
                   itemBuilder: (context, idx) {
                     final tracked = shows[idx];
                     return _TrackedShowTile(
+                      key: ValueKey('tracked_show_${tracked.showId}'),
                       tracked: tracked,
                       status: status,
                     );
@@ -468,6 +473,7 @@ class _MetricCard extends StatelessWidget {
 
 class _TrackedShowTile extends ConsumerWidget {
   const _TrackedShowTile({
+    super.key,
     required this.tracked,
     required this.status,
   });
@@ -702,6 +708,6 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(_SliverTabBarDelegate oldDelegate) {
-    return false;
+    return true;
   }
 }

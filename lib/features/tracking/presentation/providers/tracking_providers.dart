@@ -8,10 +8,21 @@ import '../../../shows/domain/entities/episode.dart';
 import '../../../shows/domain/entities/show.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../data/demo_data_seeder.dart';
+import '../../data/repositories/user_library_repository_impl.dart';
 import '../../data/services/firestore_sync_service.dart';
 import '../../domain/entities/tracking_entities.dart';
 import '../../domain/entities/tracking_state.dart';
 import '../../domain/repositories/tracking_repository.dart';
+import '../../domain/repositories/user_library_repository.dart';
+
+final userLibraryRepositoryProvider = Provider<UserLibraryRepository>((ref) {
+  final syncService = ref.watch(firestoreSyncServiceProvider);
+  final trackingRepo = ref.watch(trackingRepositoryProvider);
+  return UserLibraryRepositoryImpl(
+    syncService: syncService,
+    trackingRepo: trackingRepo,
+  );
+});
 
 final trackingControllerProvider =
     AsyncNotifierProvider<TrackingController, TrackingState>(
@@ -48,6 +59,14 @@ class TrackingController extends AsyncNotifier<TrackingState> {
   @override
   Future<TrackingState> build() async {
     final repo = ref.watch(trackingRepositoryProvider);
+    final syncService = ref.watch(firestoreSyncServiceProvider);
+
+    // Register active listener with FirestoreSyncService for real-time cloud updates
+    final unregister = syncService.addTrackingListener((snapshot) {
+      syncFromRemote(snapshot);
+    });
+    ref.onDispose(unregister);
+
     if (ref.watch(demoSeedingEnabledProvider)) {
       try {
         await DemoDataSeeder(

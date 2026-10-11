@@ -11,6 +11,7 @@ import '../../../settings/domain/repositories/settings_repository.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../shows/domain/entities/episode.dart';
 import '../../domain/entities/tracking_entities.dart';
+import '../../domain/entities/tracking_state.dart';
 import '../../domain/repositories/tracking_repository.dart';
 import '../../presentation/providers/tracking_providers.dart';
 
@@ -38,8 +39,28 @@ class FirestoreSyncService {
 
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userDocSubscription;
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _watchlistSubscription;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _librarySubscription;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _watchedEpisodesSubscription;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _profileSubscription;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _favoritesSubscription;
+
+  final Set<void Function(TrackingSnapshot snapshot)> _trackingListeners = {};
+
+  /// Registers a reactive callback triggered whenever cloud library changes are synced down.
+  void Function() addTrackingListener(void Function(TrackingSnapshot snapshot) listener) {
+    _trackingListeners.add(listener);
+    return () => _trackingListeners.remove(listener);
+  }
+
+  void _notifyTrackingListeners(TrackingSnapshot snapshot) {
+    for (final listener in List.of(_trackingListeners)) {
+      try {
+        listener(snapshot);
+      } catch (e) {
+        debugPrint('FirestoreSyncService: tracking listener notification note: $e');
+      }
+    }
+  }
 
   /// Resolves the authenticated user ID from active state or Firebase Auth.
   String? get _resolvedUid {
@@ -84,6 +105,10 @@ class FirestoreSyncService {
     _userDocSubscription = null;
     _watchlistSubscription?.cancel();
     _watchlistSubscription = null;
+    _librarySubscription?.cancel();
+    _librarySubscription = null;
+    _watchedEpisodesSubscription?.cancel();
+    _watchedEpisodesSubscription = null;
     _profileSubscription?.cancel();
     _profileSubscription = null;
     _favoritesSubscription?.cancel();
@@ -192,20 +217,30 @@ class FirestoreSyncService {
         await syncFavorites(localSettings, uid: uid);
       }
 
-      // 4. Watchlist Sync (users/{uid}/watchlist/{seriesId})
+      // 4. Watchlist & Library Sync (users/{uid}/library and users/{uid}/watchlist)
       final watchlistCol = userDocRef.collection('watchlist');
+      final libraryCol = userDocRef.collection('library');
       try {
         final watchlistSnapshot = await watchlistCol.get();
+        final librarySnapshot = await libraryCol.get();
+        final remoteDocs = <String, Map<String, dynamic>>{};
+        for (final doc in watchlistSnapshot.docs) {
+          remoteDocs[doc.id] = doc.data();
+        }
+        for (final doc in librarySnapshot.docs) {
+          remoteDocs[doc.id] = doc.data();
+        }
+
         final localSnapshot = await _trackingRepo.load();
         final localWatchedMap = <int, List<WatchedEpisode>>{};
         for (final ep in localSnapshot.episodes) {
           localWatchedMap.putIfAbsent(ep.showId, () => []).add(ep);
         }
 
-        if (watchlistSnapshot.docs.isNotEmpty) {
+        if (remoteDocs.isNotEmpty) {
           final remoteShowIds = <int>{};
-          for (final doc in watchlistSnapshot.docs) {
-            final data = doc.data();
+          for (final entry in remoteDocs.entries) {
+            final data = entry.value;
             final show = trackedShowFromMap(data);
             final episodes = watchedEpisodesFromMap(show.showId, data);
             remoteShowIds.add(show.showId);
@@ -219,30 +254,31 @@ class FirestoreSyncService {
           // If local database had shows not present in Firestore, push them up
           for (final localShow in localSnapshot.shows) {
             if (!remoteShowIds.contains(localShow.showId)) {
-              await watchlistCol.doc('${localShow.showId}').set(
-                    trackedShowToMap(
-                      localShow,
-                      watchedEpisodes: localWatchedMap[localShow.showId] ?? const [],
-                    ),
-                  );
+              final showMap = trackedShowToMap(
+                localShow,
+                watchedEpisodes: localWatchedMap[localShow.showId] ?? const [],
+              );
+              await watchlistCol.doc('${localShow.showId}').set(showMap);
+              await libraryCol.doc('${localShow.showId}').set(showMap);
             }
           }
 
           final mergedSnapshot = await _trackingRepo.load();
           trackingController?.syncFromRemote(mergedSnapshot);
+          _notifyTrackingListeners(mergedSnapshot);
         } else if (localSnapshot.shows.isNotEmpty) {
           // Upload local shows to Firestore
           for (final localShow in localSnapshot.shows) {
-            await watchlistCol.doc('${localShow.showId}').set(
-                  trackedShowToMap(
-                    localShow,
-                    watchedEpisodes: localWatchedMap[localShow.showId] ?? const [],
-                  ),
-                );
+            final showMap = trackedShowToMap(
+              localShow,
+              watchedEpisodes: localWatchedMap[localShow.showId] ?? const [],
+            );
+            await watchlistCol.doc('${localShow.showId}').set(showMap);
+            await libraryCol.doc('${localShow.showId}').set(showMap);
           }
         }
       } catch (e) {
-        debugPrint('FirestoreSyncService: Watchlist sync note: $e');
+        debugPrint('FirestoreSyncService: Watchlist/Library sync note: $e');
       }
 
       // 5. Setup live reactive snapshot listeners
@@ -292,40 +328,124 @@ class FirestoreSyncService {
       },
     );
 
+    Future<void> handleLibrarySnapshotChanges(
+      QuerySnapshot<Map<String, dynamic>> querySnap,
+    ) async {
+      if (_isSyncingDown) return;
+      _isSyncingDown = true;
+      try {
+        var hasChanges = false;
+        for (final docChange in querySnap.docChanges) {
+          hasChanges = true;
+          if (docChange.type == DocumentChangeType.removed) {
+            final showId = int.tryParse(docChange.doc.id);
+            if (showId != null) {
+              await _trackingRepo.removeShow(showId);
+            }
+          } else {
+            final data = docChange.doc.data();
+            if (data != null) {
+              final show = trackedShowFromMap(data);
+              final episodes = watchedEpisodesFromMap(show.showId, data);
+              await _trackingRepo.upsertShow(show);
+              if (episodes.isNotEmpty) {
+                await _trackingRepo.markWatched(episodes);
+              }
+            }
+          }
+        }
+        if (hasChanges) {
+          final updated = await _trackingRepo.load();
+          trackingController?.syncFromRemote(updated);
+          _notifyTrackingListeners(updated);
+        }
+      } catch (e) {
+        debugPrint('FirestoreSyncService: Library live listener error: $e');
+      } finally {
+        _isSyncingDown = false;
+      }
+    }
+
     // Watchlist listener
-    _watchlistSubscription = userDocRef.collection('watchlist').snapshots().listen(
+    _watchlistSubscription = userDocRef
+        .collection('watchlist')
+        .snapshots()
+        .listen(
+          handleLibrarySnapshotChanges,
+          onError: (e) {
+            debugPrint('FirestoreSyncService: Watchlist subscription error: $e');
+          },
+        );
+
+    // Library listener (mirrored collection users/{uid}/library)
+    _librarySubscription = userDocRef
+        .collection('library')
+        .snapshots()
+        .listen(
+          handleLibrarySnapshotChanges,
+          onError: (e) {
+            debugPrint('FirestoreSyncService: Library subscription error: $e');
+          },
+        );
+
+    // Watched episodes subcollection listener (users/{uid}/watched_episodes)
+    _watchedEpisodesSubscription = userDocRef
+        .collection('watched_episodes')
+        .snapshots()
+        .listen(
       (querySnap) async {
         if (_isSyncingDown) return;
         _isSyncingDown = true;
         try {
+          var hasEpisodeChanges = false;
           for (final docChange in querySnap.docChanges) {
-            if (docChange.type == DocumentChangeType.removed) {
-              final showId = int.tryParse(docChange.doc.id);
-              if (showId != null) {
-                await _trackingRepo.removeShow(showId);
-              }
-            } else {
-              final data = docChange.doc.data();
-              if (data != null) {
-                final show = trackedShowFromMap(data);
-                final episodes = watchedEpisodesFromMap(show.showId, data);
-                await _trackingRepo.upsertShow(show);
-                if (episodes.isNotEmpty) {
-                  await _trackingRepo.markWatched(episodes);
-                }
+            hasEpisodeChanges = true;
+            final data = docChange.doc.data();
+            final showId = (data?['showId'] as num?)?.toInt();
+            final season = (data?['seasonNumber'] as num?)?.toInt();
+            final episode = (data?['episodeNumber'] as num?)?.toInt();
+            if (showId != null && season != null && episode != null) {
+              final key = EpisodeKey(season, episode);
+              if (docChange.type == DocumentChangeType.removed) {
+                await _trackingRepo.unmarkWatched(showId, [key]);
+              } else if (data != null) {
+                final runtime = (data['runtime'] as num?)?.toInt() ?? 45;
+                final watchedAtMs = (data['watchedAt'] as num?)?.toInt() ?? 0;
+                final userRating = (data['userRating'] as num?)?.toDouble();
+                final reviewText = data['reviewText'] as String?;
+                final hasSpoilers = data['hasSpoilers'] as bool? ?? false;
+                final loggedAtMs = (data['loggedAt'] as num?)?.toInt();
+
+                await _trackingRepo.markWatched([
+                  WatchedEpisode(
+                    showId: showId,
+                    key: key,
+                    runtime: runtime,
+                    watchedAt: DateTime.fromMillisecondsSinceEpoch(watchedAtMs),
+                    userRating: userRating,
+                    reviewText: reviewText,
+                    hasSpoilers: hasSpoilers,
+                    loggedAt: loggedAtMs != null
+                        ? DateTime.fromMillisecondsSinceEpoch(loggedAtMs)
+                        : null,
+                  ),
+                ]);
               }
             }
           }
-          final updated = await _trackingRepo.load();
-          trackingController?.syncFromRemote(updated);
+          if (hasEpisodeChanges) {
+            final updated = await _trackingRepo.load();
+            trackingController?.syncFromRemote(updated);
+            _notifyTrackingListeners(updated);
+          }
         } catch (e) {
-          debugPrint('FirestoreSyncService: Watchlist live listener error: $e');
+          debugPrint('FirestoreSyncService: watched_episodes live listener error: $e');
         } finally {
           _isSyncingDown = false;
         }
       },
       onError: (e) {
-        debugPrint('FirestoreSyncService: Watchlist subscription error: $e');
+        debugPrint('FirestoreSyncService: watched_episodes subscription error: $e');
       },
     );
 
@@ -371,7 +491,57 @@ class FirestoreSyncService {
     );
   }
 
-  /// Syncs an individual show and its watched episodes to `users/{uid}/watchlist/{seriesId}`.
+  /// Real-time stream of tracked shows in the user's library.
+  Stream<List<TrackedShow>> streamUserLibrary(String uid) {
+    final firestore = _firestore;
+    if (firestore == null || uid.trim().isEmpty) {
+      return Stream.fromFuture(_trackingRepo.load().then((s) => s.shows));
+    }
+    return firestore
+        .collection('users')
+        .doc(uid)
+        .collection('library')
+        .snapshots()
+        .asyncMap((snap) async {
+          if (snap.docs.isNotEmpty) {
+            return snap.docs.map((d) => trackedShowFromMap(d.data())).toList();
+          }
+          final fallbackSnap = await firestore
+              .collection('users')
+              .doc(uid)
+              .collection('watchlist')
+              .get();
+          if (fallbackSnap.docs.isNotEmpty) {
+            return fallbackSnap.docs
+                .map((d) => trackedShowFromMap(d.data()))
+                .toList();
+          }
+          final local = await _trackingRepo.load();
+          return local.shows;
+        });
+  }
+
+  /// Real-time stream of aggregated UserStats.
+  Stream<UserStats> streamUserStats(String uid) {
+    final firestore = _firestore;
+    if (firestore == null || uid.trim().isEmpty) {
+      return Stream.fromFuture(
+        _trackingRepo.load().then((s) => TrackingState.fromSnapshot(s).stats),
+      );
+    }
+    return firestore
+        .collection('users')
+        .doc(uid)
+        .collection('library')
+        .snapshots()
+        .asyncMap((_) async {
+          final snapshot = await _trackingRepo.load();
+          return TrackingState.fromSnapshot(snapshot).stats;
+        });
+  }
+
+  /// Syncs an individual show and its watched episodes to `users/{uid}/watchlist/{seriesId}`
+  /// and `users/{uid}/library/{seriesId}`.
   Future<void> syncTrackedShow(
     TrackedShow show, {
     List<WatchedEpisode>? watchedEpisodes,
@@ -384,13 +554,27 @@ class FirestoreSyncService {
     }
 
     try {
-      final docRef = firestore
+      final docMap = trackedShowToMap(show, watchedEpisodes: watchedEpisodes);
+
+      // Persist to watchlist collection
+      final watchlistDocRef = firestore
           .collection('users')
           .doc(effectiveUid)
           .collection('watchlist')
           .doc('${show.showId}');
-      await docRef.set(
-        trackedShowToMap(show, watchedEpisodes: watchedEpisodes),
+      await watchlistDocRef.set(
+        docMap,
+        SetOptions(merge: true),
+      );
+
+      // Mirror to library collection
+      final libraryDocRef = firestore
+          .collection('users')
+          .doc(effectiveUid)
+          .collection('library')
+          .doc('${show.showId}');
+      await libraryDocRef.set(
+        docMap,
         SetOptions(merge: true),
       );
 
@@ -428,7 +612,7 @@ class FirestoreSyncService {
     }
   }
 
-  /// Removes an individual show from `users/{uid}/watchlist/{seriesId}`.
+  /// Removes an individual show from `users/{uid}/watchlist/{seriesId}` and `library`.
   Future<void> deleteTrackedShow(int showId, {String? uid}) async {
     final firestore = _firestore;
     final effectiveUid = uid ?? _resolvedUid;
@@ -437,12 +621,19 @@ class FirestoreSyncService {
     }
 
     try {
-      final docRef = firestore
+      final watchlistDocRef = firestore
           .collection('users')
           .doc(effectiveUid)
           .collection('watchlist')
           .doc('$showId');
-      await docRef.delete();
+      await watchlistDocRef.delete();
+
+      final libraryDocRef = firestore
+          .collection('users')
+          .doc(effectiveUid)
+          .collection('library')
+          .doc('$showId');
+      await libraryDocRef.delete();
 
       try {
         final watchedQuery = await firestore
