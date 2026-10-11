@@ -167,7 +167,7 @@ void main() {
       expect(find.text('#5'), findsNothing);
 
       // Verify header and empty slots
-      expect(find.text('TOP 5 FAVORITES'), findsOneWidget);
+      expect(find.text('TOP 5'), findsOneWidget);
       expect(find.byIcon(Icons.add_rounded), findsNWidgets(4)); // 4 empty slots
     });
   });

@@ -239,7 +239,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     // Verify RatingsBreakdownSection displays 0-ratings state
-    expect(find.text('RATINGS BREAKDOWN'), findsOneWidget);
+    expect(find.text('RATINGS'), findsOneWidget);
     expect(find.text('Média: —'), findsOneWidget);
     expect(find.text('(0)'), findsOneWidget);
     expect(find.text('Ainda não avaliaste nenhuma série'), findsOneWidget);

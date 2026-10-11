@@ -35,7 +35,7 @@ class TopFavoritesSection extends ConsumerWidget {
         children: [
           // Section header
           const Text(
-            'TOP 5 FAVORITES',
+            'TOP 5',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w800,

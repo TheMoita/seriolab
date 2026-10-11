@@ -93,7 +93,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Section title is present
-      expect(find.text('TOP 5 FAVORITES'), findsOneWidget);
+      expect(find.text('TOP 5'), findsOneWidget);
 
       // Counter text like "0/5 selecionadas" must NOT exist
       expect(find.textContaining('selecionadas'), findsNothing);

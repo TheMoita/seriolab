@@ -121,7 +121,7 @@ class _RatingsBreakdownSectionState
             textBaseline: TextBaseline.alphabetic,
             children: [
               const Text(
-                'RATINGS BREAKDOWN',
+                'RATINGS',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,

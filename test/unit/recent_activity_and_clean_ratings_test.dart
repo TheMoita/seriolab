@@ -63,8 +63,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // RATINGS BREAKDOWN header is present
-      expect(find.text('RATINGS BREAKDOWN'), findsOneWidget);
+      // RATINGS header is present
+      expect(find.text('RATINGS'), findsOneWidget);
       // Empty state text is present when total = 0
       expect(find.text('Ainda não avaliaste nenhuma série'), findsOneWidget);
 
