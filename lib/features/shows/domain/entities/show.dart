@@ -381,12 +381,14 @@ class UpcomingEpisode {
     required this.showName,
     required this.episode,
     this.posterUrl,
+    this.backdropUrl,
     this.network,
   });
 
   final int showId;
   final String showName;
   final String? posterUrl;
+  final String? backdropUrl;
   final String? network;
   final Episode episode;
 

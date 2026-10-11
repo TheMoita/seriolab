@@ -136,20 +136,41 @@ class ShowRepositoryImpl implements ShowRepository {
         final show = await getShowDetails(id);
         final next = show.nextEpisodeToAir;
         if (next == null) return const [];
-        final season = await getSeason(id, next.seasonNumber);
-        return season.episodes
-            .where((e) {
-              final d = e.airDate;
-              return d != null && !d.isBefore(today) && !d.isAfter(until);
-            })
-            .map((e) => UpcomingEpisode(
-                  showId: id,
-                  showName: show.name,
-                  posterUrl: show.posterUrl,
-                  network: show.primaryNetwork,
-                  episode: e,
-                ))
-            .toList();
+        try {
+          final season = await getSeason(id, next.seasonNumber);
+          final episodes = season.episodes
+              .where((e) {
+                final d = e.airDate;
+                return d != null && !d.isBefore(today) && !d.isAfter(until);
+              })
+              .map((e) => UpcomingEpisode(
+                    showId: id,
+                    showName: show.name,
+                    posterUrl: show.posterUrl,
+                    backdropUrl: show.backdropUrl,
+                    network: show.primaryNetwork,
+                    episode: e,
+                  ))
+              .toList();
+          if (episodes.isNotEmpty) return episodes;
+        } catch (_) {
+          // If individual season cannot be loaded, fallback to nextEpisodeToAir
+        }
+
+        final nextDate = next.airDate;
+        if (nextDate != null && !nextDate.isBefore(today) && !nextDate.isAfter(until)) {
+          return [
+            UpcomingEpisode(
+              showId: id,
+              showName: show.name,
+              posterUrl: show.posterUrl,
+              backdropUrl: show.backdropUrl,
+              network: show.primaryNetwork,
+              episode: next,
+            ),
+          ];
+        }
+        return const [];
       } on CatalogException {
         // A single failing show must not break the whole calendar.
         return const [];

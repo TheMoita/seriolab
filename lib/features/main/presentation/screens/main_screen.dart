@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:series_app/features/home/presentation/screens/home_screen.dart';
-import 'package:series_app/features/shows/presentation/screens/calendar_screen.dart';
+import 'package:series_app/features/schedule/presentation/screens/schedule_screen.dart';
 import 'package:series_app/features/shows/presentation/screens/explore_screen.dart';
 import 'package:series_app/features/tracking/presentation/screens/profile_screen.dart';
 
@@ -29,7 +29,7 @@ class _MainScreenState extends State<MainScreen> {
         children: [
           HomeScreen(onExploreTap: _navigateToExplore),
           const ExploreScreen(),
-          CalendarScreen(onExploreTap: _navigateToExplore),
+          ScheduleScreen(onExploreTap: _navigateToExplore),
           ProfileScreen(onExploreTap: _navigateToExplore),
         ],
       ),
