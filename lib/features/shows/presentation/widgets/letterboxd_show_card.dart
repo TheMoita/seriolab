@@ -111,57 +111,61 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                 const SizedBox(height: 16),
                 const Divider(height: 1, color: AppColors.outline),
                 const SizedBox(height: 8),
-                for (final status in TrackingStatus.values)
-                  ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(
-                      status.icon,
-                      color: current?.status == status
-                          ? status.color
-                          : AppColors.textSecondary,
-                    ),
-                    title: Text(
-                      status.label,
-                      style: TextStyle(
-                        fontWeight: current?.status == status
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                        color: current?.status == status
-                            ? Colors.white
-                            : AppColors.textPrimary,
+                if (current != null) ...[
+                  if (current.status != TrackingStatus.dropped)
+                    ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(
+                        Icons.pause_circle_outline_rounded,
+                        color: Color(0xFFF59E0B),
                       ),
-                    ),
-                    trailing: current?.status == status
-                        ? Icon(Icons.check_rounded, color: status.color, size: 20)
-                        : null,
-                    onTap: () async {
-                      Navigator.of(ctx).pop();
-                      final hadUnwatched =
-                          await tracking.setSummaryStatus(widget.show, status);
-                      if (!context.mounted) return;
-                      if (status == TrackingStatus.completed && hadUnwatched) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Marcaste a série como Terminada. Todos os episódios foram assinalados como vistos.',
-                            ),
-                            duration: Duration(seconds: 3),
-                          ),
-                        );
-                      } else {
+                      title: const Text(
+                        'Marcar como Abandonada / Pausa',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      onTap: () async {
+                        Navigator.of(ctx).pop();
+                        await tracking.setSummaryStatus(widget.show, TrackingStatus.dropped);
+                        if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(
-                              '$displayTitle marcada como "${status.label}"',
-                            ),
+                            content: Text('$displayTitle marcada como Abandonada.'),
                             duration: const Duration(seconds: 2),
                           ),
                         );
-                      }
-                    },
-                  ),
-                if (current != null) ...[
+                      },
+                    )
+                  else
+                    ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(
+                        Icons.play_circle_outline_rounded,
+                        color: AppColors.primary,
+                      ),
+                      title: const Text(
+                        'Retomar Série ("A Ver")',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      onTap: () async {
+                        Navigator.of(ctx).pop();
+                        await tracking.setSummaryStatus(widget.show, TrackingStatus.watching);
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('$displayTitle retomada ("A Ver").'),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                    ),
                   const Divider(height: 1, color: AppColors.outline),
                   ListTile(
                     dense: true,
@@ -171,23 +175,60 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                       color: AppColors.danger,
                     ),
                     title: const Text(
-                      'Remover da lista',
+                      'Remover da Minha Lista',
                       style: TextStyle(
                         color: AppColors.danger,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.of(ctx).pop();
-                      tracking.removeShow(widget.show.id);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            '$displayTitle removida da lista',
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (dlgCtx) => AlertDialog(
+                          backgroundColor: AppColors.surfaceHigh,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: const BorderSide(color: AppColors.outline),
                           ),
-                          duration: const Duration(seconds: 2),
+                          title: const Text(
+                            'Remover da Minha Lista?',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          content: Text(
+                            'Tens a certeza que queres remover "$displayTitle" da tua biblioteca? O teu progresso será apagado.',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(dlgCtx, false),
+                              child: const Text('Cancelar', style: TextStyle(color: AppColors.textMuted)),
+                            ),
+                            FilledButton(
+                              style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+                              onPressed: () => Navigator.pop(dlgCtx, true),
+                              child: const Text('Remover'),
+                            ),
+                          ],
                         ),
                       );
+                      if (confirmed == true && context.mounted) {
+                        await tracking.removeShow(widget.show.id);
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('$displayTitle removida da tua biblioteca.'),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
                     },
                   ),
                 ],
@@ -206,6 +247,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
     final showOriginal =
         ref.watch(settingsControllerProvider.select((s) => s.showOriginalTitles));
     final displayTitle = widget.show.displayTitle(showOriginal: showOriginal);
+    final tracking = ref.read(trackingControllerProvider.notifier);
 
     final content = Column(
       mainAxisSize: MainAxisSize.min,
@@ -345,7 +387,21 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () => _showQuickStatusSheet(context, tracked),
+                        onTap: () async {
+                          if (tracked == null) {
+                            await tracking.setSummaryStatus(widget.show, TrackingStatus.watchlist);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('$displayTitle adicionada a "Quero Ver"'),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          } else {
+                            _showQuickStatusSheet(context, tracked);
+                          }
+                        },
                         borderRadius: BorderRadius.circular(16),
                         child: Container(
                           padding: const EdgeInsets.all(5),

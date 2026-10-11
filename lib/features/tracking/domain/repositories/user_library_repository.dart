@@ -1,3 +1,4 @@
+import '../../../shows/domain/entities/show.dart';
 import '../../domain/entities/tracking_entities.dart';
 import '../../domain/entities/tracking_state.dart';
 
@@ -19,6 +20,17 @@ abstract class UserLibraryRepository {
     List<WatchedEpisode>? watchedEpisodes,
   });
 
+  /// Automatically updates or adds a show when an episode is marked as watched:
+  /// - If the show is not in library: adds as 'watching'
+  /// - If the show is in 'watchlist' ('plan_to_watch'): updates to 'watching'
+  /// - If all episodes are watched on a finished show: updates to 'completed'
+  Future<TrackingStatus> handleEpisodeWatched({
+    required String userId,
+    required ShowDetails show,
+    required int watchedRegularEpisodesCount,
+  });
+
   /// Deletes a show from the user's library and cloud storage.
   Future<void> removeShow(String userId, int showId);
 }
+

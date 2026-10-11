@@ -279,4 +279,95 @@ void main() {
       expect(state.show(95396)?.status, TrackingStatus.completed);
     });
   });
+
+  group('Streamlined series status automation and management', () {
+    test('nextStatusFor: untracked or watchlist transitions to watching on episode watched', () {
+      // 1. Untracked show (current == null) becomes watching when an episode is watched
+      expect(
+        TrackingController.nextStatusFor(
+          current: null,
+          markedWatched: true,
+          watchedRegular: 1,
+          airedEpisodes: 10,
+          showFinished: false,
+        ),
+        TrackingStatus.watching,
+      );
+
+      // 2. Watchlist show becomes watching when an episode is watched
+      expect(
+        TrackingController.nextStatusFor(
+          current: TrackingStatus.watchlist,
+          markedWatched: true,
+          watchedRegular: 1,
+          airedEpisodes: 10,
+          showFinished: false,
+        ),
+        TrackingStatus.watching,
+      );
+
+      // 3. Watchlist show that finishes all episodes on ended show becomes completed
+      expect(
+        TrackingController.nextStatusFor(
+          current: TrackingStatus.watchlist,
+          markedWatched: true,
+          watchedRegular: 10,
+          airedEpisodes: 10,
+          showFinished: true,
+          totalEpisodes: 10,
+        ),
+        TrackingStatus.completed,
+      );
+    });
+
+    test('End-to-end: 1-tap add to watchlist, auto-watching on episode watched, drop, and remove', () async {
+      final inMemoryRepo = InMemoryTrackingRepository();
+      final testRepo = ShowRepositoryImpl(
+        remote: MockShowRemoteDataSource(latency: Duration.zero),
+        isUsingMockData: true,
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          trackingRepositoryProvider.overrideWithValue(inMemoryRepo),
+          showRepositoryProvider.overrideWithValue(testRepo),
+          demoSeedingEnabledProvider.overrideWithValue(false),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(trackingControllerProvider.future);
+      final notifier = container.read(trackingControllerProvider.notifier);
+
+      final showWithEpisodes = await testRepo.getShowWithEpisodes(95396); // Severance
+      final showDetails = showWithEpisodes.show;
+      final summary = showDetails.toSummary();
+
+      final firstEpisode = showWithEpisodes.episodes.first;
+
+      // 1. Single tap add: sets status to watchlist
+      await notifier.setSummaryStatus(summary, TrackingStatus.watchlist);
+      var state = container.read(trackingControllerProvider).value!;
+      expect(state.show(showDetails.id)?.status, TrackingStatus.watchlist);
+      expect(state.isWatched(showDetails.id, firstEpisode.key), isFalse);
+
+      // 2. Mark episode watched: automatically moves from watchlist to watching
+      await notifier.toggleEpisode(showDetails, firstEpisode);
+      state = container.read(trackingControllerProvider).value!;
+      expect(state.show(showDetails.id)?.status, TrackingStatus.watching);
+      expect(state.isWatched(showDetails.id, firstEpisode.key), isTrue);
+
+      // 3. Mark as dropped (abandonada / pausa)
+      await notifier.setStatus(showDetails, TrackingStatus.dropped);
+      state = container.read(trackingControllerProvider).value!;
+      expect(state.show(showDetails.id)?.status, TrackingStatus.dropped);
+
+      // 4. Remove show: completely removes show and its watched episodes
+      await notifier.removeShow(showDetails.id);
+      state = container.read(trackingControllerProvider).value!;
+      expect(state.show(showDetails.id), isNull);
+      expect(state.watchedFor(showDetails.id), isEmpty);
+    });
+  });
 }
+

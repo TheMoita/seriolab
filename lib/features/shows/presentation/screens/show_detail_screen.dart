@@ -334,7 +334,23 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
-                    onPressed: () => _showTrackingOptionsModal(context, show, tracked),
+                    onPressed: () async {
+                      if (tracked == null) {
+                        await ref
+                            .read(trackingControllerProvider.notifier)
+                            .setStatus(show, TrackingStatus.watchlist);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Série adicionada a "Quero Ver".'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      } else {
+                        _showSeriesMoreOptionsSheet(context, show, tracked);
+                      }
+                    },
                     style: FilledButton.styleFrom(
                       backgroundColor: tracked != null
                           ? AppColors.surfaceHigh
@@ -351,14 +367,19 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                       ),
                     ),
                     icon: Icon(
-                      tracked != null ? tracked.status.icon : Icons.add_rounded,
+                      tracked != null ? tracked.status.icon : Icons.bookmark_add_outlined,
                       size: 20,
                       color: tracked != null ? tracked.status.color : AppColors.onPrimary,
                     ),
                     label: Text(
                       tracked != null
-                          ? 'Lista: ${tracked.status.label} (Alterar)'
-                          : 'Seguir / Adicionar à Lista',
+                          ? switch (tracked.status) {
+                              TrackingStatus.watchlist => 'Na Minha Lista (Quero Ver)',
+                              TrackingStatus.watching => 'A Ver Atualmente',
+                              TrackingStatus.completed => 'Série Terminada',
+                              TrackingStatus.dropped => 'Série Abandonada',
+                            }
+                          : 'Seguir / Quero Ver',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -1148,14 +1169,15 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
     );
   }
 
-  void _showTrackingOptionsModal(
+  void _showSeriesMoreOptionsSheet(
     BuildContext context,
     ShowDetails show,
-    TrackedShow? current,
+    TrackedShow tracked,
   ) {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: false,
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1172,15 +1194,29 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-                      const Text(
-                        'Estado da Série',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              show.displayTitle(
+                                showOriginal: ref
+                                    .read(settingsControllerProvider)
+                                    .showOriginalTitles,
+                              ),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            StatusChip(status: tracked.status, compact: true),
+                          ],
                         ),
                       ),
-                      const Spacer(),
                       IconButton(
                         icon: const Icon(Icons.close_rounded),
                         onPressed: () => Navigator.pop(modalCtx),
@@ -1188,88 +1224,183 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 8),
                 const Divider(),
-                ...TrackingStatus.values.map((status) {
-                  final isCurrent = current?.status == status;
-                  return ListTile(
-                    leading: Icon(
-                      status.icon,
-                      color: isCurrent ? status.color : AppColors.textSecondary,
+
+                // Option 1: Drop or Resume
+                if (tracked.status != TrackingStatus.dropped)
+                  ListTile(
+                    leading: const Icon(
+                      Icons.pause_circle_outline_rounded,
+                      color: Color(0xFFF59E0B),
                     ),
-                    title: Text(
-                      status.label,
+                    title: const Text(
+                      'Marcar como Abandonada / Pausa',
                       style: TextStyle(
-                        fontWeight:
-                            isCurrent ? FontWeight.w800 : FontWeight.w600,
-                        color:
-                            isCurrent ? status.color : AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    trailing: isCurrent
-                        ? Icon(Icons.check_rounded, color: status.color)
-                        : null,
+                    subtitle: const Text(
+                      'Arquiva a série e retira-a de "A Ver Atualmente"',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
                     onTap: () async {
                       Navigator.pop(modalCtx);
-                      final hadUnwatched = await ref
+                      await ref
                           .read(trackingControllerProvider.notifier)
-                          .setStatus(show, status);
-                      if (!context.mounted) return;
-                      if (status == TrackingStatus.completed && hadUnwatched) {
+                          .setStatus(show, TrackingStatus.dropped);
+                      if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text(
-                              'Marcaste a série como Terminada. Todos os episódios foram assinalados como vistos.',
-                            ),
-                            duration: Duration(seconds: 3),
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Série marcada como "${status.label}"',
-                            ),
-                            duration: const Duration(seconds: 2),
+                            content: Text('Série marcada como Abandonada.'),
+                            duration: Duration(seconds: 2),
                           ),
                         );
                       }
                     },
-                  );
-                }),
-                if (current != null) ...[
-                  const Divider(),
+                  )
+                else
                   ListTile(
                     leading: const Icon(
-                      Icons.delete_outline_rounded,
-                      color: AppColors.danger,
+                      Icons.play_circle_outline_rounded,
+                      color: AppColors.primary,
                     ),
                     title: const Text(
-                      'Remover da minha lista',
+                      'Retomar Série ("A Ver")',
                       style: TextStyle(
-                        color: AppColors.danger,
                         fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    onTap: () {
+                    subtitle: const Text(
+                      'Reativa a série na tua lista de séries que estás a ver',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                    onTap: () async {
                       Navigator.pop(modalCtx);
-                      ref
+                      await ref
                           .read(trackingControllerProvider.notifier)
-                          .removeShow(show.id);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Série removida do teu perfil.'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
+                          .setStatus(show, TrackingStatus.watching);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Série reativada ("A Ver").'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
                     },
                   ),
-                ],
+
+                // Option 2: Remove from library
+                ListTile(
+                  leading: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: AppColors.danger,
+                  ),
+                  title: const Text(
+                    'Remover da Minha Lista',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.danger,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Elimina a série da tua biblioteca e apaga o progresso',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(modalCtx);
+                    _confirmRemoveShow(context, ref, show);
+                  },
+                ),
               ],
             ),
           ),
         );
       },
     );
+  }
+
+  static Future<void> _confirmRemoveShow(
+    BuildContext context,
+    WidgetRef ref,
+    ShowDetails show,
+  ) async {
+    final showOriginal =
+        ref.read(settingsControllerProvider).showOriginalTitles;
+    final title = show.displayTitle(showOriginal: showOriginal);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceHigh,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.outline),
+        ),
+        title: const Text(
+          'Remover da Minha Lista?',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: Text(
+          'Tens a certeza que queres remover "$title" da tua biblioteca? O teu progresso e episódios vistos nesta série serão apagados.',
+          style: const TextStyle(
+            fontSize: 13,
+            color: AppColors.textSecondary,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: AppColors.textMuted),
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.danger,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Remover',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      await ref.read(trackingControllerProvider.notifier).removeShow(show.id);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Série removida da tua biblioteca.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildOverallRatingCard(
@@ -1649,6 +1780,7 @@ class _ShowDetailOptionsMenu extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsControllerProvider);
     final isInTopFive = settings.favoriteShowIds.contains(show.id);
+    final tracked = ref.watch(trackedShowProvider(show.id));
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -1664,12 +1796,106 @@ class _ShowDetailOptionsMenu extends ConsumerWidget {
           borderRadius: BorderRadius.circular(14),
           side: const BorderSide(color: AppColors.outline),
         ),
-        onSelected: (value) {
+        onSelected: (value) async {
           if (value == 'top5') {
             _showTopFiveSlotPicker(context, ref, show);
+          } else if (value == 'drop') {
+            await ref
+                .read(trackingControllerProvider.notifier)
+                .setStatus(show, TrackingStatus.dropped);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Série marcada como Abandonada.'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          } else if (value == 'resume') {
+            await ref
+                .read(trackingControllerProvider.notifier)
+                .setStatus(show, TrackingStatus.watching);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Série reativada ("A Ver").'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          } else if (value == 'remove') {
+            _ShowDetailScreenState._confirmRemoveShow(context, ref, show);
           }
         },
         itemBuilder: (context) => [
+          if (tracked != null) ...[
+            if (tracked.status != TrackingStatus.dropped)
+              const PopupMenuItem<String>(
+                value: 'drop',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.pause_circle_outline_rounded,
+                      color: Color(0xFFF59E0B),
+                      size: 20,
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      'Marcar como Abandonada',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              const PopupMenuItem<String>(
+                value: 'resume',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.play_circle_outline_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      'Retomar Série ("A Ver")',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const PopupMenuItem<String>(
+              value: 'remove',
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.delete_outline_rounded,
+                    color: AppColors.danger,
+                    size: 20,
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    'Remover da Minha Lista',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.danger,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const PopupMenuDivider(),
+          ],
           PopupMenuItem<String>(
             value: 'top5',
             child: Row(
@@ -1679,7 +1905,7 @@ class _ShowDetailOptionsMenu extends ConsumerWidget {
                   color: AppColors.secondary,
                   size: 20,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Text(
                   isInTopFive ? 'Gerir no Top 5' : 'Adicionar ao Top 5',
                   style: const TextStyle(

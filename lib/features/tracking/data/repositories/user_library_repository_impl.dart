@@ -1,7 +1,9 @@
+import '../../../shows/domain/entities/show.dart';
 import '../../domain/entities/tracking_entities.dart';
 import '../../domain/entities/tracking_state.dart';
 import '../../domain/repositories/tracking_repository.dart';
 import '../../domain/repositories/user_library_repository.dart';
+import '../../presentation/providers/tracking_providers.dart';
 import '../services/firestore_sync_service.dart';
 
 /// Implementation of [UserLibraryRepository] combining local persistence
@@ -46,6 +48,43 @@ class UserLibraryRepositoryImpl implements UserLibraryRepository {
       watchedEpisodes: watchedEpisodes,
       uid: userId,
     );
+  }
+
+  @override
+  Future<TrackingStatus> handleEpisodeWatched({
+    required String userId,
+    required ShowDetails show,
+    required int watchedRegularEpisodesCount,
+  }) async {
+    final library = await getLibrary(userId);
+    final existing = library.where((s) => s.showId == show.id).firstOrNull;
+    final nextStatus = TrackingController.nextStatusFor(
+      current: existing?.status,
+      markedWatched: true,
+      watchedRegular: watchedRegularEpisodesCount,
+      airedEpisodes: show.airedEpisodeCount,
+      showFinished: show.status.isFinished,
+      totalEpisodes: show.totalEpisodeCount,
+    );
+
+    final now = DateTime.now();
+    final updated = (existing ??
+            TrackedShow(
+              showId: show.id,
+              name: show.name,
+              posterUrl: show.posterUrl,
+              status: nextStatus,
+              airedEpisodeCount: show.airedEpisodeCount,
+              episodeRuntime: show.episodeRuntime,
+              showStatus: show.status,
+              network: show.primaryNetwork,
+              addedAt: now,
+              updatedAt: now,
+            ))
+        .copyWith(status: nextStatus, updatedAt: now);
+
+    await updateShow(userId, updated);
+    return nextStatus;
   }
 
   @override

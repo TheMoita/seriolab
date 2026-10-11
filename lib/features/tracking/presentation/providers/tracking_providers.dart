@@ -657,13 +657,13 @@ class TrackingController extends AsyncNotifier<TrackingState> {
         }
       });
 
-  @visibleForTesting
   static TrackingStatus nextStatusFor({
     required TrackingStatus? current,
     required bool markedWatched,
     required int watchedRegular,
     required int airedEpisodes,
     required bool showFinished,
+    int totalEpisodes = 0,
   }) {
     var status = current ?? TrackingStatus.watching;
     if (markedWatched &&
@@ -672,9 +672,12 @@ class TrackingController extends AsyncNotifier<TrackingState> {
       status = TrackingStatus.watching;
     }
     final caughtUp = airedEpisodes > 0 && watchedRegular >= airedEpisodes;
-    if (caughtUp && showFinished) {
+    final allCompleted =
+        (totalEpisodes > 0 && watchedRegular >= totalEpisodes) ||
+            (caughtUp && showFinished);
+    if (allCompleted) {
       status = TrackingStatus.completed;
-    } else if (!caughtUp && status == TrackingStatus.completed) {
+    } else if (!allCompleted && status == TrackingStatus.completed) {
       status = TrackingStatus.watching;
     }
     return status;
@@ -692,6 +695,7 @@ class TrackingController extends AsyncNotifier<TrackingState> {
         watchedRegular: watchedRegular,
         airedEpisodes: show.airedEpisodeCount,
         showFinished: show.status.isFinished,
+        totalEpisodes: show.totalEpisodeCount,
       );
 }
 
