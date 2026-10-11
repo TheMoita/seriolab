@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../settings/presentation/widgets/user_avatar_widget.dart';
 import '../../../shows/presentation/screens/show_detail_screen.dart';
 import '../../../tracking/presentation/widgets/top_favorites_section.dart';
@@ -30,7 +31,7 @@ class UserProfileScreen extends ConsumerWidget {
       body: profileAsync.when(
         loading: () => const Scaffold(
           body: Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+            child: SeriolabLoader(),
           ),
         ),
         error: (err, _) => Scaffold(

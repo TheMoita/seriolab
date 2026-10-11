@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../shows/domain/entities/episode.dart';
 import '../../../shows/domain/entities/show.dart';
@@ -136,7 +137,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen>
       ),
       body: scheduleAsync.when(
         loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: SeriolabLoader(),
         ),
         error: (err, _) => EmptyState(
           icon: Icons.calendar_today_rounded,

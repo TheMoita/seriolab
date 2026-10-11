@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/di/providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../settings/presentation/widgets/user_avatar_widget.dart';
 import '../../../social/domain/entities/user_profile.dart';
 import '../../../social/presentation/providers/social_providers.dart';
@@ -146,7 +147,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   height: 220,
                   child: trendingAsync.when(
                     loading: () => const Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
+                      child: SeriolabLoader(size: 40),
                     ),
                     error: (err, _) {
                       final errStr = err.toString();
@@ -336,7 +337,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             exploreAsync.when(
               loading: () => const SliverFillRemaining(
                 child: Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
+                  child: SeriolabLoader(),
                 ),
               ),
               error: (err, _) {
@@ -436,7 +437,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       final searchAsync = ref.watch(searchUsersProvider(searchQuery));
       return searchAsync.when(
         loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: SeriolabLoader(),
         ),
         error: (err, _) => Center(
           child: EmptyState(
@@ -470,7 +471,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final suggestedAsync = ref.watch(suggestedUsersProvider);
     return suggestedAsync.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+        child: SeriolabLoader(),
       ),
       error: (err, _) => Center(
         child: EmptyState(

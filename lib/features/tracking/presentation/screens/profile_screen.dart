@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../settings/presentation/screens/settings_screen.dart';
 import '../../../settings/presentation/widgets/edit_profile_sheet.dart';
@@ -85,7 +86,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       ),
       body: trackingAsync.when(
         loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: SeriolabLoader(),
         ),
         error: (err, _) => EmptyState(
           icon: Icons.error_outline_rounded,

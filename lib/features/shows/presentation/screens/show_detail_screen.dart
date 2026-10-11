@@ -6,6 +6,7 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/modal_drag_handle.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../../core/widgets/status_chip.dart';
 import '../../../tracking/domain/entities/tracking_entities.dart';
 import '../../../tracking/presentation/providers/tracking_providers.dart';
@@ -37,7 +38,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
     return Scaffold(
       body: showAsync.when(
         loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: SeriolabLoader(),
         ),
         error: (err, stack) => Scaffold(
           appBar: AppBar(),
@@ -626,7 +627,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
             child: Padding(
               padding: EdgeInsets.all(32),
               child: Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+                child: SeriolabLoader(size: 36),
               ),
             ),
           ),
