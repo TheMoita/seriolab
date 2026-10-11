@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 concurrency:
@@ -94,22 +96,41 @@ jobs:
             --build-number=${{ github.run_number }} \
             --dart-define=TMDB_API_KEY="$TMDB_KEY"
 
+      - name: Rename Release APK
+        run: |
+          VERSION="${{ github.ref_name }}"
+          # Fallback se não for disparado por tag:
+          if [ -z "$VERSION" ] || [ "$VERSION" = "main" ] || [ "$VERSION" = "master" ]; then
+            VERSION="v1.0.${{ github.run_number }}"
+          fi
+          # Remove eventuais prefixos 'v' duplicados se necessário
+          CLEAN_VERSION=$(echo "$VERSION" | sed 's/^v*//')
+          TAG="v${CLEAN_VERSION}"
+          APK_NAME="seriolab-${TAG}.apk"
+          if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+            mv "build/app/outputs/flutter-apk/app-release.apk" "build/app/outputs/flutter-apk/${APK_NAME}"
+          fi
+          echo "APK_NAME=${APK_NAME}" >> $GITHUB_ENV
+          echo "RELEASE_TAG=${TAG}" >> $GITHUB_ENV
+          echo "Renamed release APK to: ${APK_NAME}"
+          ls -la build/app/outputs/flutter-apk/
+
       - name: Upload APK Artifact (Actions Tab)
         uses: actions/upload-artifact@v4
         with:
           name: seriolab-release-apk
-          path: build/app/outputs/flutter-apk/*.apk
+          path: build/app/outputs/flutter-apk/${{ env.APK_NAME }}
           if-no-files-found: error
           retention-days: 30
 
       - name: Create Automatic GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: "Release v1.0.${{ github.run_number }}"
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: "Release ${{ env.RELEASE_TAG }}"
           generate_release_notes: true
           draft: false
           prerelease: false
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: build/app/outputs/flutter-apk/${{ env.APK_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
