@@ -6,9 +6,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../auth/presentation/widgets/auth_gate.dart';
+import '../../../../core/services/update_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/modal_drag_handle.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
+import '../../../../core/widgets/update_dialog.dart';
 import '../providers/settings_providers.dart';
 import '../widgets/avatar_selection_sheet.dart';
 import '../widgets/edit_profile_sheet.dart';
@@ -30,6 +33,60 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   // Simulated cache tracking that can be cleared dynamically
   bool _cacheCleared = false;
+  bool _isCheckingUpdate = false;
+
+  Future<void> _checkManualUpdate() async {
+    if (_isCheckingUpdate) return;
+    setState(() => _isCheckingUpdate = true);
+
+    try {
+      final updateService = ref.read(updateServiceProvider);
+      final updateInfo = await updateService.checkForUpdates();
+      if (!mounted) return;
+
+      if (updateInfo != null && updateInfo.hasUpdate) {
+        await showUpdateBottomSheet(context, updateInfo);
+      } else {
+        final currentVersion = updateInfo?.currentVersion ?? '1.0.14';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'O Seriolab está atualizado (v$currentVersion)',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: AppColors.surfaceHigh,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: AppColors.outline, width: 0.8),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Não foi possível verificar atualizações de momento.',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: AppColors.surfaceHigh,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: const BorderSide(color: AppColors.outline, width: 0.8),
+          ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isCheckingUpdate = false);
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -967,6 +1024,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     height: 1.4,
                   ),
                 ),
+              ),
+              ListTile(
+                leading: _isCheckingUpdate
+                    ? const SeriolabLoader(
+                        size: 22,
+                      )
+                    : const Icon(
+                        Icons.system_update_rounded,
+                        color: AppColors.secondary,
+                        size: 22,
+                      ),
+                title: const Text(
+                  'Verificar Atualizações',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                subtitle: Text(
+                  _isCheckingUpdate
+                      ? 'A verificar novas versões no GitHub...'
+                      : 'Procurar novas versões e atualizações da app',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                trailing: _isCheckingUpdate
+                    ? null
+                    : const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 14,
+                        color: AppColors.textMuted,
+                      ),
+                onTap: _isCheckingUpdate ? null : _checkManualUpdate,
               ),
               ListTile(
                 leading: const Icon(

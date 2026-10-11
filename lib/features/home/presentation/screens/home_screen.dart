@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/providers.dart';
 import '../../../../core/l10n/app_localizations.dart';
+import '../../../../core/services/update_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
 import '../../../../core/widgets/seriolab_refresh_indicator.dart';
+import '../../../../core/widgets/update_dialog.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../shows/domain/entities/genre.dart';
 import '../../../shows/domain/entities/show.dart';
@@ -33,8 +35,34 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  static bool _hasCheckedForUpdatesThisSession = false;
+
   Genre? _selectedGenreFilter;
   bool _showAllPopular = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkForUpdatesQuietly();
+    });
+  }
+
+  Future<void> _checkForUpdatesQuietly() async {
+    if (_hasCheckedForUpdatesThisSession) return;
+    _hasCheckedForUpdatesThisSession = true;
+
+    try {
+      final updateService = ref.read(updateServiceProvider);
+      final updateInfo = await updateService.checkForUpdates();
+      if (!mounted) return;
+      if (updateInfo != null && updateInfo.hasUpdate) {
+        showUpdateBottomSheet(context, updateInfo);
+      }
+    } catch (_) {
+      // Quiet background check - do not disturb user on failure
+    }
+  }
 
   Future<void> _refresh() async {
     ref.invalidate(popularThisWeekProvider);
