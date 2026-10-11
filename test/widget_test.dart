@@ -62,7 +62,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.text('O Meu Perfil'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Afonso Dias'), findsOneWidget);
   });
 
   testWidgets('SettingsScreen navigation and EditProfileSheet smoke test',

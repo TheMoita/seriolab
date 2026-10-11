@@ -86,34 +86,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        title: Row(
-          children: [
-            const SeriolabLogo(
-              iconSize: 28,
-              fontSize: 19,
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceHigh,
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: AppColors.outline,
-                  width: 0.8,
-                ),
-              ),
-              child: Text(
-                l10n.tvShowsBadge,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 8.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.8,
-                ),
-              ),
-            ),
-          ],
+        title: const SeriolabLogo(
+          iconSize: 28,
+          fontSize: 19,
         ),
         actions: [
           if (widget.onExploreTap != null)

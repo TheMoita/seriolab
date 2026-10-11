@@ -71,9 +71,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final authState = ref.watch(authControllerProvider);
     final effectiveTracking = profileAsync.hasValue ? profileAsync : trackingAsync;
 
+    final displayName = settings.displayName.trim().isNotEmpty
+        ? settings.displayName.trim()
+        : (authState.user?.displayName?.trim().isNotEmpty == true
+            ? authState.user!.displayName!.trim()
+            : (authState.user?.preferredName ?? 'Perfil'));
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('O Meu Perfil'),
+        title: Text(displayName),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: AppColors.textPrimary),
@@ -132,20 +138,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
-                                settings.displayName,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
                                 '@${settings.username}',
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.secondary,
                                 ),

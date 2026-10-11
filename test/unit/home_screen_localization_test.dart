@@ -65,8 +65,8 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
 
-      // AppBar badge is Portuguese
-      expect(find.text('SÉRIES'), findsOneWidget);
+      // Series badge is removed from AppBar
+      expect(find.text('SÉRIES'), findsNothing);
       expect(find.text('TV SHOWS'), findsNothing);
 
       // Filter chips in Portuguese
@@ -129,8 +129,8 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
 
-      // AppBar badge is English
-      expect(find.text('TV SHOWS'), findsOneWidget);
+      // Series badge is removed from AppBar
+      expect(find.text('TV SHOWS'), findsNothing);
       expect(find.text('SÉRIES'), findsNothing);
 
       // Filter chips in English
