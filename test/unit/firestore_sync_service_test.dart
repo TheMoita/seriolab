@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:series_app/features/settings/domain/entities/user_settings.dart';
-import 'package:series_app/features/settings/data/repositories/settings_repository_impl.dart';
-import 'package:series_app/features/shows/domain/entities/episode.dart';
-import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
-import 'package:series_app/features/tracking/data/services/firestore_sync_service.dart';
-import 'package:series_app/features/tracking/domain/entities/tracking_entities.dart';
+import 'package:seriolab/features/settings/domain/entities/user_settings.dart';
+import 'package:seriolab/features/settings/data/repositories/settings_repository_impl.dart';
+import 'package:seriolab/features/shows/domain/entities/episode.dart';
+import 'package:seriolab/features/tracking/data/repositories/in_memory_tracking_repository.dart';
+import 'package:seriolab/features/tracking/data/services/firestore_sync_service.dart';
+import 'package:seriolab/features/tracking/domain/entities/tracking_entities.dart';
 
 void main() {
   group('FirestoreSyncService serialization tests', () {

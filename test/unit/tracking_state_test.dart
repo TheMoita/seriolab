@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:series_app/core/di/providers.dart';
-import 'package:series_app/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
-import 'package:series_app/features/shows/data/repositories/show_repository_impl.dart';
-import 'package:series_app/features/shows/domain/entities/episode.dart';
-import 'package:series_app/features/shows/domain/entities/show.dart';
-import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
-import 'package:series_app/features/tracking/domain/entities/tracking_entities.dart';
-import 'package:series_app/features/tracking/domain/entities/tracking_state.dart';
-import 'package:series_app/features/tracking/presentation/providers/tracking_providers.dart';
+import 'package:seriolab/core/di/providers.dart';
+import 'package:seriolab/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
+import 'package:seriolab/features/shows/data/repositories/show_repository_impl.dart';
+import 'package:seriolab/features/shows/domain/entities/episode.dart';
+import 'package:seriolab/features/shows/domain/entities/show.dart';
+import 'package:seriolab/features/tracking/data/repositories/in_memory_tracking_repository.dart';
+import 'package:seriolab/features/tracking/domain/entities/tracking_entities.dart';
+import 'package:seriolab/features/tracking/domain/entities/tracking_state.dart';
+import 'package:seriolab/features/tracking/presentation/providers/tracking_providers.dart';
 
 void main() {
   group('TrackingState and UserStats', () {

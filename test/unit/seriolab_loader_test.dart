@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:series_app/core/theme/app_theme.dart';
-import 'package:series_app/core/widgets/seriolab_loader.dart';
+import 'package:seriolab/core/theme/app_theme.dart';
+import 'package:seriolab/core/widgets/seriolab_loader.dart';
 
 void main() {
   group('SeriolabLoader widget tests', () {

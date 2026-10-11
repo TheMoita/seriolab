@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:series_app/core/utils/formatters.dart';
-import 'package:series_app/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
-import 'package:series_app/features/shows/data/repositories/episode_review_repository_impl.dart';
-import 'package:series_app/features/shows/data/repositories/show_repository_impl.dart';
-import 'package:series_app/features/shows/domain/entities/episode_review_model.dart';
-import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
+import 'package:seriolab/core/utils/formatters.dart';
+import 'package:seriolab/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
+import 'package:seriolab/features/shows/data/repositories/episode_review_repository_impl.dart';
+import 'package:seriolab/features/shows/data/repositories/show_repository_impl.dart';
+import 'package:seriolab/features/shows/domain/entities/episode_review_model.dart';
+import 'package:seriolab/features/tracking/data/repositories/in_memory_tracking_repository.dart';
 
 void main() {
   group('Formatters.timeAgo', () {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:series_app/features/shows/domain/entities/show.dart';
-import 'package:series_app/features/shows/presentation/providers/show_providers.dart';
-import 'package:series_app/features/shows/presentation/screens/show_detail_screen.dart';
+import 'package:seriolab/features/shows/domain/entities/show.dart';
+import 'package:seriolab/features/shows/presentation/providers/show_providers.dart';
+import 'package:seriolab/features/shows/presentation/screens/show_detail_screen.dart';
 
 void main() {
   const testShow = ShowDetails(

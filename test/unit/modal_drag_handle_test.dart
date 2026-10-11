@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:series_app/core/theme/app_theme.dart';
-import 'package:series_app/core/widgets/modal_drag_handle.dart';
-import 'package:series_app/features/settings/presentation/widgets/avatar_selection_sheet.dart';
-import 'package:series_app/features/shows/presentation/widgets/rating_modal.dart';
+import 'package:seriolab/core/theme/app_theme.dart';
+import 'package:seriolab/core/widgets/modal_drag_handle.dart';
+import 'package:seriolab/features/settings/presentation/widgets/avatar_selection_sheet.dart';
+import 'package:seriolab/features/shows/presentation/widgets/rating_modal.dart';
 
 void main() {
   group('ModalDragHandle widget tests', () {

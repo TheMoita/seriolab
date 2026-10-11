@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:series_app/features/shows/presentation/widgets/trailer_dialog.dart';
+import 'package:seriolab/features/shows/presentation/widgets/trailer_dialog.dart';
 // ignore: depend_on_referenced_packages
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';

@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 
-import 'package:series_app/core/utils/formatters.dart';
-import 'package:series_app/features/shows/domain/entities/episode.dart';
-import 'package:series_app/features/shows/domain/entities/show.dart';
-import 'package:series_app/features/tracking/domain/entities/tracking_entities.dart';
+import 'package:seriolab/core/utils/formatters.dart';
+import 'package:seriolab/features/shows/domain/entities/episode.dart';
+import 'package:seriolab/features/shows/domain/entities/show.dart';
+import 'package:seriolab/features/tracking/domain/entities/tracking_entities.dart';
 
 /// Represents a show the user is actively watching with its next episode state.
 @immutable

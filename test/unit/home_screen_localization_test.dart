@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:series_app/core/di/providers.dart';
-import 'package:series_app/core/l10n/app_localizations.dart';
-import 'package:series_app/features/home/presentation/screens/home_screen.dart';
-import 'package:series_app/features/settings/domain/entities/user_settings.dart';
-import 'package:series_app/features/settings/presentation/providers/settings_providers.dart';
-import 'package:series_app/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
-import 'package:series_app/features/shows/data/repositories/show_repository_impl.dart';
-import 'package:series_app/features/shows/presentation/providers/show_providers.dart';
-import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
+import 'package:seriolab/core/di/providers.dart';
+import 'package:seriolab/core/l10n/app_localizations.dart';
+import 'package:seriolab/features/home/presentation/screens/home_screen.dart';
+import 'package:seriolab/features/settings/domain/entities/user_settings.dart';
+import 'package:seriolab/features/settings/presentation/providers/settings_providers.dart';
+import 'package:seriolab/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
+import 'package:seriolab/features/shows/data/repositories/show_repository_impl.dart';
+import 'package:seriolab/features/shows/presentation/providers/show_providers.dart';
+import 'package:seriolab/features/tracking/data/repositories/in_memory_tracking_repository.dart';
 
 class _FakeSettingsNotifier extends SettingsNotifier {
   _FakeSettingsNotifier(this._initial);

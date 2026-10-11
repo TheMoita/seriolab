@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:series_app/features/auth/data/services/local_auth_service.dart';
-import 'package:series_app/features/auth/domain/auth_exception.dart';
-import 'package:series_app/features/auth/domain/auth_validators.dart';
-import 'package:series_app/features/auth/domain/entities/app_user.dart';
-import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
+import 'package:seriolab/features/auth/data/services/local_auth_service.dart';
+import 'package:seriolab/features/auth/domain/auth_exception.dart';
+import 'package:seriolab/features/auth/domain/auth_validators.dart';
+import 'package:seriolab/features/auth/domain/entities/app_user.dart';
+import 'package:seriolab/features/tracking/data/repositories/in_memory_tracking_repository.dart';
 
 void main() {
   group('AuthValidators', () {

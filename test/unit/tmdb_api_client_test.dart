@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:series_app/features/shows/data/datasources/tmdb_api_client.dart';
-import 'package:series_app/features/shows/data/datasources/tmdb_remote_data_source.dart';
-import 'package:series_app/features/shows/domain/entities/episode.dart';
-import 'package:series_app/features/shows/domain/entities/show.dart';
+import 'package:seriolab/features/shows/data/datasources/tmdb_api_client.dart';
+import 'package:seriolab/features/shows/data/datasources/tmdb_remote_data_source.dart';
+import 'package:seriolab/features/shows/domain/entities/episode.dart';
+import 'package:seriolab/features/shows/domain/entities/show.dart';
 
 void main() {
   group('TmdbApiClient', () {

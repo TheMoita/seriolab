@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:series_app/features/settings/domain/entities/user_settings.dart';
-import 'package:series_app/features/settings/presentation/widgets/seriolab_avatar_view.dart';
-import 'package:series_app/features/settings/presentation/widgets/user_avatar_widget.dart';
+import 'package:seriolab/features/settings/domain/entities/user_settings.dart';
+import 'package:seriolab/features/settings/presentation/widgets/seriolab_avatar_view.dart';
+import 'package:seriolab/features/settings/presentation/widgets/user_avatar_widget.dart';
 
 void main() {
   group('UserAvatarWidget', () {

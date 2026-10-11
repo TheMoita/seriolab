@@ -1,7 +1,7 @@
-import 'package:series_app/core/utils/formatters.dart';
-import 'package:series_app/features/shows/domain/repositories/show_repository.dart';
-import 'package:series_app/features/tracking/domain/entities/tracking_entities.dart';
-import 'package:series_app/features/tracking/domain/entities/tracking_state.dart';
+import 'package:seriolab/core/utils/formatters.dart';
+import 'package:seriolab/features/shows/domain/repositories/show_repository.dart';
+import 'package:seriolab/features/tracking/domain/entities/tracking_entities.dart';
+import 'package:seriolab/features/tracking/domain/entities/tracking_state.dart';
 import '../../domain/entities/schedule_item.dart';
 import '../../domain/repositories/schedule_repository.dart';
 

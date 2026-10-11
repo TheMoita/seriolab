@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:series_app/features/settings/data/repositories/settings_repository_impl.dart';
-import 'package:series_app/features/settings/domain/entities/user_settings.dart';
-import 'package:series_app/features/settings/presentation/providers/settings_providers.dart';
-import 'package:series_app/features/shows/domain/entities/show.dart';
-import 'package:series_app/features/shows/presentation/providers/show_providers.dart';
-import 'package:series_app/features/social/data/repositories/social_repository_impl.dart';
-import 'package:series_app/features/social/presentation/providers/social_providers.dart';
-import 'package:series_app/features/social/presentation/screens/user_profile_screen.dart';
-import 'package:series_app/features/social/presentation/widgets/follow_list_sheet.dart';
-import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
-import 'package:series_app/features/tracking/presentation/widgets/top_favorites_section.dart';
+import 'package:seriolab/features/settings/data/repositories/settings_repository_impl.dart';
+import 'package:seriolab/features/settings/domain/entities/user_settings.dart';
+import 'package:seriolab/features/settings/presentation/providers/settings_providers.dart';
+import 'package:seriolab/features/shows/domain/entities/show.dart';
+import 'package:seriolab/features/shows/presentation/providers/show_providers.dart';
+import 'package:seriolab/features/social/data/repositories/social_repository_impl.dart';
+import 'package:seriolab/features/social/presentation/providers/social_providers.dart';
+import 'package:seriolab/features/social/presentation/screens/user_profile_screen.dart';
+import 'package:seriolab/features/social/presentation/widgets/follow_list_sheet.dart';
+import 'package:seriolab/features/tracking/data/repositories/in_memory_tracking_repository.dart';
+import 'package:seriolab/features/tracking/presentation/widgets/top_favorites_section.dart';
 
 void main() {
   group('UserSettings Social Fields', () {

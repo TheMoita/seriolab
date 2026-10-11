@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:series_app/core/services/update_service.dart';
-import 'package:series_app/core/widgets/modal_drag_handle.dart';
-import 'package:series_app/core/widgets/update_dialog.dart';
+import 'package:seriolab/core/services/update_service.dart';
+import 'package:seriolab/core/widgets/modal_drag_handle.dart';
+import 'package:seriolab/core/widgets/update_dialog.dart';
 
 class MockHttpClient extends http.BaseClient {
   MockHttpClient(this._handler);

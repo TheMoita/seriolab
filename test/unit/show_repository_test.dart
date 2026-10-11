@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:series_app/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
-import 'package:series_app/features/shows/data/repositories/show_repository_impl.dart';
-import 'package:series_app/core/widgets/app_network_image.dart';
-import 'package:series_app/features/shows/data/models/tmdb_mapper.dart';
-import 'package:series_app/features/shows/domain/entities/episode.dart';
-import 'package:series_app/features/shows/domain/entities/genre.dart';
+import 'package:seriolab/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
+import 'package:seriolab/features/shows/data/repositories/show_repository_impl.dart';
+import 'package:seriolab/core/widgets/app_network_image.dart';
+import 'package:seriolab/features/shows/data/models/tmdb_mapper.dart';
+import 'package:seriolab/features/shows/domain/entities/episode.dart';
+import 'package:seriolab/features/shows/domain/entities/genre.dart';
 
 void main() {
   group('ShowRepository & Mock DataSource', () {

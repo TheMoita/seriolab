@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:series_app/features/schedule/data/repositories/schedule_repository_impl.dart';
-import 'package:series_app/features/schedule/domain/entities/schedule_item.dart';
-import 'package:series_app/features/schedule/presentation/controllers/schedule_controller.dart';
-import 'package:series_app/features/schedule/presentation/screens/schedule_screen.dart';
-import 'package:series_app/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
-import 'package:series_app/features/shows/data/repositories/show_repository_impl.dart';
-import 'package:series_app/features/shows/domain/entities/episode.dart';
-import 'package:series_app/features/shows/domain/entities/show.dart';
-import 'package:series_app/features/tracking/domain/entities/tracking_entities.dart';
-import 'package:series_app/features/tracking/domain/entities/tracking_state.dart';
+import 'package:seriolab/features/schedule/data/repositories/schedule_repository_impl.dart';
+import 'package:seriolab/features/schedule/domain/entities/schedule_item.dart';
+import 'package:seriolab/features/schedule/presentation/controllers/schedule_controller.dart';
+import 'package:seriolab/features/schedule/presentation/screens/schedule_screen.dart';
+import 'package:seriolab/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
+import 'package:seriolab/features/shows/data/repositories/show_repository_impl.dart';
+import 'package:seriolab/features/shows/domain/entities/episode.dart';
+import 'package:seriolab/features/shows/domain/entities/show.dart';
+import 'package:seriolab/features/tracking/domain/entities/tracking_entities.dart';
+import 'package:seriolab/features/tracking/domain/entities/tracking_state.dart';
 
 void main() {
   final now = DateTime(2026, 10, 11, 12, 0, 0);

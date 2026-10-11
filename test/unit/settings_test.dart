@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:series_app/core/di/providers.dart';
-import 'package:series_app/features/settings/data/repositories/settings_repository_impl.dart';
-import 'package:series_app/features/settings/data/repositories/user_profile_repository_impl.dart';
-import 'package:series_app/features/settings/domain/entities/user_settings.dart';
-import 'package:series_app/features/settings/presentation/providers/settings_providers.dart';
-import 'package:series_app/features/shows/domain/entities/episode.dart';
-import 'package:series_app/features/shows/domain/entities/show.dart';
-import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
+import 'package:seriolab/core/di/providers.dart';
+import 'package:seriolab/features/settings/data/repositories/settings_repository_impl.dart';
+import 'package:seriolab/features/settings/data/repositories/user_profile_repository_impl.dart';
+import 'package:seriolab/features/settings/domain/entities/user_settings.dart';
+import 'package:seriolab/features/settings/presentation/providers/settings_providers.dart';
+import 'package:seriolab/features/shows/domain/entities/episode.dart';
+import 'package:seriolab/features/shows/domain/entities/show.dart';
+import 'package:seriolab/features/tracking/data/repositories/in_memory_tracking_repository.dart';
 
 void main() {
   group('UserSettings Entity', () {

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:series_app/core/di/providers.dart';
-import 'package:series_app/core/widgets/app_network_image.dart';
-import 'package:series_app/features/main/presentation/screens/main_screen.dart';
-import 'package:series_app/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
-import 'package:series_app/features/shows/data/repositories/show_repository_impl.dart';
-import 'package:series_app/features/tracking/data/repositories/in_memory_tracking_repository.dart';
-import 'package:series_app/features/shows/presentation/screens/show_detail_screen.dart';
-import 'package:series_app/main.dart';
+import 'package:seriolab/core/di/providers.dart';
+import 'package:seriolab/core/widgets/app_network_image.dart';
+import 'package:seriolab/features/main/presentation/screens/main_screen.dart';
+import 'package:seriolab/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
+import 'package:seriolab/features/shows/data/repositories/show_repository_impl.dart';
+import 'package:seriolab/features/tracking/data/repositories/in_memory_tracking_repository.dart';
+import 'package:seriolab/features/shows/presentation/screens/show_detail_screen.dart';
+import 'package:seriolab/main.dart';
 
 void main() {
-  testWidgets('SeriesApp smoke test - renders tabs and switches navigation',
+  testWidgets('SeriolabApp smoke test - renders tabs and switches navigation',
       (WidgetTester tester) async {
     final inMemoryRepo = InMemoryTrackingRepository();
     final testRepo = ShowRepositoryImpl(
@@ -26,7 +26,7 @@ void main() {
           showRepositoryProvider.overrideWithValue(testRepo),
           demoSeedingEnabledProvider.overrideWithValue(false),
         ],
-        child: const SeriesApp(home: MainScreen()),
+        child: const SeriolabApp(home: MainScreen()),
       ),
     );
 
@@ -80,7 +80,7 @@ void main() {
           showRepositoryProvider.overrideWithValue(testRepo),
           demoSeedingEnabledProvider.overrideWithValue(false),
         ],
-        child: const SeriesApp(home: MainScreen()),
+        child: const SeriolabApp(home: MainScreen()),
       ),
     );
 
@@ -167,7 +167,7 @@ void main() {
           showRepositoryProvider.overrideWithValue(testRepo),
           demoSeedingEnabledProvider.overrideWithValue(false),
         ],
-        child: const SeriesApp(),
+        child: const SeriolabApp(),
       ),
     );
 
@@ -208,7 +208,7 @@ void main() {
           showRepositoryProvider.overrideWithValue(testRepo),
           demoSeedingEnabledProvider.overrideWithValue(false),
         ],
-        child: const SeriesApp(home: MainScreen()),
+        child: const SeriolabApp(home: MainScreen()),
       ),
     );
 

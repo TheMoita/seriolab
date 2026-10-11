@@ -6,7 +6,8 @@ import 'package:sqflite/sqflite.dart';
 
 /// SQLite database holding all offline user data (tracked shows & episodes).
 abstract final class AppDatabase {
-  static const String fileName = 'series_app.db';
+  static const String fileName = 'seriolab.db';
+  static const String legacyFileName = 'series_app.db';
   static const int version = 4;
 
   static const String trackedShows = 'tracked_shows';
@@ -24,28 +25,55 @@ abstract final class AppDatabase {
       try {
         final docsDir = await getApplicationDocumentsDirectory();
         final docsPath = p.join(docsDir.path, fileName);
+        final legacyDocsPath = p.join(docsDir.path, legacyFileName);
+
+        // Migrate legacy database from series_app.db in documents if it exists
+        try {
+          final legacyDocsFile = File(legacyDocsPath);
+          final docsFile = File(docsPath);
+          if (await legacyDocsFile.exists() && !await docsFile.exists()) {
+            await docsFile.parent.create(recursive: true);
+            await legacyDocsFile.copy(docsPath);
+
+            final legacyWal = File('$legacyDocsPath-wal');
+            if (await legacyWal.exists()) {
+              await legacyWal.copy('$docsPath-wal');
+            }
+            final legacyShm = File('$legacyDocsPath-shm');
+            if (await legacyShm.exists()) {
+              await legacyShm.copy('$docsPath-shm');
+            }
+            final legacyJournal = File('$legacyDocsPath-journal');
+            if (await legacyJournal.exists()) {
+              await legacyJournal.copy('$docsPath-journal');
+            }
+          }
+        } catch (_) {}
 
         // Migrate legacy database from getDatabasesPath() if it exists and docsPath doesn't yet
         try {
           final legacyDir = await dbFactory.getDatabasesPath();
-          final legacyPath = p.join(legacyDir, fileName);
-          final legacyFile = File(legacyPath);
-          final docsFile = File(docsPath);
-          if (await legacyFile.exists() && !await docsFile.exists()) {
-            await docsFile.parent.create(recursive: true);
-            await legacyFile.copy(docsPath);
+          for (final candidateName in [legacyFileName, fileName]) {
+            final legacyPath = p.join(legacyDir, candidateName);
+            final legacyFile = File(legacyPath);
+            final docsFile = File(docsPath);
+            if (await legacyFile.exists() && !await docsFile.exists()) {
+              await docsFile.parent.create(recursive: true);
+              await legacyFile.copy(docsPath);
 
-            final legacyWal = File('$legacyPath-wal');
-            if (await legacyWal.exists()) {
-              await legacyWal.copy('$docsPath-wal');
-            }
-            final legacyShm = File('$legacyPath-shm');
-            if (await legacyShm.exists()) {
-              await legacyShm.copy('$docsPath-shm');
-            }
-            final legacyJournal = File('$legacyPath-journal');
-            if (await legacyJournal.exists()) {
-              await legacyJournal.copy('$docsPath-journal');
+              final legacyWal = File('$legacyPath-wal');
+              if (await legacyWal.exists()) {
+                await legacyWal.copy('$docsPath-wal');
+              }
+              final legacyShm = File('$legacyPath-shm');
+              if (await legacyShm.exists()) {
+                await legacyShm.copy('$docsPath-shm');
+              }
+              final legacyJournal = File('$legacyPath-journal');
+              if (await legacyJournal.exists()) {
+                await legacyJournal.copy('$docsPath-journal');
+              }
+              break;
             }
           }
         } catch (_) {}
