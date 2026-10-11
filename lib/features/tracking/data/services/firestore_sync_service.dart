@@ -393,6 +393,36 @@ class FirestoreSyncService {
         trackedShowToMap(show, watchedEpisodes: watchedEpisodes),
         SetOptions(merge: true),
       );
+
+      // Mirror to users/{uid}/watched_episodes collection
+      if (watchedEpisodes != null && watchedEpisodes.isNotEmpty) {
+        final batch = firestore.batch();
+        for (final ep in watchedEpisodes) {
+          final epDocRef = firestore
+              .collection('users')
+              .doc(effectiveUid)
+              .collection('watched_episodes')
+              .doc('${show.showId}_${ep.key.season}_${ep.key.episode}');
+          batch.set(
+            epDocRef,
+            {
+              'showId': show.showId,
+              'seasonNumber': ep.key.season,
+              'episodeNumber': ep.key.episode,
+              'runtime': ep.runtime,
+              'watchedAt': ep.watchedAt.millisecondsSinceEpoch,
+              if (ep.userRating != null) 'userRating': ep.userRating,
+              if (ep.reviewText != null) 'reviewText': ep.reviewText,
+              'hasSpoilers': ep.hasSpoilers,
+              if (ep.loggedAt != null)
+                'loggedAt': ep.loggedAt!.millisecondsSinceEpoch,
+              'updatedAt': FieldValue.serverTimestamp(),
+            },
+            SetOptions(merge: true),
+          );
+        }
+        await batch.commit();
+      }
     } catch (e) {
       debugPrint('FirestoreSyncService: Error syncing show ${show.showId}: $e');
     }
@@ -413,6 +443,22 @@ class FirestoreSyncService {
           .collection('watchlist')
           .doc('$showId');
       await docRef.delete();
+
+      try {
+        final watchedQuery = await firestore
+            .collection('users')
+            .doc(effectiveUid)
+            .collection('watched_episodes')
+            .where('showId', isEqualTo: showId)
+            .get();
+        if (watchedQuery.docs.isNotEmpty) {
+          final batch = firestore.batch();
+          for (final doc in watchedQuery.docs) {
+            batch.delete(doc.reference);
+          }
+          await batch.commit();
+        }
+      } catch (_) {}
     } catch (e) {
       debugPrint('FirestoreSyncService: Error deleting show $showId: $e');
     }

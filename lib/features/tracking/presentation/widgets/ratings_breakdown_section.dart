@@ -175,8 +175,10 @@ class _RatingsBreakdownSectionState
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Interactive inspection banner
-                _buildInspectionBanner(distribution, totalCount),
-                const SizedBox(height: 14),
+                if (totalCount == 0 || _selectedScore != null) ...[
+                  _buildInspectionBanner(distribution, totalCount),
+                  const SizedBox(height: 12),
+                ],
 
                 // 20-Bar Histogram with Touch & Drag Scrubbing
                 if (totalCount == 0) ...[
@@ -247,10 +249,6 @@ class _RatingsBreakdownSectionState
                     },
                   ),
                 ],
-                const SizedBox(height: 8),
-
-                // X-Axis Axis labels (0.5, 3, 5, 7, 10)
-                _buildXAxisLabels(),
               ],
             ),
           ),
@@ -333,24 +331,7 @@ class _RatingsBreakdownSectionState
       );
     }
 
-    return const Row(
-      children: [
-        Icon(
-          Icons.touch_app_rounded,
-          size: 13,
-          color: AppColors.textMuted,
-        ),
-        SizedBox(width: 6),
-        Text(
-          'Desliza sobre o gráfico para ver as notas',
-          style: TextStyle(
-            fontSize: 11,
-            color: AppColors.textMuted,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
+    return const SizedBox.shrink();
   }
 
   Widget _buildBarColumn({
@@ -389,8 +370,8 @@ class _RatingsBreakdownSectionState
                       end: Alignment.bottomCenter,
                       colors: count > 0
                           ? [
-                              AppColors.primary,
-                              AppColors.primary.withValues(alpha: 0.6),
+                              const Color(0xFF475569),
+                              const Color(0xFF232938),
                             ]
                           : [
                               AppColors.outline,
@@ -410,54 +391,6 @@ class _RatingsBreakdownSectionState
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildXAxisLabels() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: const [
-        Text(
-          '1',
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textMuted,
-          ),
-        ),
-        Text(
-          '3',
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textMuted,
-          ),
-        ),
-        Text(
-          '5',
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textMuted,
-          ),
-        ),
-        Text(
-          '7',
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textMuted,
-          ),
-        ),
-        Text(
-          '10',
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textMuted,
-          ),
-        ),
-      ],
     );
   }
 }

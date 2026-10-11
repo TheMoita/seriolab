@@ -17,6 +17,7 @@ import '../../domain/entities/tracking_entities.dart';
 import '../providers/tracking_providers.dart';
 import '../widgets/profile_banner_header.dart';
 import '../widgets/ratings_breakdown_section.dart';
+import '../widgets/recent_activity_section.dart';
 import '../widgets/top_favorites_section.dart';
 import '../../../social/presentation/widgets/follow_list_sheet.dart';
 
@@ -357,6 +358,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
                         // Top 5 Favorites Section
                         const TopFavoritesSection(),
+                        const SizedBox(height: 24),
+
+                        // Recent Activity Section
+                        const RecentActivitySection(),
                         const SizedBox(height: 24),
 
                         // Letterboxd-Style Ratings Breakdown
