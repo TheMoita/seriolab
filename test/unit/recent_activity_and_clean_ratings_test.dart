@@ -145,7 +145,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('ATIVIDADE RECENTE'), findsOneWidget);
-      expect(find.text('2 recentes'), findsOneWidget);
+      expect(find.text('2 recentes'), findsNothing);
 
       // Episode key badge
       expect(find.text('T1 • E1'), findsOneWidget);

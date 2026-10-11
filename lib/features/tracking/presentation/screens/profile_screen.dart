@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/di/providers.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -148,32 +147,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                   color: AppColors.secondary,
                                 ),
                               ),
-                              if (authState.user != null) ...[
-                                const SizedBox(height: 4),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      authState.user!.provider ==
-                                              AuthProviderKind.google
-                                          ? Icons.account_circle_outlined
-                                          : Icons.mail_outline_rounded,
-                                      size: 13,
-                                      color: AppColors.textMuted,
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      authState.user!.email,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: AppColors.textMuted,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
                               if (settings.bio.isNotEmpty) ...[
                                 const SizedBox(height: 6),
                                 Padding(

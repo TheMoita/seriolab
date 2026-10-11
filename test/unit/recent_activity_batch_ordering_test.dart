@@ -220,7 +220,7 @@ void main() {
 
       // Recent Activity header is present
       expect(find.text('ATIVIDADE RECENTE'), findsOneWidget);
-      expect(find.text('10 recentes'), findsOneWidget);
+      expect(find.text('10 recentes'), findsNothing);
 
       // First badge should be T2 • E10
       final firstBadgeFinder = find.text('T2 • E10');

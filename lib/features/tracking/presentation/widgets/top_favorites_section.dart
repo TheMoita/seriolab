@@ -34,28 +34,14 @@ class TopFavoritesSection extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Section header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'TOP 5 FAVORITES',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.2,
-                  color: AppColors.textMuted,
-                ),
-              ),
-              if (isEditable)
-                Text(
-                  '${effectiveFavorites.length}/5 selecionadas',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-            ],
+          const Text(
+            'TOP 5 FAVORITES',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+              color: AppColors.textMuted,
+            ),
           ),
           const SizedBox(height: 12),
 
