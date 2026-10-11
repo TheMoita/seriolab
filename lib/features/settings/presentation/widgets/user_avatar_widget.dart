@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/local_storage_utils.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../domain/entities/user_settings.dart';
 import 'seriolab_avatar_view.dart';
 
@@ -222,13 +223,8 @@ class UserAvatarWidget extends StatelessWidget {
           placeholder: (context, url) => Container(
             color: AppColors.surface,
             alignment: Alignment.center,
-            child: SizedBox(
-              width: size * 0.32,
-              height: size * 0.32,
-              child: const CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              ),
+            child: SeriolabLoader(
+              size: (size * 0.36).clamp(16.0, 48.0),
             ),
           ),
           errorWidget: (context, url, error) => SeriolabAvatarView(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/modal_drag_handle.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../shows/domain/entities/show.dart';
 import '../../../shows/presentation/providers/show_providers.dart';
@@ -390,14 +391,7 @@ class _FavoriteSlotTile extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Center(
-                child: SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.primary,
-                  ),
-                ),
+                child: SeriolabLoader(size: 20),
               ),
             ),
             error: (_, _) => Container(
@@ -601,7 +595,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
 
     return searchAsync.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+        child: SeriolabLoader(size: 40),
       ),
       error: (e, _) => Center(
         child: Text(

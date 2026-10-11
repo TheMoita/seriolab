@@ -5,7 +5,7 @@ import 'package:series_app/core/widgets/seriolab_loader.dart';
 
 void main() {
   group('SeriolabLoader widget tests', () {
-    testWidgets('renders SeriolabLoader with default size 48', (tester) async {
+    testWidgets('renders SeriolabLoader with default size 60', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -26,11 +26,12 @@ void main() {
       expect(customPaintFinder, findsOneWidget);
 
       final customPaint = tester.widget<CustomPaint>(customPaintFinder);
-      expect(customPaint.size, const Size(48.0, 48.0));
+      expect(customPaint.size, const Size(60.0, 60.0));
+      expect(customPaint.painter, isA<BeakerPainter>());
     });
 
     testWidgets('renders SeriolabLoader with custom size and custom colors', (tester) async {
-      const customSize = 64.0;
+      const customSize = 80.0;
       final primary = AppColors.primary;
       final secondary = AppColors.secondary;
 
@@ -57,6 +58,28 @@ void main() {
 
       final customPaint = tester.widget<CustomPaint>(customPaintFinder);
       expect(customPaint.size, const Size(customSize, customSize));
+    });
+
+    testWidgets('renders small size with fallback correctly', (tester) async {
+      const smallSize = 20.0;
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SeriolabLoader(size: smallSize),
+            ),
+          ),
+        ),
+      );
+
+      final customPaintFinder = find.descendant(
+        of: find.byType(SeriolabLoader),
+        matching: find.byType(CustomPaint),
+      );
+      expect(customPaintFinder, findsOneWidget);
+
+      final customPaint = tester.widget<CustomPaint>(customPaintFinder);
+      expect(customPaint.size, const Size(smallSize, smallSize));
     });
 
     testWidgets('animates and loops smoothly without throwing errors', (tester) async {

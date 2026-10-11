@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
 import '../../domain/auth_validators.dart';
 import '../providers/auth_providers.dart';
@@ -220,14 +221,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               AppColors.primary.withValues(alpha: 0.4),
                         ),
                         child: authState.isLoading
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.2,
-                                  valueColor:
-                                      AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
+                            ? const SeriolabLoader(
+                                size: 24,
+                                primaryColor: Colors.white,
+                                secondaryColor: AppColors.secondary,
                               )
                             : const Text(
                                 'Entrar',

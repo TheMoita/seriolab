@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../settings/presentation/widgets/user_avatar_widget.dart';
 import '../../../tracking/domain/entities/tracking_entities.dart';
@@ -1522,13 +1523,10 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
               FilledButton.icon(
                 onPressed: _isSubmittingComment ? null : _submitComment,
                 icon: _isSubmittingComment
-                    ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
+                    ? const SeriolabLoader(
+                        size: 16,
+                        primaryColor: Colors.white,
+                        secondaryColor: AppColors.secondary,
                       )
                     : const Icon(Icons.send_rounded, size: 14),
                 label: const Text(

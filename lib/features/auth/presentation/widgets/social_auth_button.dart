@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 
 /// Distinctive social sign-in button matching Seriolab's Midnight Indigo theme.
 class SocialAuthButton extends StatelessWidget {
@@ -30,13 +31,10 @@ class SocialAuthButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
         child: isLoading
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.secondary),
-                ),
+            ? const SeriolabLoader(
+                size: 22,
+                primaryColor: AppColors.secondary,
+                secondaryColor: AppColors.primary,
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,

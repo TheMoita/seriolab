@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/modal_drag_handle.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../settings/presentation/widgets/user_avatar_widget.dart';
 import '../../domain/entities/user_profile.dart';
 import '../providers/social_providers.dart';
@@ -144,7 +145,7 @@ class _FollowListSheetState extends ConsumerState<FollowListSheet>
                   // Tab 1: Following
                   followingAsync.when(
                     loading: () => const Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
+                      child: SeriolabLoader(size: 36),
                     ),
                     error: (err, _) => Center(
                       child: Text('Erro: $err', style: const TextStyle(color: AppColors.danger)),
@@ -177,7 +178,7 @@ class _FollowListSheetState extends ConsumerState<FollowListSheet>
                   // Tab 2: Followers
                   followersAsync.when(
                     loading: () => const Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
+                      child: SeriolabLoader(size: 36),
                     ),
                     error: (err, _) => Center(
                       child: Text('Erro: $err', style: const TextStyle(color: AppColors.danger)),

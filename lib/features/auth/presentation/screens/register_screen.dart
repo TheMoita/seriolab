@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/modal_drag_handle.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
 import '../../../settings/domain/entities/user_settings.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
@@ -451,14 +452,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               AppColors.primary.withValues(alpha: 0.4),
                         ),
                         child: authState.isLoading
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.2,
-                                  valueColor:
-                                      AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
+                            ? const SeriolabLoader(
+                                size: 24,
+                                primaryColor: Colors.white,
+                                secondaryColor: AppColors.secondary,
                               )
                             : const Text(
                                 'Criar Conta',

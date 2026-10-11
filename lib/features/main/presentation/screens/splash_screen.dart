@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../auth/presentation/widgets/auth_gate.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -94,16 +95,7 @@ class _SplashScreenState extends State<SplashScreen>
                   subtitle: 'Your TV Series Log',
                 ),
                 const SizedBox(height: 48),
-                SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.primary.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ),
+                const SeriolabLoader(size: 32),
               ],
             ),
           ),

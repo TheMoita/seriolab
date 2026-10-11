@@ -8,6 +8,7 @@ import '../../../../core/di/providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/modal_drag_handle.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../shows/domain/entities/show.dart';
 import '../../../shows/presentation/providers/show_providers.dart';
@@ -234,7 +235,7 @@ class _SeriesBackdropPickerSheetState
         Expanded(
           child: _isSearching
               ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
+                  child: SeriolabLoader(size: 40),
                 )
               : _query.isNotEmpty
                   ? _buildSearchResults()
@@ -315,7 +316,7 @@ class _SeriesBackdropPickerSheetState
         Expanded(
           child: popularAsync.when(
             loading: () => const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+              child: SeriolabLoader(size: 40),
             ),
             error: (err, _) => Center(
               child: Text(
@@ -485,7 +486,7 @@ class _SeriesBackdropPickerSheetState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(color: AppColors.primary),
+                  SeriolabLoader(size: 44),
                   SizedBox(height: 16),
                   Text(
                     'A carregar wallpapers oficiais...',
@@ -605,10 +606,7 @@ class _SeriesBackdropPickerSheetState
                                     placeholder: (context, url) => Container(
                                       color: AppColors.surfaceHigh,
                                       child: const Center(
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: AppColors.primary,
-                                        ),
+                                        child: SeriolabLoader(size: 24),
                                       ),
                                     ),
                                     errorWidget: (context, url, error) => Container(

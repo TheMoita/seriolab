@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/local_storage_utils.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../settings/domain/entities/user_settings.dart';
 import '../../../settings/presentation/widgets/avatar_selection_sheet.dart';
 import '../../../settings/presentation/widgets/user_avatar_widget.dart';
@@ -43,14 +44,7 @@ class ProfileBannerHeader extends StatelessWidget {
         placeholder: (context, url) => Container(
           color: AppColors.surfaceHigh,
           child: const Center(
-            child: SizedBox(
-              width: 28,
-              height: 28,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.2,
-                color: AppColors.primary,
-              ),
-            ),
+            child: SeriolabLoader(size: 32),
           ),
         ),
         errorWidget: (context, url, error) => _buildDefaultGradient(),

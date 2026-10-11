@@ -7,6 +7,7 @@ import '../../../../core/di/providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/local_storage_utils.dart';
 import '../../../../core/widgets/modal_drag_handle.dart';
+import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../shows/domain/entities/show.dart';
 import '../../domain/entities/user_settings.dart';
 import '../providers/settings_providers.dart';
@@ -553,10 +554,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                  ),
+                  SeriolabLoader(size: 44),
                   SizedBox(height: 14),
                   Text(
                     'A pesquisar no catálogo do TMDB...',
@@ -636,13 +634,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                                     height: 60,
                                     color: AppColors.surface,
                                     child: const Center(
-                                      child: SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
+                                      child: SeriolabLoader(size: 20),
                                     ),
                                   ),
                                   errorWidget: (context, url, error) => Container(
@@ -879,16 +871,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                             placeholder: (context, url) => Container(
                               color: AppColors.surface,
                               child: const Center(
-                                child: SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.primary,
-                                    ),
-                                  ),
-                                ),
+                                child: SeriolabLoader(size: 20),
                               ),
                             ),
                             errorWidget: (context, url, error) => Container(
@@ -970,10 +953,10 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                         shape: BoxShape.circle,
                       ),
                       child: const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        child: SeriolabLoader(
+                          size: 36,
+                          primaryColor: Colors.white,
+                          secondaryColor: AppColors.secondary,
                         ),
                       ),
                     ),
