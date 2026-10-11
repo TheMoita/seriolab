@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,6 +36,46 @@ class AppUpdateInfo {
   final bool hasUpdate;
 }
 
+/// Status of the update check operation.
+enum UpdateCheckStatus {
+  /// A newer release is available.
+  hasUpdate,
+
+  /// Current installation is up to date.
+  upToDate,
+
+  /// No releases found on GitHub repository (or repo is private / 404).
+  noReleaseFound,
+
+  /// GitHub API rate limit exceeded (HTTP 403).
+  rateLimitExceeded,
+
+  /// Real network connectivity error (e.g. SocketException, ClientException).
+  networkError,
+
+  /// Other unexpected error.
+  unknownError,
+}
+
+/// Detailed result of an update check.
+class UpdateCheckResult {
+  const UpdateCheckResult({
+    required this.status,
+    this.updateInfo,
+    this.currentVersion = '',
+    this.errorMessage,
+    this.statusCode,
+  });
+
+  final UpdateCheckStatus status;
+  final AppUpdateInfo? updateInfo;
+  final String currentVersion;
+  final String? errorMessage;
+  final int? statusCode;
+
+  bool get hasUpdate => status == UpdateCheckStatus.hasUpdate;
+}
+
 typedef PackageInfoFetcher = Future<PackageInfo> Function();
 
 /// Service that checks for new GitHub releases and reports update status.
@@ -42,120 +83,214 @@ class UpdateService {
   UpdateService({
     http.Client? client,
     PackageInfoFetcher? packageInfoFetcher,
-    this.owner = 'TheMoita',
-    this.repo = 'seriolab',
+    String? owner,
+    String? repo,
   })  : _client = client ?? http.Client(),
-        _packageInfoFetcher = packageInfoFetcher ?? PackageInfo.fromPlatform;
+        _packageInfoFetcher = packageInfoFetcher ?? PackageInfo.fromPlatform,
+        owner = owner ?? _resolveOwner(),
+        repo = repo ?? _resolveRepo();
 
   final http.Client _client;
   final PackageInfoFetcher _packageInfoFetcher;
   final String owner;
   final String repo;
 
-  /// Compares [remoteTag] against [currentVersion] following SemVer rules:
+  static String _resolveOwner() {
+    try {
+      if (dotenv.isInitialized && (dotenv.env['GITHUB_OWNER']?.isNotEmpty ?? false)) {
+        return dotenv.env['GITHUB_OWNER']!;
+      }
+    } catch (_) {}
+    return 'TheMoita';
+  }
+
+  static String _resolveRepo() {
+    try {
+      if (dotenv.isInitialized && (dotenv.env['GITHUB_REPO']?.isNotEmpty ?? false)) {
+        return dotenv.env['GITHUB_REPO']!;
+      }
+    } catch (_) {}
+    return 'seriolab';
+  }
+
+  /// Robust SemVer comparison:
   /// - Strips leading 'v' / 'V'
-  /// - Strips any suffix following '+' or '-' (e.g. 'v1.0.15+15' -> '1.0.15')
+  /// - Strips any suffix following '+' or '-' (e.g. '1.0.14+14' -> '1.0.14')
   /// - Splits by '.' into integer segments [major, minor, patch]
-  /// - Checks:
-  ///   - remote.major > current.major -> true
-  ///   - remote.major == current.major && remote.minor > current.minor -> true
-  ///   - remote.major == current.major && remote.minor == current.minor && remote.patch > current.patch -> true
-  ///   - otherwise -> false
-  static bool isUpdateAvailable(String currentVersion, String remoteTag) {
-    if (remoteTag.trim().isEmpty) return false;
+  /// - Compares segment by segment
+  static bool isRemoteVersionNewer(String local, String remote) {
+    if (remote.trim().isEmpty) return false;
 
-    List<int> parseSegments(String versionStr) {
-      var s = versionStr.trim();
-      if (s.startsWith('v') || s.startsWith('V')) {
-        s = s.substring(1).trim();
-      }
+    final cleanLocal = local
+        .trim()
+        .replaceAll(RegExp(r'^[vV]'), '')
+        .split('+')
+        .first
+        .split('-')
+        .first
+        .trim();
+    final cleanRemote = remote
+        .trim()
+        .replaceAll(RegExp(r'^[vV]'), '')
+        .split('+')
+        .first
+        .split('-')
+        .first
+        .trim();
 
-      // Remove any suffix after '+' or '-'
-      if (s.contains('+')) {
-        s = s.split('+').first.trim();
-      }
-      if (s.contains('-')) {
-        s = s.split('-').first.trim();
-      }
+    final localParts =
+        cleanLocal.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final remoteParts =
+        cleanRemote.split('.').map((e) => int.tryParse(e) ?? 0).toList();
 
-      final parts = s.split('.');
-      final numbers = <int>[];
-      for (final part in parts) {
-        final digits = part.replaceAll(RegExp(r'[^\d]'), '');
-        numbers.add(int.tryParse(digits) ?? 0);
-      }
-      while (numbers.length < 3) {
-        numbers.add(0);
-      }
-      return numbers;
+    while (localParts.length < 3) {
+      localParts.add(0);
+    }
+    while (remoteParts.length < 3) {
+      remoteParts.add(0);
     }
 
-    final current = parseSegments(currentVersion);
-    final remote = parseSegments(remoteTag);
-
-    final currentMajor = current[0];
-    final currentMinor = current[1];
-    final currentPatch = current[2];
-
-    final remoteMajor = remote[0];
-    final remoteMinor = remote[1];
-    final remotePatch = remote[2];
-
-    if (remoteMajor > currentMajor) return true;
-    if (remoteMajor == currentMajor && remoteMinor > currentMinor) return true;
-    if (remoteMajor == currentMajor &&
-        remoteMinor == currentMinor &&
-        remotePatch > currentPatch) {
-      return true;
+    for (int i = 0; i < 3; i++) {
+      if (remoteParts[i] > localParts[i]) return true;
+      if (remoteParts[i] < localParts[i]) return false;
     }
-
     return false;
   }
 
-  /// Fetches the latest release from GitHub and compares it with the local app version.
-  Future<AppUpdateInfo?> checkForUpdates() async {
+  /// Alias for backward compatibility.
+  static bool isUpdateAvailable(String currentVersion, String remoteTag) =>
+      isRemoteVersionNewer(currentVersion, remoteTag);
+
+  /// Fetches the latest release from GitHub and returns a structured [UpdateCheckResult].
+  Future<UpdateCheckResult> checkForUpdatesResult() async {
+    String currentVersion = '';
     try {
       final packageInfo = await _packageInfoFetcher();
-      final currentVersion = packageInfo.version;
+      currentVersion = packageInfo.version;
+    } catch (e) {
+      debugPrint('[UpdateService] Erro ao ler PackageInfo: $e');
+    }
 
-      final url = Uri.parse(
+    final cleanLocalVersion = currentVersion
+        .trim()
+        .replaceAll(RegExp(r'^[vV]'), '')
+        .split('+')
+        .first
+        .split('-')
+        .first
+        .trim();
+
+    final headers = <String, String>{
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'Seriolab-App',
+    };
+
+    // Support optional token if configured (e.g. during testing or private repositories)
+    try {
+      final envToken = dotenv.isInitialized ? dotenv.env['GITHUB_TOKEN'] : null;
+      if (envToken != null && envToken.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $envToken';
+      }
+    } catch (_) {}
+
+    try {
+      // 1. Try /releases/latest endpoint first
+      final latestUrl = Uri.parse(
         'https://api.github.com/repos/$owner/$repo/releases/latest',
       );
+      debugPrint('[UpdateService] Request GET $latestUrl');
 
-      final headers = <String, String>{
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Seriolab-App',
-      };
-
-      // Support optional token if configured (e.g. during testing or private repositories)
-      try {
-        final envToken = dotenv.isInitialized ? dotenv.env['GITHUB_TOKEN'] : null;
-        if (envToken != null && envToken.isNotEmpty) {
-          headers['Authorization'] = 'Bearer $envToken';
-        }
-      } catch (_) {}
-
-      final response = await _client.get(
-        url,
+      http.Response response = await _client.get(
+        latestUrl,
         headers: headers,
       );
 
-      if (response.statusCode != 200) {
-        debugPrint(
-          '[UpdateService] Resposta da API do GitHub retornou status ${response.statusCode}: ${response.body}',
+      debugPrint(
+        '[UpdateService] Resposta da API do GitHub ($latestUrl) - Status Code: ${response.statusCode}',
+      );
+      debugPrint('[UpdateService] Corpo da resposta: ${response.body}');
+
+      Map<String, dynamic>? releaseData;
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          releaseData = decoded;
+        }
+      } else if (response.statusCode == 404) {
+        // Fallback: Check list of releases at /releases to find first non-draft release
+        final releasesUrl = Uri.parse(
+          'https://api.github.com/repos/$owner/$repo/releases',
         );
-        return null;
+        debugPrint(
+          '[UpdateService] Endpoint /releases/latest retornou 404. A tentar fallback em: $releasesUrl',
+        );
+
+        final fallbackResponse = await _client.get(
+          releasesUrl,
+          headers: headers,
+        );
+
+        debugPrint(
+          '[UpdateService] Resposta da API do GitHub ($releasesUrl) - Status Code: ${fallbackResponse.statusCode}',
+        );
+        debugPrint('[UpdateService] Corpo da resposta: ${fallbackResponse.body}');
+
+        if (fallbackResponse.statusCode == 200) {
+          final decodedList = jsonDecode(fallbackResponse.body);
+          if (decodedList is List && decodedList.isNotEmpty) {
+            for (final item in decodedList) {
+              if (item is Map<String, dynamic> && item['draft'] != true) {
+                releaseData = item;
+                break;
+              }
+            }
+          }
+        } else {
+          response = fallbackResponse;
+        }
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final tagName = data['tag_name'] as String? ?? '';
-      final body = data['body'] as String? ?? '';
-      final htmlUrl = data['html_url'] as String? ??
+      if (releaseData == null) {
+        if (response.statusCode == 404) {
+          debugPrint(
+            '[UpdateService] Repositório privado ou sem releases públicas encontradas no GitHub (404)',
+          );
+          return UpdateCheckResult(
+            status: UpdateCheckStatus.noReleaseFound,
+            statusCode: 404,
+            currentVersion: cleanLocalVersion,
+            errorMessage: 'Nenhuma versão encontrada no repositório.',
+          );
+        } else if (response.statusCode == 403) {
+          debugPrint('[UpdateService] Rate Limit da API do GitHub atingido (403)');
+          return UpdateCheckResult(
+            status: UpdateCheckStatus.rateLimitExceeded,
+            statusCode: 403,
+            currentVersion: cleanLocalVersion,
+            errorMessage: 'Limite de pedidos ao GitHub atingido. Tenta mais tarde.',
+          );
+        } else {
+          debugPrint(
+            '[UpdateService] Resposta não tratada da API do GitHub: Status ${response.statusCode}',
+          );
+          return UpdateCheckResult(
+            status: UpdateCheckStatus.unknownError,
+            statusCode: response.statusCode,
+            currentVersion: cleanLocalVersion,
+            errorMessage: 'Não foi possível verificar atualizações de momento.',
+          );
+        }
+      }
+
+      final tagName = releaseData['tag_name'] as String? ?? '';
+      final body = releaseData['body'] as String? ?? '';
+      final htmlUrl = releaseData['html_url'] as String? ??
           'https://github.com/$owner/$repo/releases';
 
       // Look for APK download URL in assets
       String apkUrl = '';
-      final assets = data['assets'] as List<dynamic>? ?? [];
+      final assets = releaseData['assets'] as List<dynamic>? ?? [];
       for (final asset in assets) {
         if (asset is Map<String, dynamic>) {
           final name = (asset['name'] as String? ?? '').toLowerCase();
@@ -175,29 +310,63 @@ class UpdateService {
         apkUrl = htmlUrl;
       }
 
-      final hasUpdate = isUpdateAvailable(currentVersion, tagName);
+      final hasUpdate = isRemoteVersionNewer(cleanLocalVersion, tagName);
 
-      debugPrint('[UpdateService] Versão local lida: $currentVersion');
+      debugPrint('[UpdateService] Versão local lida: $cleanLocalVersion');
       debugPrint('[UpdateService] Tag recebida do GitHub: $tagName');
       debugPrint('[UpdateService] Resultado da comparação booleana: $hasUpdate');
 
-      final cleanLatestVersion =
-          tagName.startsWith('v') || tagName.startsWith('V')
-              ? tagName.substring(1)
-              : tagName;
+      final cleanLatestVersion = tagName
+          .replaceAll(RegExp(r'^[vV]'), '')
+          .split('+')
+          .first
+          .split('-')
+          .first
+          .trim();
 
-      return AppUpdateInfo(
-        currentVersion: currentVersion,
+      final updateInfo = AppUpdateInfo(
+        currentVersion: cleanLocalVersion,
         latestVersion: cleanLatestVersion,
         releaseNotes: body,
         apkDownloadUrl: apkUrl,
         releaseHtmlUrl: htmlUrl,
         hasUpdate: hasUpdate,
       );
+
+      return UpdateCheckResult(
+        status: hasUpdate ? UpdateCheckStatus.hasUpdate : UpdateCheckStatus.upToDate,
+        updateInfo: updateInfo,
+        currentVersion: cleanLocalVersion,
+        statusCode: 200,
+      );
+    } on SocketException catch (e) {
+      debugPrint('[UpdateService] Erro real de rede (SocketException): $e');
+      return UpdateCheckResult(
+        status: UpdateCheckStatus.networkError,
+        currentVersion: cleanLocalVersion,
+        errorMessage: 'Sem ligação à internet.',
+      );
+    } on http.ClientException catch (e) {
+      debugPrint('[UpdateService] Erro de cliente HTTP (ClientException): $e');
+      return UpdateCheckResult(
+        status: UpdateCheckStatus.networkError,
+        currentVersion: cleanLocalVersion,
+        errorMessage: 'Sem ligação à internet.',
+      );
     } catch (e, stack) {
       debugPrint('[UpdateService] Erro ao verificar atualizações: $e\n$stack');
-      return null;
+      return UpdateCheckResult(
+        status: UpdateCheckStatus.unknownError,
+        currentVersion: cleanLocalVersion,
+        errorMessage: 'Não foi possível verificar atualizações de momento.',
+      );
     }
+  }
+
+  /// Backward-compatible method returning [AppUpdateInfo] or null.
+  Future<AppUpdateInfo?> checkForUpdates() async {
+    final result = await checkForUpdatesResult();
+    return result.updateInfo;
   }
 }
 

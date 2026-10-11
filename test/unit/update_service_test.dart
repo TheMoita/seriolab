@@ -182,7 +182,7 @@ void main() {
       expect(result.hasUpdate, isFalse);
     });
 
-    test('Handles HTTP errors gracefully by returning null', () async {
+    test('Handles HTTP errors gracefully by returning null in checkForUpdates', () async {
       final client = MockHttpClient((request) async {
         return http.Response('Not Found', 404);
       });
@@ -199,6 +199,121 @@ void main() {
 
       final result = await service.checkForUpdates();
       expect(result, isNull);
+    });
+
+    test('Falls back to /releases when /releases/latest returns 404', () async {
+      final mockReleasesListJson = jsonEncode([
+        {
+          'tag_name': 'v1.0.16-draft',
+          'draft': true,
+          'body': 'Draft notes',
+          'html_url': 'https://github.com/TheMoita/seriolab/releases/tag/v1.0.16-draft',
+          'assets': [],
+        },
+        {
+          'tag_name': 'v1.0.15',
+          'draft': false,
+          'body': 'Release published via tags',
+          'html_url': 'https://github.com/TheMoita/seriolab/releases/tag/v1.0.15',
+          'assets': [
+            {
+              'name': 'seriolab-release.apk',
+              'browser_download_url':
+                  'https://github.com/TheMoita/seriolab/releases/download/v1.0.15/seriolab-release.apk',
+            },
+          ],
+        },
+      ]);
+
+      final client = MockHttpClient((request) async {
+        if (request.url.path.endsWith('/releases/latest')) {
+          return http.Response('Not Found', 404);
+        }
+        if (request.url.path.endsWith('/releases')) {
+          return http.Response(mockReleasesListJson, 200,
+              headers: {'content-type': 'application/json'});
+        }
+        return http.Response('Not Found', 404);
+      });
+
+      final service = UpdateService(
+        client: client,
+        packageInfoFetcher: () async => PackageInfo(
+          appName: 'Seriolab',
+          packageName: 'com.seriolab.app',
+          version: '1.0.14+14',
+          buildNumber: '14',
+        ),
+      );
+
+      final result = await service.checkForUpdatesResult();
+      expect(result.status, UpdateCheckStatus.hasUpdate);
+      expect(result.updateInfo, isNotNull);
+      expect(result.updateInfo!.latestVersion, '1.0.15');
+      expect(result.updateInfo!.currentVersion, '1.0.14');
+      expect(result.updateInfo!.hasUpdate, isTrue);
+    });
+
+    test('Returns noReleaseFound when 404 on both latest and releases', () async {
+      final client = MockHttpClient((request) async {
+        return http.Response('Not Found', 404);
+      });
+
+      final service = UpdateService(
+        client: client,
+        packageInfoFetcher: () async => PackageInfo(
+          appName: 'Seriolab',
+          packageName: 'com.seriolab.app',
+          version: '1.0.14',
+          buildNumber: '14',
+        ),
+      );
+
+      final result = await service.checkForUpdatesResult();
+      expect(result.status, UpdateCheckStatus.noReleaseFound);
+      expect(result.errorMessage, 'Nenhuma versão encontrada no repositório.');
+      expect(result.statusCode, 404);
+    });
+
+    test('Returns rateLimitExceeded on HTTP 403', () async {
+      final client = MockHttpClient((request) async {
+        return http.Response('API rate limit exceeded', 403);
+      });
+
+      final service = UpdateService(
+        client: client,
+        packageInfoFetcher: () async => PackageInfo(
+          appName: 'Seriolab',
+          packageName: 'com.seriolab.app',
+          version: '1.0.14',
+          buildNumber: '14',
+        ),
+      );
+
+      final result = await service.checkForUpdatesResult();
+      expect(result.status, UpdateCheckStatus.rateLimitExceeded);
+      expect(result.errorMessage, 'Limite de pedidos ao GitHub atingido. Tenta mais tarde.');
+      expect(result.statusCode, 403);
+    });
+
+    test('Returns networkError on client network exception', () async {
+      final client = MockHttpClient((request) async {
+        throw http.ClientException('Failed to connect to host');
+      });
+
+      final service = UpdateService(
+        client: client,
+        packageInfoFetcher: () async => PackageInfo(
+          appName: 'Seriolab',
+          packageName: 'com.seriolab.app',
+          version: '1.0.14',
+          buildNumber: '14',
+        ),
+      );
+
+      final result = await service.checkForUpdatesResult();
+      expect(result.status, UpdateCheckStatus.networkError);
+      expect(result.errorMessage, 'Sem ligação à internet.');
     });
   });
 

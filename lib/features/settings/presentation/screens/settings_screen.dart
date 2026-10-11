@@ -44,17 +44,68 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final currentVersion = packageInfo.version;
 
       final updateService = ref.read(updateServiceProvider);
-      final updateInfo = await updateService.checkForUpdates();
+      final result = await updateService.checkForUpdatesResult();
       if (!mounted) return;
 
-      if (updateInfo != null && updateInfo.hasUpdate) {
-        await showUpdateBottomSheet(context, updateInfo);
-      } else if (updateInfo != null && !updateInfo.hasUpdate) {
+      if (result.status == UpdateCheckStatus.hasUpdate && result.updateInfo != null) {
+        await showUpdateBottomSheet(context, result.updateInfo!);
+      } else if (result.status == UpdateCheckStatus.upToDate) {
+        final versionToDisplay = result.currentVersion.isNotEmpty
+            ? result.currentVersion
+            : currentVersion;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'A aplicação já está na versão mais recente (v$currentVersion).',
+              'Tens a versão mais recente instalada (v$versionToDisplay).',
               style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: AppColors.surfaceHigh,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: AppColors.outline, width: 0.8),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      } else if (result.status == UpdateCheckStatus.noReleaseFound) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Nenhuma versão encontrada no repositório.',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: AppColors.surfaceHigh,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: AppColors.outline, width: 0.8),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      } else if (result.status == UpdateCheckStatus.rateLimitExceeded) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Limite de pedidos ao GitHub atingido. Tenta mais tarde.',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: AppColors.surfaceHigh,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: AppColors.outline, width: 0.8),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      } else if (result.status == UpdateCheckStatus.networkError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Sem ligação à internet.',
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
             backgroundColor: AppColors.surfaceHigh,
             behavior: SnackBarBehavior.floating,
@@ -68,9 +119,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text(
-              'Não foi possível verificar atualizações de momento. Verifica a ligação à internet.',
-              style: TextStyle(fontWeight: FontWeight.w600),
+            content: Text(
+              result.errorMessage ?? 'Não foi possível verificar atualizações de momento.',
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             backgroundColor: AppColors.surfaceHigh,
             behavior: SnackBarBehavior.floating,
