@@ -45,14 +45,9 @@ class RecentActivitySection extends ConsumerWidget {
     final List<WatchedEpisode> episodes;
     if (customEpisodes != null) {
       episodes = List.of(customEpisodes!)
-        ..sort((a, b) => b.watchedAt.compareTo(a.watchedAt));
+        ..sort(WatchedEpisode.compareForRecentActivity);
     } else if (trackingState != null) {
-      final flattened = <WatchedEpisode>[];
-      for (final showMap in trackingState.watched.values) {
-        flattened.addAll(showMap.values);
-      }
-      flattened.sort((a, b) => b.watchedAt.compareTo(a.watchedAt));
-      episodes = flattened;
+      episodes = trackingState.recentWatchedEpisodes();
     } else {
       episodes = const [];
     }

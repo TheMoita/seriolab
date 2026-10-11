@@ -144,6 +144,23 @@ class WatchedEpisode {
   /// Date the log was recorded.
   final DateTime? loggedAt;
 
+  int get seasonNumber => key.season;
+  int get episodeNumber => key.episode;
+
+  /// Compares two watched episodes for Recent Activity ordering:
+  /// 1º Critério: watchedAt (descendente — mais recente primeiro);
+  /// 2º Critério: seasonNumber (descendente — temporadas mais recentes primeiro);
+  /// 3º Critério: episodeNumber (descendente — episódios finais primeiro).
+  static int compareForRecentActivity(WatchedEpisode a, WatchedEpisode b) {
+    final timeDiff = b.watchedAt.compareTo(a.watchedAt);
+    if (timeDiff != 0) return timeDiff;
+
+    final seasonDiff = b.seasonNumber.compareTo(a.seasonNumber);
+    if (seasonDiff != 0) return seasonDiff;
+
+    return b.episodeNumber.compareTo(a.episodeNumber);
+  }
+
   WatchedEpisode copyWith({
     int? showId,
     EpisodeKey? key,

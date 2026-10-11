@@ -120,7 +120,10 @@ class TrackingController extends AsyncNotifier<TrackingState> {
           final newWatchedMap = {...watchedMap};
 
           if (episodes.isNotEmpty) {
-            for (final e in episodes) {
+            final sortedEpisodes = List.of(episodes)
+              ..sort((a, b) => a.key.compareTo(b.key));
+            for (var i = 0; i < sortedEpisodes.length; i++) {
+              final e = sortedEpisodes[i];
               final existing = watchedMap[e.key];
               if (existing == null) {
                 hadUnwatched = true;
@@ -132,7 +135,8 @@ class TrackingController extends AsyncNotifier<TrackingState> {
                     ((e.runtime != null && e.runtime! > 0)
                         ? e.runtime!
                         : (show.episodeRuntime > 0 ? show.episodeRuntime : 45)),
-                watchedAt: existing?.watchedAt ?? now,
+                watchedAt: existing?.watchedAt ??
+                    now.add(Duration(milliseconds: i)),
                 userRating: existing?.userRating,
                 reviewText: existing?.reviewText,
                 hasSpoilers: existing?.hasSpoilers ?? false,
@@ -142,7 +146,10 @@ class TrackingController extends AsyncNotifier<TrackingState> {
               newWatchedMap[e.key] = updated;
             }
           } else if (show.regularSeasons.isNotEmpty) {
-            for (final s in show.regularSeasons) {
+            final sortedSeasons = List.of(show.regularSeasons)
+              ..sort((a, b) => a.seasonNumber.compareTo(b.seasonNumber));
+            var epCounter = 0;
+            for (final s in sortedSeasons) {
               for (var i = 1; i <= s.episodeCount; i++) {
                 final key = EpisodeKey(s.seasonNumber, i);
                 final existing = watchedMap[key];
@@ -154,7 +161,8 @@ class TrackingController extends AsyncNotifier<TrackingState> {
                   key: key,
                   runtime: existing?.runtime ??
                       (show.episodeRuntime > 0 ? show.episodeRuntime : 45),
-                  watchedAt: existing?.watchedAt ?? now,
+                  watchedAt: existing?.watchedAt ??
+                      now.add(Duration(milliseconds: epCounter++)),
                   userRating: existing?.userRating,
                   reviewText: existing?.reviewText,
                   hasSpoilers: existing?.hasSpoilers ?? false,
@@ -221,8 +229,11 @@ class TrackingController extends AsyncNotifier<TrackingState> {
 
             final items = <WatchedEpisode>[];
             final newWatchedMap = {...watchedMap};
+            final sortedEpisodes = List.of(episodes)
+              ..sort((a, b) => a.key.compareTo(b.key));
 
-            for (final e in episodes) {
+            for (var i = 0; i < sortedEpisodes.length; i++) {
+              final e = sortedEpisodes[i];
               final existingWatched = watchedMap[e.key];
               if (existingWatched == null) {
                 hadUnwatched = true;
@@ -236,7 +247,8 @@ class TrackingController extends AsyncNotifier<TrackingState> {
                         : (details.episodeRuntime > 0
                             ? details.episodeRuntime
                             : (existing?.episodeRuntime ?? 45))),
-                watchedAt: existingWatched?.watchedAt ?? now,
+                watchedAt: existingWatched?.watchedAt ??
+                    now.add(Duration(milliseconds: i)),
                 userRating: existingWatched?.userRating,
                 reviewText: existingWatched?.reviewText,
                 hasSpoilers: existingWatched?.hasSpoilers ?? false,
@@ -396,15 +408,29 @@ class TrackingController extends AsyncNotifier<TrackingState> {
 
         final watchedMap = {...current.watchedFor(show.id)};
         if (watched) {
-          final items = [
-            for (final e in targets)
+          final sortedTargets = List.of(targets)
+            ..sort((a, b) => a.key.compareTo(b.key));
+          final items = <WatchedEpisode>[];
+          for (var i = 0; i < sortedTargets.length; i++) {
+            final e = sortedTargets[i];
+            final existingWatched = watchedMap[e.key];
+            items.add(
               WatchedEpisode(
                 showId: show.id,
                 key: e.key,
-                runtime: e.runtime ?? show.episodeRuntime,
-                watchedAt: now,
+                runtime: existingWatched?.runtime ??
+                    ((e.runtime != null && e.runtime! > 0)
+                        ? e.runtime!
+                        : show.episodeRuntime),
+                watchedAt: existingWatched?.watchedAt ??
+                    now.add(Duration(milliseconds: i)),
+                userRating: existingWatched?.userRating,
+                reviewText: existingWatched?.reviewText,
+                hasSpoilers: existingWatched?.hasSpoilers ?? false,
+                loggedAt: existingWatched?.loggedAt,
               ),
-          ];
+            );
+          }
           await _repo.markWatched(items);
           for (final item in items) {
             watchedMap[item.key] = item;

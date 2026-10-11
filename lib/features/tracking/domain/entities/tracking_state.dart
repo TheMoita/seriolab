@@ -80,6 +80,22 @@ class TrackingState {
           .toList()
         ..sort());
 
+  /// Returns watched episodes sorted for Recent Activity:
+  /// 1º Criteria: watchedAt (descending — latest first)
+  /// 2º Criteria: seasonNumber (descending — latest seasons first)
+  /// 3º Criteria: episodeNumber (descending — finale episodes first)
+  List<WatchedEpisode> recentWatchedEpisodes({int? limit}) {
+    final flattened = <WatchedEpisode>[];
+    for (final perShow in watched.values) {
+      flattened.addAll(perShow.values);
+    }
+    flattened.sort(WatchedEpisode.compareForRecentActivity);
+    if (limit != null && limit > 0) {
+      return flattened.take(limit).toList();
+    }
+    return flattened;
+  }
+
   UserStats get stats {
     var episodes = 0;
     var minutes = 0;
