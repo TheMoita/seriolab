@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
+import '../../../../core/widgets/modal_drag_handle.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../tracking/domain/entities/tracking_entities.dart';
 import '../../../tracking/presentation/providers/tracking_providers.dart';
@@ -56,6 +57,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
 
     showModalBottomSheet<void>(
       context: context,
+      showDragHandle: false,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -68,17 +70,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.outline,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
+                const ModalDragHandle(topPadding: 0, bottomPadding: 16),
                 Row(
                   children: [
                     ClipRRect(

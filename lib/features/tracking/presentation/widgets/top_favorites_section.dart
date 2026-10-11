@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_network_image.dart';
+import '../../../../core/widgets/modal_drag_handle.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../shows/domain/entities/show.dart';
 import '../../../shows/presentation/providers/show_providers.dart';
@@ -128,6 +129,7 @@ class TopFavoritesSection extends ConsumerWidget {
   void _openAddFavoriteSheet(BuildContext context, {int? targetSlot}) {
     showModalBottomSheet<void>(
       context: context,
+      showDragHandle: false,
       isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
@@ -145,6 +147,7 @@ class TopFavoritesSection extends ConsumerWidget {
   ) {
     showModalBottomSheet<void>(
       context: context,
+      showDragHandle: false,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -157,6 +160,7 @@ class TopFavoritesSection extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const ModalDragHandle(topPadding: 0, bottomPadding: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -270,6 +274,7 @@ class TopFavoritesSection extends ConsumerWidget {
   ) {
     showModalBottomSheet<void>(
       context: context,
+      showDragHandle: false,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -282,17 +287,7 @@ class TopFavoritesSection extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: AppColors.outline,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
+                const ModalDragHandle(topPadding: 0, bottomPadding: 16),
                 const Text(
                   'Mover para nova posição:',
                   style: TextStyle(
@@ -545,17 +540,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.outline,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
+            const ModalDragHandle(topPadding: 0, bottomPadding: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

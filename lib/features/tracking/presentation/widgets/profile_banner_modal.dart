@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/local_storage_utils.dart';
+import '../../../../core/widgets/modal_drag_handle.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import 'series_backdrop_picker_sheet.dart';
 
@@ -17,6 +18,7 @@ class ProfileBannerModal extends ConsumerWidget {
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet<void>(
       context: context,
+      showDragHandle: false,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -119,6 +121,9 @@ class ProfileBannerModal extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Top drag handle
+            const ModalDragHandle(topPadding: 0, bottomPadding: 8),
+
             // Sheet Header
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 16, 12),

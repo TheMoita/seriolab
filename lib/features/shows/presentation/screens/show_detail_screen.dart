@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/modal_drag_handle.dart';
 import '../../../../core/widgets/status_chip.dart';
 import '../../../tracking/domain/entities/tracking_entities.dart';
 import '../../../tracking/presentation/providers/tracking_providers.dart';
@@ -1124,6 +1125,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
   ) {
     showModalBottomSheet<void>(
       context: context,
+      showDragHandle: false,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1135,6 +1137,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const ModalDragHandle(topPadding: 0, bottomPadding: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -1672,6 +1675,7 @@ void _showTopFiveSlotPicker(
 ) {
   showModalBottomSheet<void>(
     context: context,
+    showDragHandle: false,
     backgroundColor: AppColors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -1690,17 +1694,7 @@ void _showTopFiveSlotPicker(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.outline,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
+                  const ModalDragHandle(topPadding: 0, bottomPadding: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

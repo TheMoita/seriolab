@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/modal_drag_handle.dart';
 import '../../../tracking/presentation/providers/tracking_providers.dart';
 import '../providers/settings_providers.dart';
 
@@ -16,6 +17,7 @@ class ExportWatchlistSheet extends ConsumerStatefulWidget {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      showDragHandle: false,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -101,17 +103,7 @@ class _ExportWatchlistSheetState extends ConsumerState<ExportWatchlistSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Top handle
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.outline,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
+            const ModalDragHandle(topPadding: 0, bottomPadding: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

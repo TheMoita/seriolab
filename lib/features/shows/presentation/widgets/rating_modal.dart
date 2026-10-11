@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/modal_drag_handle.dart';
 
 /// Result from [RatingModal.show].
 sealed class RatingResult {
@@ -77,6 +78,7 @@ class RatingModal extends StatefulWidget {
     return showModalBottomSheet<RatingResult>(
       context: context,
       isScrollControlled: true,
+      showDragHandle: false,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -248,17 +250,7 @@ class _RatingModalState extends State<RatingModal> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Top drag handle
-              Center(
-                child: Container(
-                  width: 38,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 14),
-                  decoration: BoxDecoration(
-                    color: AppColors.outline,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
+              const ModalDragHandle(topPadding: 0, bottomPadding: 14),
 
               // Header: Title, Item Name & Badge
               Row(

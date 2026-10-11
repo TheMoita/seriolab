@@ -40,6 +40,7 @@ class TrailerDialog extends StatefulWidget {
   }) {
     return showModalBottomSheet<void>(
       context: context,
+      showDragHandle: false,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Padding(

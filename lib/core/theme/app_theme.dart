@@ -145,7 +145,7 @@ abstract final class AppTheme {
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
-        showDragHandle: true,
+        showDragHandle: false,
       ),
       dividerTheme: const DividerThemeData(
         color: AppColors.outline,

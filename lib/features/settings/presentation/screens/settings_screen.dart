@@ -7,6 +7,7 @@ import '../../../auth/domain/entities/app_user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../auth/presentation/widgets/auth_gate.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/modal_drag_handle.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
 import '../providers/settings_providers.dart';
 import '../widgets/avatar_selection_sheet.dart';
@@ -62,6 +63,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     final selected = await showModalBottomSheet<String>(
       context: context,
+      showDragHandle: false,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -74,6 +76,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const ModalDragHandle(topPadding: 0, bottomPadding: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -131,6 +134,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _selectRegion(BuildContext context, String current) async {
     final selected = await showModalBottomSheet<String>(
       context: context,
+      showDragHandle: false,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -143,6 +147,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const ModalDragHandle(topPadding: 0, bottomPadding: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(

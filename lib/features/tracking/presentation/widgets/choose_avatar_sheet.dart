@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/modal_drag_handle.dart';
 import '../../../settings/domain/entities/user_settings.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../settings/presentation/widgets/avatar_selection_sheet.dart';
@@ -29,18 +30,7 @@ class ChooseAvatarSheet extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Top drag handle
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.outline,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
+            const ModalDragHandle(topPadding: 0, bottomPadding: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

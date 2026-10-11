@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/di/providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_network_image.dart';
+import '../../../../core/widgets/modal_drag_handle.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../shows/domain/entities/show.dart';
 import '../../../shows/presentation/providers/show_providers.dart';
@@ -19,6 +20,7 @@ class SeriesBackdropPickerSheet extends ConsumerStatefulWidget {
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet<void>(
       context: context,
+      showDragHandle: false,
       isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
@@ -122,9 +124,10 @@ class _SeriesBackdropPickerSheetState
         top: false,
         child: Column(
           children: [
-            // Drag handle & Header
+            const ModalDragHandle(topPadding: 12, bottomPadding: 4),
+            // Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
+              padding: const EdgeInsets.fromLTRB(20, 6, 12, 8),
               child: Row(
                 children: [
                   Container(

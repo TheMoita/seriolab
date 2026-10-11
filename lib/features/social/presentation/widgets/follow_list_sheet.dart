@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/modal_drag_handle.dart';
 import '../../../settings/presentation/widgets/user_avatar_widget.dart';
 import '../../domain/entities/user_profile.dart';
 import '../providers/social_providers.dart';
@@ -30,6 +31,7 @@ class FollowListSheet extends ConsumerStatefulWidget {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      showDragHandle: false,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -80,16 +82,7 @@ class _FollowListSheetState extends ConsumerState<FollowListSheet>
         child: Column(
           children: [
             // Handle bar
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.outline,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 12),
+            const ModalDragHandle(topPadding: 12, bottomPadding: 12),
 
             // Header
             Padding(

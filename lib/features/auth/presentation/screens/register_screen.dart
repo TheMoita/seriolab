@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/modal_drag_handle.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
 import '../../../settings/domain/entities/user_settings.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
@@ -72,6 +73,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _selectAvatar() async {
     final picked = await showModalBottomSheet<String>(
       context: context,
+      showDragHandle: false,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -84,6 +86,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const ModalDragHandle(topPadding: 0, bottomPadding: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
