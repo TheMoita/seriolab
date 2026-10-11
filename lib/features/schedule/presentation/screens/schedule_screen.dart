@@ -6,6 +6,7 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/seriolab_loader.dart';
+import '../../../../core/widgets/seriolab_refresh_indicator.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../shows/domain/entities/episode.dart';
 import '../../../shows/domain/entities/show.dart';
@@ -227,9 +228,7 @@ class _WatchingListView extends StatelessWidget {
       );
     }
 
-    return RefreshIndicator(
-      color: AppColors.primary,
-      backgroundColor: AppColors.surface,
+    return SeriolabRefreshIndicator(
       onRefresh: onRefresh,
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -471,9 +470,7 @@ class _ComingSoonListView extends StatelessWidget {
       );
     }
 
-    return RefreshIndicator(
-      color: AppColors.primary,
-      backgroundColor: AppColors.surface,
+    return SeriolabRefreshIndicator(
       onRefresh: onRefresh,
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),

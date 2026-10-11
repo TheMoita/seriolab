@@ -8,6 +8,7 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/seriolab_loader.dart';
+import '../../../../core/widgets/seriolab_refresh_indicator.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../settings/presentation/screens/settings_screen.dart';
 import '../../../settings/presentation/widgets/edit_profile_sheet.dart';
@@ -96,9 +97,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           onAction: () => ref.refresh(trackingControllerProvider),
         ),
         data: (trackingState) {
-          return RefreshIndicator(
-            color: AppColors.primary,
-            backgroundColor: AppColors.surface,
+          return SeriolabRefreshIndicator(
             onRefresh: () async {
               final user = ref.read(authControllerProvider).user;
               if (user != null) {

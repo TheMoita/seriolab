@@ -7,6 +7,7 @@ import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/modal_drag_handle.dart';
 import '../../../../core/widgets/seriolab_loader.dart';
+import '../../../../core/widgets/seriolab_refresh_indicator.dart';
 import '../../../../core/widgets/status_chip.dart';
 import '../../../tracking/domain/entities/tracking_entities.dart';
 import '../../../tracking/presentation/providers/tracking_providers.dart';
@@ -77,7 +78,16 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
       )),
     );
 
-    return CustomScrollView(
+    return SeriolabRefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(showDetailsProvider(show.id));
+        ref.invalidate(seasonDetailsProvider((
+          showId: show.id,
+          seasonNumber: _selectedSeasonNumber,
+        )));
+      },
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         // Collapsible App Bar with Backdrop
         SliverAppBar(
@@ -811,7 +821,8 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
           child: SizedBox(height: 48),
         ),
       ],
-    );
+    ),
+  );
   }
 
   Widget _buildEpisodeItem({

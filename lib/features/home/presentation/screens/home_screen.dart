@@ -6,6 +6,7 @@ import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
+import '../../../../core/widgets/seriolab_refresh_indicator.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../shows/domain/entities/genre.dart';
 import '../../../shows/domain/entities/show.dart';
@@ -95,10 +96,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
         ],
       ),
-      body: RefreshIndicator(
+      body: SeriolabRefreshIndicator(
         onRefresh: _refresh,
-        color: AppColors.primary,
-        backgroundColor: AppColors.surface,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
           children: [

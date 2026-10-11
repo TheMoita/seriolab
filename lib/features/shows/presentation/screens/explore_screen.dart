@@ -5,6 +5,7 @@ import '../../../../core/di/providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/seriolab_loader.dart';
+import '../../../../core/widgets/seriolab_refresh_indicator.dart';
 import '../../../settings/presentation/widgets/user_avatar_widget.dart';
 import '../../../social/domain/entities/user_profile.dart';
 import '../../../social/presentation/providers/social_providers.dart';
@@ -100,9 +101,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           ),
         ),
       ),
-      body: RefreshIndicator(
-        color: AppColors.primary,
-        backgroundColor: AppColors.surfaceHigh,
+      body: SeriolabRefreshIndicator(
         onRefresh: () async {
           if (_currentTab == ExploreTab.shows) {
             ref.invalidate(trendingShowsProvider);
