@@ -176,6 +176,144 @@ class UpdateService {
   static bool isUpdateAvailable(String currentVersion, String remoteTag) =>
       isRemoteVersionNewer(currentVersion, remoteTag);
 
+  /// Default user-friendly release notes when no notes or only technical data are available.
+  static const String defaultReleaseNotes =
+      'Esta versão inclui melhorias de desempenho, correções de estabilidade e novas funcionalidades para a tua experiência no Seriolab.';
+
+  /// Sanitizes and formats raw GitHub release notes into clean, user-friendly notes:
+  /// - Strips markdown links and raw URLs
+  /// - Strips commit hashes and PR / author mentions
+  /// - Filters out automated changelog lines (Full Changelog, Dependabot, Merge PR, etc.)
+  /// - Converts raw bullet markers (- or *) into clean bullets with friendly prefixes:
+  ///   • "Novo:" / "Novidades:"
+  ///   • "Melhorias:"
+  ///   • "Correções:"
+  /// - Returns [defaultReleaseNotes] if the notes are empty or only contained technical data.
+  static String formatReleaseNotes(String? rawBody) {
+    if (rawBody == null || rawBody.trim().isEmpty) {
+      return defaultReleaseNotes;
+    }
+
+    final lines = rawBody.split(RegExp(r'\r?\n'));
+    final formattedLines = <String>[];
+
+    for (final rawLine in lines) {
+      var line = rawLine.trim();
+      if (line.isEmpty) continue;
+
+      // Ignore markdown headers for changelog / contributor sections
+      if (RegExp(
+        r'^#{1,6}\s*(what\x27s changed|new contributors|changelog|release notes|novidades|alterações)',
+        caseSensitive: false,
+      ).hasMatch(line)) {
+        continue;
+      }
+
+      // Ignore horizontal rules/dividers (---, ***, ___)
+      if (RegExp(r'^[-*_]{3,}$').hasMatch(line)) {
+        continue;
+      }
+
+      // Ignore automated GitHub lines
+      if (RegExp(r'full changelog', caseSensitive: false).hasMatch(line) ||
+          RegExp(r'merge(d)?\s+pull\s+request', caseSensitive: false).hasMatch(line) ||
+          RegExp(r'@?dependabot', caseSensitive: false).hasMatch(line) ||
+          RegExp(r'made (their|his|her) first contribution', caseSensitive: false).hasMatch(line)) {
+        continue;
+      }
+
+      final hadBullet = RegExp(r'^[-*+•]\s*').hasMatch(line);
+      line = line.replaceFirst(RegExp(r'^[-*+•]\s*'), '').trim();
+
+      // Clean commit SHAs at the beginning of the line (e.g. "8ad31ef feat: ...")
+      line = line.replaceFirst(RegExp(r'^[0-9a-fA-F]{7,40}\s+'), '').trim();
+
+      // Clean markdown links: [text](url) -> keep text if meaningful, otherwise remove
+      line = line.replaceAllMapped(
+        RegExp(r'\[([^\]]*)\]\([^\)]+\)'),
+        (match) {
+          final linkText = match.group(1)?.trim() ?? '';
+          if (linkText.isEmpty ||
+              linkText.startsWith('http') ||
+              RegExp(r'^#\d+$').hasMatch(linkText) ||
+              RegExp(r'^(pr|pull request|commit|see pr|link|here)$', caseSensitive: false).hasMatch(linkText) ||
+              RegExp(r'^[0-9a-fA-F]{7,40}$').hasMatch(linkText)) {
+            return '';
+          }
+          return linkText;
+        },
+      );
+
+      // Clean raw URLs
+      line = line.replaceAll(RegExp(r'https?://\S+'), '');
+
+      // Clean author mentions ("by @username" or "@username")
+      line = line.replaceAll(RegExp(r'\bby\s+@[\w\.-]+', caseSensitive: false), '');
+      line = line.replaceAll(RegExp(r'@[\w\.-]+'), '');
+
+      // Clean PR references ("in #123", "(#123)", "PR #123", "#123")
+      line = line.replaceAll(RegExp(r'\bin\s+#\d+\b', caseSensitive: false), '');
+      line = line.replaceAll(RegExp(r'\(\s*(pr\s*)?#?\d+\s*\)', caseSensitive: false), '');
+      line = line.replaceAll(RegExp(r'\bpr\s*#\d+\b', caseSensitive: false), '');
+      line = line.replaceAll(RegExp(r'#\d+\b'), '');
+
+      // Clean dangling commit hashes inside the line (containing at least one digit to avoid stripping regular words)
+      line = line.replaceAll(
+        RegExp(r'\b(?=[0-9a-fA-F]{7,40}\b)(?:[0-9a-fA-F]*[0-9][0-9a-fA-F]*)\b'),
+        '',
+      );
+
+      // Clean empty brackets and parentheses
+      line = line.replaceAll(RegExp(r'\(\s*(see|ver)?\s*\)', caseSensitive: false), '');
+      line = line.replaceAll(RegExp(r'\[\s*\]'), '');
+
+      // Clean trailing dangling "in", "see", "ver", ":", "-", or whitespace
+      line = line.replaceAll(RegExp(r'\b(in|see|ver)\s*$', caseSensitive: false), '');
+      line = line.replaceAll(RegExp(r'\s*[:\-]\s*$'), '');
+      line = line.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+      if (line.isEmpty || line == '-' || line == '*' || line == '•' || line == ':') {
+        continue;
+      }
+
+      // Check category prefixes
+      String formattedItem;
+      if (RegExp(r'^(novidades)\s*:\s*', caseSensitive: false).hasMatch(line)) {
+        final content = line.replaceFirst(RegExp(r'^(novidades)\s*:\s*', caseSensitive: false), '').trim();
+        formattedItem = content.isNotEmpty ? '• Novidades: ${_capitalize(content)}' : '';
+      } else if (RegExp(r'^(feat(\([^\)]*\))?|novo|novidade)\s*:\s*', caseSensitive: false).hasMatch(line)) {
+        final content = line.replaceFirst(RegExp(r'^(feat(\([^\)]*\))?|novo|novidade)\s*:\s*', caseSensitive: false), '').trim();
+        formattedItem = content.isNotEmpty ? '• Novo: ${_capitalize(content)}' : '';
+      } else if (RegExp(r'^(fix(\([^\)]*\))?|bug(\([^\)]*\))?|correç[ãa]o|correç[õo]es|correcao|correcoes)\s*:\s*', caseSensitive: false).hasMatch(line)) {
+        final content = line.replaceFirst(RegExp(r'^(fix(\([^\)]*\))?|bug(\([^\)]*\))?|correç[ãa]o|correç[õo]es|correcao|correcoes)\s*:\s*', caseSensitive: false), '').trim();
+        formattedItem = content.isNotEmpty ? '• Correções: ${_capitalize(content)}' : '';
+      } else if (RegExp(r'^(perf(\([^\)]*\))?|refactor(\([^\)]*\))?|melhoria|melhorias)\s*:\s*', caseSensitive: false).hasMatch(line)) {
+        final content = line.replaceFirst(RegExp(r'^(perf(\([^\)]*\))?|refactor(\([^\)]*\))?|melhoria|melhorias)\s*:\s*', caseSensitive: false), '').trim();
+        formattedItem = content.isNotEmpty ? '• Melhorias: ${_capitalize(content)}' : '';
+      } else if (hadBullet) {
+        formattedItem = '• ${_capitalize(line)}';
+      } else {
+        formattedItem = _capitalize(line);
+      }
+
+      if (formattedItem.isNotEmpty) {
+        formattedLines.add(formattedItem);
+      }
+    }
+
+    if (formattedLines.isEmpty) {
+      return defaultReleaseNotes;
+    }
+
+    return formattedLines.join('\n');
+  }
+
+  static String _capitalize(String text) {
+    if (text.isEmpty) return text;
+    if (text.length == 1) return text.toUpperCase();
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
   /// Fetches the latest release from GitHub and returns a structured [UpdateCheckResult].
   Future<UpdateCheckResult> checkForUpdatesResult() async {
     String currentVersion = '';
@@ -342,7 +480,7 @@ class UpdateService {
       final updateInfo = AppUpdateInfo(
         currentVersion: cleanLocalVersion,
         latestVersion: cleanLatestVersion,
-        releaseNotes: body,
+        releaseNotes: formatReleaseNotes(body),
         apkDownloadUrl: apkUrl,
         releaseHtmlUrl: htmlUrl,
         hasUpdate: hasUpdate,

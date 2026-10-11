@@ -263,61 +263,64 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
               ),
               const SizedBox(height: 16),
 
-              // Title
+              // Title and version badge
               Center(
-                child: Text(
-                  _isInstalling
-                      ? 'A Iniciar Instalação'
-                      : _isDownloading
-                          ? 'A Descarregar Atualização...'
-                          : 'Nova Versão Disponível',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                    letterSpacing: -0.3,
-                  ),
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    Text(
+                      _isInstalling
+                          ? 'A Iniciar Instalação'
+                          : _isDownloading
+                              ? 'A Descarregar Atualização...'
+                              : 'Nova Atualização Disponível',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: AppColors.secondary.withValues(alpha: 0.35),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        'v${widget.updateInfo.latestVersion}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.secondary,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 8),
 
-              // Version badge
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: AppColors.secondary.withValues(alpha: 0.35),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    'v${widget.updateInfo.latestVersion}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.secondary,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // Description with dynamic versions or progress state
+              // Subtitle
               Center(
                 child: Text(
                   _isInstalling
                       ? 'O instalador nativo do Android foi iniciado. Por favor confirma a instalação no ecrã para atualizar o Seriolab.'
                       : _isDownloading
                           ? 'A transferir seriolab-update.apk (v${widget.updateInfo.latestVersion}). Por favor aguarda.'
-                          : 'Uma nova versão (v${widget.updateInfo.latestVersion}) está pronta para download. A tua versão atual é a v${widget.updateInfo.currentVersion}.',
+                          : 'Vê o que mudou nesta versão:',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 13,
@@ -418,55 +421,33 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                   const SizedBox(height: 12),
                 ],
 
-                // Changelog container
+                // Release notes content container
                 Container(
-                  constraints: const BoxConstraints(maxHeight: 180),
+                  constraints: const BoxConstraints(maxHeight: 200),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: const Color(0xFF161922),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppColors.outline,
+                      color: AppColors.outline.withValues(alpha: 0.6),
                       width: 1,
                     ),
                   ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(
-                                Icons.notes_rounded,
-                                size: 16,
-                                color: AppColors.textMuted,
-                              ),
-                              SizedBox(width: 6),
-                              Text(
-                                'Novidades desta versão:',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            widget.updateInfo.releaseNotes.isNotEmpty
-                                ? widget.updateInfo.releaseNotes
-                                : 'Melhorias de desempenho e correções de erros gerais.',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              height: 1.5,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        UpdateService.formatReleaseNotes(widget.updateInfo.releaseNotes),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          height: 1.55,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                   ),
+                ),
                 const SizedBox(height: 20),
               ],
 

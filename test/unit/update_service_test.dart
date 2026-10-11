@@ -105,6 +105,84 @@ void main() {
     });
   });
 
+  group('Release Notes Sanitizer and Formatting Tests', () {
+    test('Returns defaultReleaseNotes for null, empty or whitespace input', () {
+      expect(
+        UpdateService.formatReleaseNotes(null),
+        UpdateService.defaultReleaseNotes,
+      );
+      expect(
+        UpdateService.formatReleaseNotes(''),
+        UpdateService.defaultReleaseNotes,
+      );
+      expect(
+        UpdateService.formatReleaseNotes('   \n\n  \t '),
+        UpdateService.defaultReleaseNotes,
+      );
+    });
+
+    test('Strips markdown links, URLs, author tags, and PR mentions', () {
+      const raw = '''
+* feat: add comments by @themoita in https://github.com/themoita/seriolab/pull/12
+* fix: crash on tap (#25) (see [PR #25](https://github.com/themoita/seriolab/pull/25))
+* 7a3c89f perf: improve startup time
+''';
+      final formatted = UpdateService.formatReleaseNotes(raw);
+      expect(formatted, contains('• Novo: Add comments'));
+      expect(formatted, contains('• Correções: Crash on tap'));
+      expect(formatted, contains('• Melhorias: Improve startup time'));
+      expect(formatted, isNot(contains('@themoita')));
+      expect(formatted, isNot(contains('https://')));
+      expect(formatted, isNot(contains('7a3c89f')));
+      expect(formatted, isNot(contains('#12')));
+      expect(formatted, isNot(contains('#25')));
+    });
+
+    test('Converts Portuguese keywords into clean bullet categories', () {
+      const raw = '''
+- Novo: suporte a notificações em tempo real
+- Novidades: feed comunitário aprimorado
+- Correções: falha ao guardar série na biblioteca
+- Melhorias: fluidez nas animações
+''';
+      final formatted = UpdateService.formatReleaseNotes(raw);
+      expect(formatted, contains('• Novo: Suporte a notificações em tempo real'));
+      expect(formatted, contains('• Novidades: Feed comunitário aprimorado'));
+      expect(formatted, contains('• Correções: Falha ao guardar série na biblioteca'));
+      expect(formatted, contains('• Melhorias: Fluidez nas animações'));
+    });
+
+    test('Filters out automated GitHub text and section headings', () {
+      const raw = '''
+## What's Changed
+* fix: episode progress calculation by @themoita in #10
+## New Contributors
+* @someone made their first contribution in #11
+Merged pull request #12 from themoita/fix
+* Dependabot bump dependencies
+Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
+''';
+      final formatted = UpdateService.formatReleaseNotes(raw);
+      expect(formatted, '• Correções: Episode progress calculation');
+      expect(formatted, isNot(contains("What's Changed")));
+      expect(formatted, isNot(contains('Full Changelog')));
+      expect(formatted, isNot(contains('Dependabot')));
+      expect(formatted, isNot(contains('Merged pull request')));
+    });
+
+    test('Returns defaultReleaseNotes if release body only contains stripped technical data', () {
+      const raw = '''
+## What's Changed
+* Merged pull request #10 from themoita/patch
+* Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
+''';
+      expect(
+        UpdateService.formatReleaseNotes(raw),
+        UpdateService.defaultReleaseNotes,
+      );
+    });
+  });
+
   group('UpdateService GitHub API tests', () {
     test('Parses latest GitHub release successfully with APK asset', () async {
       final mockReleaseJson = jsonEncode({
@@ -369,22 +447,17 @@ void main() {
       expect(find.byType(ModalDragHandle), findsOneWidget);
 
       // Verify Title
-      expect(find.text('Nova Versão Disponível'), findsOneWidget);
+      expect(find.text('Nova Atualização Disponível'), findsOneWidget);
 
       // Verify version badge
       expect(find.text('v1.0.15'), findsOneWidget);
 
-      // Verify dynamic text with remote and current versions
-      expect(
-        find.text(
-          'Uma nova versão (v1.0.15) está pronta para download. A tua versão atual é a v1.0.14.',
-        ),
-        findsOneWidget,
-      );
+      // Verify subtitle
+      expect(find.text('Vê o que mudou nesta versão:'), findsOneWidget);
 
-      // Verify release notes
+      // Verify formatted release notes
       expect(
-        find.text('- Novo leitor de atualizações\n- Correções de bugs'),
+        find.text('• Novo leitor de atualizações\n• Correções de bugs'),
         findsOneWidget,
       );
 
@@ -547,7 +620,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Atualizar Agora'), findsOneWidget);
-      expect(find.text('Nova Versão Disponível'), findsOneWidget);
+      expect(find.text('Nova Atualização Disponível'), findsOneWidget);
 
       await controller.close();
     });
