@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:ota_update/ota_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 /// Structured information about the application update state.
@@ -83,17 +84,31 @@ class UpdateService {
   UpdateService({
     http.Client? client,
     PackageInfoFetcher? packageInfoFetcher,
+    OtaUpdate? otaUpdate,
     String? owner,
     String? repo,
   })  : _client = client ?? http.Client(),
         _packageInfoFetcher = packageInfoFetcher ?? PackageInfo.fromPlatform,
+        _otaUpdate = otaUpdate ?? OtaUpdate(),
         owner = owner ?? _resolveOwner(),
         repo = repo ?? _resolveRepo();
 
   final http.Client _client;
   final PackageInfoFetcher _packageInfoFetcher;
+  final OtaUpdate _otaUpdate;
   final String owner;
   final String repo;
+
+  /// Executes an In-App OTA download of the APK and launches the Android package installer.
+  Stream<OtaEvent> executeOtaUpdate(
+    String downloadUrl, {
+    String destinationFilename = 'seriolab-update.apk',
+  }) {
+    return _otaUpdate.execute(
+      downloadUrl,
+      destinationFilename: destinationFilename,
+    );
+  }
 
   static String _resolveOwner() {
     try {

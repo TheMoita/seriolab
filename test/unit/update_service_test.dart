@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
+import 'package:ota_update/ota_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:seriolab/core/services/update_service.dart';
 import 'package:seriolab/core/widgets/modal_drag_handle.dart';
@@ -315,6 +317,26 @@ void main() {
       expect(result.status, UpdateCheckStatus.networkError);
       expect(result.errorMessage, 'Sem ligação à internet.');
     });
+
+    test('executeOtaUpdate delegates to OtaUpdate with destinationFilename', () {
+      final controller = StreamController<OtaEvent>.broadcast();
+      String? capturedUrl;
+      String? capturedFilename;
+      final fakeOta = FakeOtaUpdate(
+        streamBuilder: (url, filename) {
+          capturedUrl = url;
+          capturedFilename = filename;
+          return controller.stream;
+        },
+      );
+
+      final service = UpdateService(otaUpdate: fakeOta);
+      final stream = service.executeOtaUpdate('https://example.com/app.apk');
+      expect(stream, isNotNull);
+      expect(capturedUrl, 'https://example.com/app.apk');
+      expect(capturedFilename, 'seriolab-update.apk');
+      controller.close();
+    });
   });
 
   group('UpdateBottomSheet Widget Tests', () {
@@ -377,5 +399,174 @@ void main() {
       await tester.pump();
       expect(dismissed, isTrue);
     });
+
+    testWidgets('Tapping "Atualizar Agora" enters downloading state and updates progress',
+        (tester) async {
+      final controller = StreamController<OtaEvent>.broadcast();
+      final fakeOta = FakeOtaUpdate(
+        streamBuilder: (url, filename) {
+          expect(url, 'https://example.com/seriolab-v1.0.15.apk');
+          expect(filename, 'seriolab-update.apk');
+          return controller.stream;
+        },
+      );
+
+      const updateInfo = AppUpdateInfo(
+        currentVersion: '1.0.14',
+        latestVersion: '1.0.15',
+        releaseNotes: 'Melhorias de desempenho',
+        apkDownloadUrl: 'https://example.com/seriolab-v1.0.15.apk',
+        releaseHtmlUrl: 'https://example.com/release',
+        hasUpdate: true,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: UpdateBottomSheet(
+              updateInfo: updateInfo,
+              otaUpdate: fakeOta,
+            ),
+          ),
+        ),
+      );
+
+      final updateButton = find.text('Atualizar Agora');
+      expect(updateButton, findsOneWidget);
+
+      await tester.tap(updateButton);
+      await tester.pump();
+
+      // Emit downloading event at 45%
+      controller.add(OtaEvent(OtaStatus.DOWNLOADING, '45'));
+      await tester.pump();
+
+      expect(find.text('A Descarregar Atualização...'), findsOneWidget);
+      expect(find.text('45%'), findsOneWidget);
+      expect(find.text('Cancelar Transferência'), findsOneWidget);
+
+      // Emit installing event
+      controller.add(OtaEvent(OtaStatus.INSTALLING, null));
+      await tester.pump();
+
+      expect(find.text('A Iniciar Instalação'), findsOneWidget);
+      expect(find.text('Pronto'), findsOneWidget);
+      expect(find.text('Fechar'), findsOneWidget);
+
+      await controller.close();
+    });
+
+    testWidgets('Displays error message and browser fallback button on permission error',
+        (tester) async {
+      final controller = StreamController<OtaEvent>.broadcast();
+      final fakeOta = FakeOtaUpdate(
+        streamBuilder: (url, filename) => controller.stream,
+      );
+
+      const updateInfo = AppUpdateInfo(
+        currentVersion: '1.0.14',
+        latestVersion: '1.0.15',
+        releaseNotes: 'Melhorias de desempenho',
+        apkDownloadUrl: 'https://example.com/seriolab-v1.0.15.apk',
+        releaseHtmlUrl: 'https://example.com/release',
+        hasUpdate: true,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: UpdateBottomSheet(
+              updateInfo: updateInfo,
+              otaUpdate: fakeOta,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Atualizar Agora'));
+      await tester.pump();
+
+      // Emit permission not granted error
+      controller.add(OtaEvent(OtaStatus.PERMISSION_NOT_GRANTED_ERROR, null));
+      await tester.pump();
+
+      expect(
+        find.textContaining('Permissão de instalação necessária'),
+        findsOneWidget,
+      );
+      expect(find.text('Descarregar no Browser'), findsOneWidget);
+      expect(find.text('Atualizar Agora'), findsOneWidget);
+
+      await controller.close();
+    });
+
+    testWidgets('Tapping "Cancelar Transferência" restores initial view',
+        (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final controller = StreamController<OtaEvent>.broadcast();
+      final fakeOta = FakeOtaUpdate(
+        streamBuilder: (url, filename) => controller.stream,
+      );
+
+      const updateInfo = AppUpdateInfo(
+        currentVersion: '1.0.14',
+        latestVersion: '1.0.15',
+        releaseNotes: 'Melhorias de desempenho',
+        apkDownloadUrl: 'https://example.com/seriolab-v1.0.15.apk',
+        releaseHtmlUrl: 'https://example.com/release',
+        hasUpdate: true,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: UpdateBottomSheet(
+              updateInfo: updateInfo,
+              otaUpdate: fakeOta,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Atualizar Agora'));
+      await tester.pump();
+
+      controller.add(OtaEvent(OtaStatus.DOWNLOADING, '20'));
+      await tester.pump();
+
+      final cancelButton = find.text('Cancelar Transferência');
+      expect(cancelButton, findsOneWidget);
+
+      await tester.ensureVisible(cancelButton);
+      await tester.tap(cancelButton);
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Atualizar Agora'), findsOneWidget);
+      expect(find.text('Nova Versão Disponível'), findsOneWidget);
+
+      await controller.close();
+    });
   });
 }
+
+class FakeOtaUpdate extends OtaUpdate {
+  FakeOtaUpdate({required this.streamBuilder});
+  final Stream<OtaEvent> Function(String url, String? filename) streamBuilder;
+
+  @override
+  Stream<OtaEvent> execute(
+    String url, {
+    Map<String, String> headers = const <String, String>{},
+    String? androidProviderAuthority,
+    String? destinationFilename,
+    String? sha256checksum,
+  }) {
+    return streamBuilder(url, destinationFilename);
+  }
+}
+
