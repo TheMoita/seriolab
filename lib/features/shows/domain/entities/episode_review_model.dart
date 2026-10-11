@@ -19,9 +19,13 @@ class EpisodeReviewModel {
     this.containsSpoilers = false,
     required this.createdAt,
     this.likesCount = 0,
+    this.dislikesCount = 0,
+    this.likedBy = const [],
+    this.dislikedBy = const [],
   });
 
   final String id;
+
   /// Identifier pattern: "{seriesId}_s{seasonNumber}_e{episodeNumber}".
   final String episodeKeyString;
   final String userId;
@@ -35,6 +39,12 @@ class EpisodeReviewModel {
   final bool containsSpoilers;
   final DateTime createdAt;
   final int likesCount;
+  final int dislikesCount;
+  final List<String> likedBy;
+  final List<String> dislikedBy;
+
+  bool isLikedBy(String? uid) => uid != null && likedBy.contains(uid);
+  bool isDislikedBy(String? uid) => uid != null && dislikedBy.contains(uid);
 
   static String buildKey(int seriesId, int seasonNumber, int episodeNumber) =>
       '${seriesId}_s${seasonNumber}_e$episodeNumber';
@@ -56,6 +66,15 @@ class EpisodeReviewModel {
           ? DateTime.tryParse(json['createdAt'] as String) ?? DateTime.now()
           : DateTime.now(),
       likesCount: (json['likesCount'] as num?)?.toInt() ?? 0,
+      dislikesCount: (json['dislikesCount'] as num?)?.toInt() ?? 0,
+      likedBy: (json['likedBy'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      dislikedBy: (json['dislikedBy'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
     );
   }
 
@@ -73,6 +92,9 @@ class EpisodeReviewModel {
         'containsSpoilers': containsSpoilers,
         'createdAt': createdAt.toIso8601String(),
         'likesCount': likesCount,
+        'dislikesCount': dislikesCount,
+        'likedBy': likedBy,
+        'dislikedBy': dislikedBy,
       };
 
   EpisodeReviewModel copyWith({
@@ -89,6 +111,9 @@ class EpisodeReviewModel {
     bool? containsSpoilers,
     DateTime? createdAt,
     int? likesCount,
+    int? dislikesCount,
+    List<String>? likedBy,
+    List<String>? dislikedBy,
   }) =>
       EpisodeReviewModel(
         id: id ?? this.id,
@@ -104,5 +129,11 @@ class EpisodeReviewModel {
         containsSpoilers: containsSpoilers ?? this.containsSpoilers,
         createdAt: createdAt ?? this.createdAt,
         likesCount: likesCount ?? this.likesCount,
+        dislikesCount: dislikesCount ?? this.dislikesCount,
+        likedBy: likedBy ?? this.likedBy,
+        dislikedBy: dislikedBy ?? this.dislikedBy,
       );
 }
+
+/// Convenience alias matching user naming conventions
+typedef EpisodeCommentModel = EpisodeReviewModel;

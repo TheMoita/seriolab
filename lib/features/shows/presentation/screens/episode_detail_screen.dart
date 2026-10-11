@@ -19,6 +19,7 @@ import '../../domain/entities/episode_review_model.dart';
 import '../../domain/entities/show.dart';
 import '../providers/episode_review_providers.dart';
 import '../providers/show_providers.dart';
+import '../widgets/comment_card_widget.dart';
 import '../widgets/episode_review_bottom_sheet.dart';
 import '../widgets/rating_modal.dart';
 
@@ -1306,195 +1307,33 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
               final isOwnComment = currentUserId != null &&
                   currentUserId == review.userId;
 
-              return Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.outline, width: 0.8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Author info & Rating
-                    Row(
-                      children: [
-                        UserAvatarWidget(
-                          avatarId: review.userAvatarId,
-                          avatarType: review.userAvatarType,
-                          avatarValue: review.userAvatarValue,
-                          size: 36,
-                          borderWidth: 1.5,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                review.userDisplayName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              Text(
-                                '@${review.username} • ${Formatters.timeAgo(review.createdAt)}',
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  color: AppColors.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (review.rating != null) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: RatingModal.letterboxdGreen
-                                  .withValues(alpha: 0.16),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '★ ${review.rating!.toStringAsFixed(1)}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                                color: RatingModal.letterboxdGreen,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                        ],
-                        if (!isOwnComment)
-                          PopupMenuButton<String>(
-                            icon: const Icon(
-                              Icons.more_vert_rounded,
-                              size: 18,
-                              color: AppColors.textMuted,
-                            ),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            tooltip: 'Opções do comentário',
-                            color: AppColors.surfaceHigh,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: const BorderSide(color: AppColors.outline),
-                            ),
-                            onSelected: (value) async {
-                              if (value == 'report') {
-                                final reported = await showReportBottomSheet(
-                                  context: context,
-                                  targetType: ReportTargetType.comment,
-                                  targetId: review.id,
-                                  reportedUserId: review.userId,
-                                  reportedUsername: review.username,
-                                );
-                                if (reported == true && mounted) {
-                                  setState(() {
-                                    _hiddenReportedComments.add(review.id);
-                                  });
-                                }
-                              }
-                            },
-                            itemBuilder: (context) => [
-                              const PopupMenuItem<String>(
-                                value: 'report',
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.flag_outlined,
-                                      size: 16,
-                                      color: AppColors.danger,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Denunciar comentário',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: AppColors.danger,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Comment Body with Spoiler Protection
-                    if (isSpoilerProtected)
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            _revealedCommentSpoilers.add(review.id);
-                          });
-                        },
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color:
-                                const Color(0xFFF59E0B).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: const Color(0xFFF59E0B)
-                                  .withValues(alpha: 0.35),
-                              width: 0.8,
-                            ),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                size: 16,
-                                color: Color(0xFFF59E0B),
-                              ),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Aviso de Spoiler — Toca para ver',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFFF59E0B),
-                                  ),
-                                ),
-                              ),
-                              Icon(
-                                Icons.chevron_right_rounded,
-                                size: 16,
-                                color: Color(0xFFF59E0B),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    else
-                      Text(
-                        review.comment,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textPrimary,
-                          height: 1.4,
-                        ),
-                      ),
-                  ],
-                ),
+              return CommentCardWidget(
+                review: review,
+                seriesId: widget.seriesId,
+                seasonNumber: widget.seasonNumber,
+                episodeNumber: widget.episodeNumber,
+                currentUserId: currentUserId,
+                isOwnComment: isOwnComment,
+                isSpoilerProtected: isSpoilerProtected,
+                onRevealSpoiler: () {
+                  setState(() {
+                    _revealedCommentSpoilers.add(review.id);
+                  });
+                },
+                onReport: () async {
+                  final reported = await showReportBottomSheet(
+                    context: context,
+                    targetType: ReportTargetType.comment,
+                    targetId: review.id,
+                    reportedUserId: review.userId,
+                    reportedUsername: review.username,
+                  );
+                  if (reported == true && mounted) {
+                    setState(() {
+                      _hiddenReportedComments.add(review.id);
+                    });
+                  }
+                },
               );
             },
           ),
