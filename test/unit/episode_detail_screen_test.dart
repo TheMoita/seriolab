@@ -53,8 +53,9 @@ void main() {
     // Verify Synopsis section
     expect(find.text('Sinopse'), findsOneWidget);
 
-    // Verify Letterboxd-style personal rating CTA
+    // Verify personal rating CTA and clean unrated placeholder
     expect(find.text('A Tua Avaliação'), findsOneWidget);
+    expect(find.text('Ainda não avaliaste este episódio'), findsOneWidget);
     expect(find.text('Registar / Avaliar Episódio'), findsOneWidget);
 
     // Toggle watched state

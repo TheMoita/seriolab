@@ -1148,7 +1148,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
               ),
           ] else ...[
             const Text(
-              'Ainda não avaliaste este episódio. Dá uma nota de 0.5 a 10.0 estrelas no estilo Letterboxd!',
+              'Ainda não avaliaste este episódio',
               style: TextStyle(
                 fontSize: 13,
                 color: AppColors.textSecondary,
