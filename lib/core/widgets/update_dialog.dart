@@ -159,6 +159,31 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
               });
               break;
 
+            case OtaStatus.INSTALLATION_DONE:
+              setState(() {
+                _isDownloading = false;
+                _isInstalling = false;
+                _progress = 100;
+              });
+              break;
+
+            case OtaStatus.INSTALLATION_ERROR:
+              setState(() {
+                _isDownloading = false;
+                _isInstalling = false;
+                _errorMessage =
+                    'Falha ao instalar a atualização. Podes tentar descarregar pelo browser.';
+              });
+              break;
+
+            case OtaStatus.CANCELED:
+              setState(() {
+                _isDownloading = false;
+                _isInstalling = false;
+                _progress = 0;
+              });
+              break;
+
             case OtaStatus.INTERNAL_ERROR:
               setState(() {
                 _isDownloading = false;

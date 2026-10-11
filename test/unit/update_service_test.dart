@@ -638,6 +638,7 @@ class FakeOtaUpdate extends OtaUpdate {
     String? androidProviderAuthority,
     String? destinationFilename,
     String? sha256checksum,
+    bool usePackageInstaller = false,
   }) {
     return streamBuilder(url, destinationFilename);
   }

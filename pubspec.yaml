@@ -53,7 +53,7 @@ dependencies:
   youtube_player_iframe: ^6.0.2
   custom_refresh_indicator: ^4.0.2
   url_launcher: ^6.3.3
-  ota_update: ^5.0.0
+  ota_update: ^7.1.0
 
 dev_dependencies:
   flutter_test:
