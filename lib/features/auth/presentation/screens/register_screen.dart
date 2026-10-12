@@ -101,7 +101,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Escolhe o teu Avatar',
+                        'Choose your Avatar',
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
@@ -227,7 +227,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                     // Header
                     const Text(
-                      'Criar Conta',
+                      'Create Account',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -238,7 +238,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Junta-te ao Seriolab e partilha a tua maratona de séries.',
+                      'Join Seriolab and share your TV show journey.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
@@ -288,7 +288,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     const SizedBox(height: 8),
                     Center(
                       child: Text(
-                        'Avatar: ${avatar.name} • Toca para mudar',
+                        'Avatar: ${avatar.name} • Tap to change',
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -344,7 +344,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       textInputAction: TextInputAction.next,
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: const InputDecoration(
-                        labelText: 'Nome de utilizador',
+                        labelText: 'Username',
                         hintText: '@username',
                         prefixIcon: Icon(
                           Icons.alternate_email_rounded,
@@ -364,7 +364,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: const InputDecoration(
                         labelText: 'Email',
-                        hintText: 'exemplo@seriolab.app',
+                        hintText: 'example@seriolab.app',
                         prefixIcon: Icon(
                           Icons.mail_outline_rounded,
                           color: AppColors.textSecondary,
@@ -382,8 +382,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       textInputAction: TextInputAction.next,
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
-                        labelText: 'Palavra-passe',
-                        hintText: 'Mínimo 6 caracteres',
+                        labelText: 'Password',
+                        hintText: 'Minimum 6 characters',
                         prefixIcon: const Icon(
                           Icons.lock_outline_rounded,
                           color: AppColors.textSecondary,
@@ -414,8 +414,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       onFieldSubmitted: (_) => _handleRegister(),
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
-                        labelText: 'Confirmar Palavra-passe',
-                        hintText: 'Repete a palavra-passe',
+                        labelText: 'Confirm Password',
+                        hintText: 'Repeat your password',
                         prefixIcon: const Icon(
                           Icons.lock_reset_rounded,
                           color: AppColors.textSecondary,
@@ -442,7 +442,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Submit Button ("Criar Conta")
+                    // Submit Button ("Create Account")
                     SizedBox(
                       height: 52,
                       child: FilledButton(
@@ -465,7 +465,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 secondaryColor: AppColors.secondary,
                               )
                             : const Text(
-                                'Criar Conta',
+                                'Create Account',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -482,7 +482,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         const Text(
-                          'Já tens uma conta? ',
+                          'Already have an account? ',
                           style: TextStyle(
                             fontSize: 13,
                             color: AppColors.textSecondary,
@@ -494,7 +494,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             Navigator.of(context).pop();
                           },
                           child: const Text(
-                            'Inicia sessão',
+                            'Sign In',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,

@@ -67,14 +67,14 @@ class LocalAuthService implements AuthService {
     final account = accounts[cleanEmail];
     if (account == null) {
       throw const AuthException(
-        'Nenhuma conta encontrada com este email. Regista-te primeiro.',
+        'No account found with this email. Please sign up first.',
         code: 'user-not-found',
       );
     }
 
     if (account['password'] != password) {
       throw const AuthException(
-        'Email ou palavra-passe incorretos.',
+        'Incorrect email or password.',
         code: 'wrong-password',
       );
     }
@@ -102,7 +102,7 @@ class LocalAuthService implements AuthService {
 
     if (accounts.containsKey(cleanEmail)) {
       throw const AuthException(
-        'Já existe uma conta associada a este email.',
+        'An account already exists with this email.',
         code: 'email-already-in-use',
       );
     }

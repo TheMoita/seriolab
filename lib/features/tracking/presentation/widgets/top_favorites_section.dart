@@ -94,17 +94,37 @@ class TopFavoritesSection extends ConsumerWidget {
             },
           ),
           if (effectiveFavorites.isEmpty) ...[
-            const SizedBox(height: 10),
-            Center(
-              child: Text(
-                isEditable
-                    ? 'Ainda não selecionaste as tuas séries favoritas'
-                    : 'Ainda não selecionou séries favoritas',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textMuted,
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.surface.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: AppColors.outline.withValues(alpha: 0.5),
                 ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.star_outline_rounded,
+                    size: 16,
+                    color: AppColors.secondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      isEditable
+                          ? 'Sem séries no Top 5. Toca num espaço para adicionar as tuas favoritas.'
+                          : 'Sem séries no Top 5.',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -394,15 +414,27 @@ class _FavoriteSlotTile extends ConsumerWidget {
                 child: SeriolabLoader(size: 20),
               ),
             ),
-            error: (_, _) => Container(
-              decoration: BoxDecoration(
-                color: AppColors.surfaceHigh,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Center(
-                child: Icon(Icons.tv_rounded, color: AppColors.textMuted),
-              ),
-            ),
+            error: (e, stackTrace) {
+              debugPrint('Erro ao carregar Top 5: $e');
+              debugPrint('Stack: $stackTrace');
+              return Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceHigh,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.refresh_rounded,
+                      color: AppColors.textMuted,
+                      size: 20,
+                    ),
+                    tooltip: 'Erro ao carregar série. Toca para recarregar.',
+                    onPressed: () => ref.invalidate(showDetailsProvider(showId)),
+                  ),
+                ),
+              );
+            },
           ),
           // Subtle border outline
           Container(

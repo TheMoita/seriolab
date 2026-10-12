@@ -126,7 +126,7 @@ class AuthController extends Notifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Erro inesperado ao iniciar sessão: $e',
+        errorMessage: 'Unexpected error signing in: $e',
       );
       return false;
     }
@@ -157,7 +157,7 @@ class AuthController extends Notifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Erro inesperado ao registar conta: $e',
+        errorMessage: 'Unexpected error registering account: $e',
       );
       return false;
     }

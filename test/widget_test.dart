@@ -183,20 +183,19 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify login UI components
-    expect(find.text('Iniciar Sessão'), findsOneWidget);
-    expect(find.text('Entrar'), findsOneWidget);
-    expect(find.text('Regista-te'), findsOneWidget);
+    expect(find.text('Sign In'), findsNWidgets(2));
+    expect(find.text('Sign up'), findsOneWidget);
     // Google Sign-In and guest mode are completely removed
     expect(find.text('Continuar com o Google'), findsNothing);
     expect(find.text('Ou continua com'), findsNothing);
     expect(find.text('Continuar como Convidado'), findsNothing);
 
-    // Enter email & password and tap Entrar to authenticate
+    // Enter email & password and tap Sign In to authenticate
     await tester.enterText(find.byType(TextFormField).at(0), 'tester@seriolab.app');
     await tester.enterText(find.byType(TextFormField).at(1), 'password123');
-    final entrarBtn = find.text('Entrar');
-    await tester.ensureVisible(entrarBtn);
-    await tester.tap(entrarBtn);
+    final signInBtn = find.widgetWithText(FilledButton, 'Sign In');
+    await tester.ensureVisible(signInBtn);
+    await tester.tap(signInBtn);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 

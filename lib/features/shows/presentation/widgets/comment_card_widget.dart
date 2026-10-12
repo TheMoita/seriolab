@@ -75,7 +75,7 @@ class _CommentCardWidgetState extends ConsumerState<CommentCardWidget> {
     if (uid == null || uid.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Inicia sessão para reagir aos comentários.'),
+          content: const Text('Sign in to react to comments.'),
           backgroundColor: AppColors.surfaceHigh,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(

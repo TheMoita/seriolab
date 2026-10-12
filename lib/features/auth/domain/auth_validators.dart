@@ -1,6 +1,6 @@
 /// Form validators shared by the login and registration screens.
 ///
-/// Each returns `null` when valid, otherwise a Portuguese error message.
+/// Each returns `null` when valid, otherwise an English error message.
 abstract final class AuthValidators {
   static final _emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$');
   static final _usernameRegex = RegExp(r'^[a-zA-Z0-9_.]{3,20}$');
@@ -9,32 +9,32 @@ abstract final class AuthValidators {
 
   static String? email(String? value) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty) return 'Introduz o teu email.';
-    if (!_emailRegex.hasMatch(v)) return 'Introduz um email válido.';
+    if (v.isEmpty) return 'Please enter your email.';
+    if (!_emailRegex.hasMatch(v)) return 'Please enter a valid email address.';
     return null;
   }
 
   static String? password(String? value) {
     final v = value ?? '';
-    if (v.isEmpty) return 'Introduz a palavra-passe.';
+    if (v.isEmpty) return 'Please enter your password.';
     if (v.length < minPasswordLength) {
-      return 'A palavra-passe deve ter pelo menos $minPasswordLength caracteres.';
+      return 'Password must be at least $minPasswordLength characters.';
     }
     return null;
   }
 
   static String? confirmPassword(String? value, String original) {
-    if (value == null || value.isEmpty) return 'Confirma a palavra-passe.';
-    if (value != original) return 'As palavras-passe não coincidem.';
+    if (value == null || value.isEmpty) return 'Please confirm your password.';
+    if (value != original) return 'Passwords do not match.';
     return null;
   }
 
   /// Accepts an optional leading `@`.
   static String? username(String? value) {
     final v = normalizeUsername(value ?? '');
-    if (v.isEmpty) return 'Escolhe um nome de utilizador.';
+    if (v.isEmpty) return 'Please choose a username.';
     if (!_usernameRegex.hasMatch(v)) {
-      return 'Usa 3 a 20 caracteres: letras, números, "_" ou ".".';
+      return 'Use 3 to 20 characters: letters, numbers, "_" or ".';
     }
     return null;
   }

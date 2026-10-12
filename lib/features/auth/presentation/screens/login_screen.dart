@@ -72,11 +72,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
       }
     } catch (e) {
-      debugPrint('Erro detalhado no login com email: $e');
+      debugPrint('Detailed error during email login: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Falha ao autenticar com email: $e'),
+            content: Text('Failed to authenticate with email: $e'),
             backgroundColor: AppColors.danger,
             behavior: SnackBarBehavior.floating,
           ),
@@ -117,7 +117,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                     // Title
                     const Text(
-                      'Iniciar Sessão',
+                      'Sign In',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -128,7 +128,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Entra para sincronizar as tuas séries, notas e histórico.',
+                      'Sign in to sync your TV series, ratings, and history.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
@@ -185,7 +185,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: const InputDecoration(
                         labelText: 'Email',
-                        hintText: 'exemplo@seriolab.app',
+                        hintText: 'example@seriolab.app',
                         prefixIcon: Icon(
                           Icons.mail_outline_rounded,
                           color: AppColors.textSecondary,
@@ -204,7 +204,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       onFieldSubmitted: (_) => _handleEmailLogin(),
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
-                        labelText: 'Palavra-passe',
+                        labelText: 'Password',
                         hintText: '••••••••',
                         prefixIcon: const Icon(
                           Icons.lock_outline_rounded,
@@ -228,7 +228,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Submit Button ("Entrar")
+                    // Submit Button ("Sign In")
                     SizedBox(
                       height: 52,
                       child: FilledButton(
@@ -251,7 +251,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 secondaryColor: AppColors.secondary,
                               )
                             : const Text(
-                                'Entrar',
+                                'Sign In',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -269,7 +269,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           const Text(
-                            'Ainda não tens conta? ',
+                            "Don't have an account? ",
                             style: TextStyle(
                               fontSize: 13,
                               color: AppColors.textSecondary,
@@ -289,7 +289,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     );
                                   },
                             child: const Text(
-                              'Regista-te',
+                              'Sign up',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,

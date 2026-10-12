@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 /// How the user authenticated with Seriolab.
 enum AuthProviderKind {
-  email('Email e palavra-passe'),
+  email('Email and password'),
   google('Google');
 
   const AuthProviderKind(this.label);

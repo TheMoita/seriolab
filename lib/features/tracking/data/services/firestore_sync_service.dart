@@ -184,37 +184,77 @@ class FirestoreSyncService {
         await syncUserProfile(localSettings, uid: uid);
       }
 
-      // 4. Favorites Sync: check root doc 'favorites' map or direct list fields
+      // 4. Favorites / Top 5 Sync: check root doc 'favorites' map or direct list fields
       Map<String, dynamic>? favData;
-      if (rootData != null && rootData['favorites'] is Map) {
-        favData = Map<String, dynamic>.from(rootData['favorites'] as Map);
-      } else if (rootData != null &&
-          (rootData['topFiveIds'] != null ||
-              rootData['favoriteSeriesIds'] != null ||
-              rootData['favoriteShowIds'] != null)) {
-        favData = Map<String, dynamic>.from(rootData);
-      }
-
-      // If not present in root doc, check subcollection users/{uid}/favorites/top_five
-      if (favData == null) {
-        final favDocRef = userDocRef.collection('favorites').doc('top_five');
-        try {
-          final favSnapshot = await favDocRef.get();
-          if (favSnapshot.exists && favSnapshot.data() != null) {
-            favData = favSnapshot.data()!;
-          }
-        } catch (e) {
-          debugPrint('FirestoreSyncService: Favorites subcollection get note: $e');
+      try {
+        if (rootData != null && rootData['favorites'] is Map) {
+          favData = Map<String, dynamic>.from(rootData['favorites'] as Map);
+        } else if (rootData != null &&
+            (rootData['topFiveIds'] != null ||
+                rootData['favoriteSeriesIds'] != null ||
+                rootData['favoriteShowIds'] != null)) {
+          favData = Map<String, dynamic>.from(rootData);
         }
-      }
 
-      if (favData != null && favData.isNotEmpty) {
-        final (topFive, allFavs) = favoritesFromMap(favData);
-        settingsNotifier?.syncFavoritesFromRemote(topFive, allFavs);
-      } else {
-        // Only upload local favorites to Firestore if NO remote favorites existed
-        final localSettings = await _settingsRepo.getSettings();
-        await syncFavorites(localSettings, uid: uid);
+        // If not present in root doc, check subcollection users/{uid}/favorites/top_five
+        if (favData == null) {
+          final favDocRef = userDocRef.collection('favorites').doc('top_five');
+          try {
+            final favSnapshot = await favDocRef.get();
+            if (favSnapshot.exists && favSnapshot.data() != null) {
+              favData = favSnapshot.data()!;
+            }
+          } catch (e, stackTrace) {
+            debugPrint('Erro ao carregar Top 5: $e');
+            debugPrint('Stack: $stackTrace');
+          }
+        }
+
+        // Check ordered subcollection query (.orderBy('order').limit(5)) if doc 'top_five' is missing
+        if (favData == null) {
+          try {
+            final querySnapshot = await userDocRef
+                .collection('favorites')
+                .orderBy('order')
+                .limit(5)
+                .get();
+            if (querySnapshot.docs.isNotEmpty) {
+              final orderedIds = querySnapshot.docs
+                  .map((d) => (d.data()['showId'] ?? d.data()['id']) as int?)
+                  .whereType<int>()
+                  .toList();
+              if (orderedIds.isNotEmpty) {
+                favData = {
+                  'topFiveIds': orderedIds,
+                  'favoriteShowIds': orderedIds,
+                };
+              }
+            }
+          } on FirebaseException catch (e, stackTrace) {
+            debugPrint('Erro ao carregar Top 5: $e');
+            debugPrint('Stack: $stackTrace');
+            if (e.code == 'failed-precondition' ||
+                (e.message?.contains('index') ?? false)) {
+              debugPrint(
+                  '⚠️ [Firestore Index Required]: A query ordenada do Top 5 requer um índice composto. Cria-o no Firebase Console através do link presente na mensagem de erro: ${e.message}');
+            }
+          } catch (e, stackTrace) {
+            debugPrint('Erro ao carregar Top 5: $e');
+            debugPrint('Stack: $stackTrace');
+          }
+        }
+
+        if (favData != null && favData.isNotEmpty) {
+          final (topFive, allFavs) = favoritesFromMap(favData);
+          settingsNotifier?.syncFavoritesFromRemote(topFive, allFavs);
+        } else {
+          // Only upload local favorites to Firestore if NO remote favorites existed
+          final localSettings = await _settingsRepo.getSettings();
+          await syncFavorites(localSettings, uid: uid);
+        }
+      } catch (e, stackTrace) {
+        debugPrint('Erro ao carregar Top 5: $e');
+        debugPrint('Stack: $stackTrace');
       }
 
       // 4. Watchlist & Library Sync (users/{uid}/library and users/{uid}/watchlist)
@@ -694,8 +734,10 @@ class FirestoreSyncService {
   /// Syncs top 5 and favorites to `users/{uid}` and `users/{uid}/favorites/top_five`.
   Future<void> syncFavorites(UserSettings settings, {String? uid}) async {
     final firestore = _firestore;
-    final effectiveUid = uid ?? _resolvedUid;
+    final currentUser = Firebase.apps.isNotEmpty ? FirebaseAuth.instance.currentUser : null;
+    final effectiveUid = uid ?? _resolvedUid ?? currentUser?.uid;
     if (firestore == null || effectiveUid == null || effectiveUid.trim().isEmpty) {
+      debugPrint('Top 5 / syncFavorites: Utilizador não autenticado. Nenhuma operação executada.');
       return;
     }
 
@@ -715,9 +757,80 @@ class FirestoreSyncService {
       // 2. Subcollection mirror for full backward compatibility
       final docRef = userDocRef.collection('favorites').doc('top_five');
       await docRef.set(favMap, SetOptions(merge: true));
-    } catch (e) {
-      debugPrint('FirestoreSyncService: Error syncing favorites: $e');
+    } catch (e, stackTrace) {
+      debugPrint('Erro ao carregar Top 5: $e');
+      debugPrint('Stack: $stackTrace');
     }
+  }
+
+  /// Fetches top 5 favorite series IDs directly from Firestore.
+  /// Safely validates user authentication, handles errors, and detects missing indexes.
+  Future<List<int>> fetchTopFive({String? uid}) async {
+    final firestore = _firestore;
+    final currentUser = Firebase.apps.isNotEmpty ? FirebaseAuth.instance.currentUser : null;
+    final effectiveUid = uid ?? _resolvedUid ?? currentUser?.uid;
+    if (effectiveUid == null || effectiveUid.trim().isEmpty) {
+      debugPrint('Top 5: Utilizador nulo/não autenticado. Devolvendo lista vazia.');
+      return const [];
+    }
+    if (firestore == null) {
+      final local = await _settingsRepo.getSettings();
+      return local.favoriteShowIds;
+    }
+
+    try {
+      final userDocRef = firestore.collection('users').doc(effectiveUid);
+
+      // 1. Root doc check
+      final userSnap = await userDocRef.get();
+      if (userSnap.exists && userSnap.data() != null) {
+        final data = userSnap.data()!;
+        if (data['favorites'] is Map) {
+          final (topFive, _) = favoritesFromMap(Map<String, dynamic>.from(data['favorites'] as Map));
+          if (topFive.isNotEmpty) return topFive;
+        }
+        if (data['topFiveIds'] != null || data['favoriteShowIds'] != null) {
+          final (topFive, _) = favoritesFromMap(data);
+          if (topFive.isNotEmpty) return topFive;
+        }
+      }
+
+      // 2. Subcollection doc 'top_five'
+      final docSnap = await userDocRef.collection('favorites').doc('top_five').get();
+      if (docSnap.exists && docSnap.data() != null) {
+        final (topFive, _) = favoritesFromMap(docSnap.data()!);
+        if (topFive.isNotEmpty) return topFive;
+      }
+
+      // 3. Ordered subcollection query with .orderBy('order').limit(5)
+      try {
+        final querySnap = await userDocRef
+            .collection('favorites')
+            .orderBy('order')
+            .limit(5)
+            .get();
+        if (querySnap.docs.isNotEmpty) {
+          final ids = querySnap.docs
+              .map((d) => (d.data()['showId'] ?? d.data()['id']) as int?)
+              .whereType<int>()
+              .toList();
+          if (ids.isNotEmpty) return ids;
+        }
+      } on FirebaseException catch (e, stackTrace) {
+        debugPrint('Erro ao carregar Top 5: $e');
+        debugPrint('Stack: $stackTrace');
+        if (e.code == 'failed-precondition' || (e.message?.contains('index') ?? false)) {
+          debugPrint(
+              '⚠️ [Firestore Index Required]: A query ordenada do Top 5 requer um índice composto. Cria-o no Firebase Console através do link: ${e.message}');
+        }
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Erro ao carregar Top 5: $e');
+      debugPrint('Stack: $stackTrace');
+    }
+
+    final local = await _settingsRepo.getSettings();
+    return local.favoriteShowIds;
   }
 
   // --- Static Mappings ---

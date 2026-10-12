@@ -1,38 +1,38 @@
-/// User-facing authentication failure with a Portuguese message.
+/// User-facing authentication failure with an English message.
 class AuthException implements Exception {
   const AuthException(this.message, {this.code});
 
-  /// Maps Firebase Auth error codes to friendly Portuguese messages.
+  /// Maps Firebase Auth error codes to friendly English messages.
   factory AuthException.fromCode(String code, [String? fallback]) {
     final message = switch (code) {
-      'invalid-email' => 'O endereço de email não é válido.',
-      'user-disabled' => 'Esta conta foi desativada.',
+      'invalid-email' => 'The email address is not valid.',
+      'user-disabled' => 'This account has been disabled.',
       'user-not-found' ||
       'wrong-password' ||
       'invalid-credential' ||
       'INVALID_LOGIN_CREDENTIALS' =>
-        'Email ou palavra-passe incorretos.',
-      'email-already-in-use' => 'Já existe uma conta com este email.',
-      'weak-password' => 'A palavra-passe é demasiado fraca (mínimo 6 caracteres).',
+        'Incorrect email or password.',
+      'email-already-in-use' => 'An account already exists with this email.',
+      'weak-password' => 'The password is too weak (minimum 6 characters).',
       'too-many-requests' =>
-        'Demasiadas tentativas. Aguarda uns minutos e tenta novamente.',
+        'Too many attempts. Please wait a few minutes and try again.',
       'network-request-failed' =>
-        'Sem ligação à internet. Verifica a tua rede e tenta novamente.',
+        'No internet connection. Please check your network and try again.',
       'operation-not-allowed' =>
-        'Este método de autenticação não está ativo no projeto Firebase.',
+        'This authentication method is not enabled.',
       'account-exists-with-different-credential' =>
-        'Este email já está associado a outro método de início de sessão.',
+        'This email is already associated with another sign-in method.',
       'popup-closed-by-user' || 'cancelled-popup-request' =>
-        'Início de sessão cancelado.',
-      _ => fallback ?? 'Ocorreu um erro de autenticação ($code).',
+        'Sign in was cancelled.',
+      _ => fallback ?? 'Authentication error occurred ($code).',
     };
     return AuthException(message, code: code);
   }
 
   /// Thrown when Firebase is not configured for this build.
   static const unavailable = AuthException(
-    'A autenticação ainda não está configurada nesta versão da app '
-    '(Firebase em falta).',
+    'Authentication is not configured in this version of the app '
+    '(Firebase missing).',
     code: 'auth-unavailable',
   );
 

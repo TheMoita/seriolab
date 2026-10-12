@@ -40,14 +40,14 @@ class FirebaseAuthService implements AuthService {
       );
       final user = credential.user;
       if (user == null) {
-        throw const AuthException('Não foi possível obter a conta autenticada.');
+        throw const AuthException('Unable to retrieve authenticated account.');
       }
       return _mapFirebaseUser(user);
     } on FirebaseAuthException catch (e) {
       throw AuthException.fromCode(e.code, e.message);
     } catch (e) {
       if (e is AuthException) rethrow;
-      throw AuthException('Erro ao iniciar sessão: $e');
+      throw AuthException('Error signing in: $e');
     }
   }
 
@@ -64,7 +64,7 @@ class FirebaseAuthService implements AuthService {
       );
       final user = credential.user;
       if (user == null) {
-        throw const AuthException('Falha ao criar utilizador no Firebase.');
+        throw const AuthException('Failed to create user in Firebase.');
       }
 
       final cleanUsername = AppUser.sanitizeUsername(username);
@@ -79,7 +79,7 @@ class FirebaseAuthService implements AuthService {
       throw AuthException.fromCode(e.code, e.message);
     } catch (e) {
       if (e is AuthException) rethrow;
-      throw AuthException('Erro ao registar conta: $e');
+      throw AuthException('Error registering account: $e');
     }
   }
 

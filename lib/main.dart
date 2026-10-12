@@ -95,8 +95,23 @@ class SeriolabApp extends ConsumerWidget {
       theme: AppTheme.dark(),
       locale: locale,
       localeResolutionCallback: (deviceLocale, supportedLocales) {
-        // Enforce the user-selected locale or fallback to English, ignoring device OS locale
-        return locale;
+        // Respect explicit user setting if available
+        if (settings.language.isNotEmpty) {
+          return locale;
+        }
+        // Match device locale if supported
+        if (deviceLocale != null) {
+          for (final supported in supportedLocales) {
+            if (supported.languageCode == deviceLocale.languageCode) {
+              if (supported.countryCode == null ||
+                  supported.countryCode == deviceLocale.countryCode) {
+                return supported;
+              }
+            }
+          }
+        }
+        // Fallback to English (en-US)
+        return const Locale('en', 'US');
       },
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -105,6 +120,7 @@ class SeriolabApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
+        Locale('en'),
         Locale('en', 'US'),
         Locale('pt', 'PT'),
         Locale('pt', 'BR'),

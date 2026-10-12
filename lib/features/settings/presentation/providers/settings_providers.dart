@@ -1,3 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/providers.dart';
@@ -22,20 +25,39 @@ final userProfileRepositoryProvider = Provider<UserProfileRepository>((ref) {
 });
 
 /// Loads the user's top 5 favorite shows with full details.
+/// Safely validates user authentication and logs full error and stack trace on failure.
 final topFiveFavoritesProvider = FutureProvider<List<ShowDetails>>((ref) async {
-  final settings = ref.watch(settingsControllerProvider);
-  final ids = settings.favoriteShowIds;
-  if (ids.isEmpty) return const [];
+  try {
+    // Explicit authentication verification without forcing currentUser!
+    if (Firebase.apps.isNotEmpty) {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        debugPrint('Top 5: Utilizador não autenticado no Firebase Auth. Devolvendo lista vazia.');
+        return const [];
+      }
+    }
 
-  final showRepo = ref.watch(showRepositoryProvider);
-  final results = <ShowDetails>[];
-  for (final id in ids) {
-    try {
-      final show = await showRepo.getShowDetails(id);
-      results.add(show);
-    } catch (_) {}
+    final settings = ref.watch(settingsControllerProvider);
+    final ids = settings.favoriteShowIds;
+    if (ids.isEmpty) return const [];
+
+    final showRepo = ref.watch(showRepositoryProvider);
+    final results = <ShowDetails>[];
+    for (final id in ids) {
+      try {
+        final show = await showRepo.getShowDetails(id);
+        results.add(show);
+      } catch (e, stackTrace) {
+        debugPrint('Erro ao carregar Top 5 ($id): $e');
+        debugPrint('Stack: $stackTrace');
+      }
+    }
+    return results;
+  } catch (e, stackTrace) {
+    debugPrint('Erro ao carregar Top 5: $e');
+    debugPrint('Stack: $stackTrace');
+    return const [];
   }
-  return results;
 });
 
 /// Riverpod controller that manages and persists app & user settings.
