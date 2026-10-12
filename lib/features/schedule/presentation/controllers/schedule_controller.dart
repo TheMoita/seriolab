@@ -22,25 +22,44 @@ final scheduleRepositoryProvider = Provider<ScheduleRepository>((ref) {
 @immutable
 class ScheduleState {
   const ScheduleState({
-    this.watching = const [],
+    List<CurrentlyWatchingItem>? upNext,
+    this.startWatching = const [],
+    this.resume = const [],
     this.comingSoon = const [],
-  });
+    List<CurrentlyWatchingItem>? watching,
+  }) : upNext = upNext ?? watching ?? const [];
 
-  final List<CurrentlyWatchingItem> watching;
+  final List<CurrentlyWatchingItem> upNext;
+  final List<CurrentlyWatchingItem> startWatching;
+  final List<CurrentlyWatchingItem> resume;
   final List<ComingSoonItem> comingSoon;
 
+  /// Backwards compatibility getter for tests and existing callers.
+  List<CurrentlyWatchingItem> get watching => upNext;
+
+  int get watchlistTotalCount =>
+      upNext.length + startWatching.length + resume.length;
+
+  bool get isWatchlistEmpty =>
+      upNext.isEmpty && startWatching.isEmpty && resume.isEmpty;
+
   ScheduleState copyWith({
-    List<CurrentlyWatchingItem>? watching,
+    List<CurrentlyWatchingItem>? upNext,
+    List<CurrentlyWatchingItem>? startWatching,
+    List<CurrentlyWatchingItem>? resume,
     List<ComingSoonItem>? comingSoon,
+    List<CurrentlyWatchingItem>? watching,
   }) =>
       ScheduleState(
-        watching: watching ?? this.watching,
+        upNext: upNext ?? watching ?? this.upNext,
+        startWatching: startWatching ?? this.startWatching,
+        resume: resume ?? this.resume,
         comingSoon: comingSoon ?? this.comingSoon,
       );
 }
 
-/// Controller that computes and manages the two schedule sections:
-/// 1. "A Ver Atualmente" (Currently Watching)
+/// Controller that computes and manages the schedule sections:
+/// 1. "Lista para Assistir" / Watchlist (Up Next, Start Watching, Resume)
 /// 2. "Brevemente" (Coming Soon)
 class ScheduleController extends AsyncNotifier<ScheduleState> {
   ScheduleRepository get _repo => ref.read(scheduleRepositoryProvider);
@@ -51,15 +70,26 @@ class ScheduleController extends AsyncNotifier<ScheduleState> {
     if (trackingState == null) return const ScheduleState();
 
     final repo = ref.watch(scheduleRepositoryProvider);
-    final rawWatching = await repo.getCurrentlyWatching(trackingState);
-    final watching = rawWatching
+    final results = await Future.wait([
+      repo.getUpNext(trackingState),
+      repo.getStartWatching(trackingState),
+      repo.getResume(trackingState),
+      repo.getComingSoon(trackingState),
+    ]);
+
+    final rawUpNext = results[0] as List<CurrentlyWatchingItem>;
+    final upNext = rawUpNext
         .where((item) =>
             !item.isCaughtUp && item.nextEpisode != null && item.isAired)
         .toList();
-    final comingSoon = await repo.getComingSoon(trackingState);
+    final startWatching = results[1] as List<CurrentlyWatchingItem>;
+    final resume = results[2] as List<CurrentlyWatchingItem>;
+    final comingSoon = results[3] as List<ComingSoonItem>;
 
     return ScheduleState(
-      watching: watching,
+      upNext: upNext,
+      startWatching: startWatching,
+      resume: resume,
       comingSoon: comingSoon,
     );
   }
@@ -70,15 +100,26 @@ class ScheduleController extends AsyncNotifier<ScheduleState> {
       final trackingState = ref.read(trackingControllerProvider).value;
       if (trackingState == null) return const ScheduleState();
 
-      final rawWatching = await _repo.getCurrentlyWatching(trackingState);
-      final watching = rawWatching
+      final results = await Future.wait([
+        _repo.getUpNext(trackingState),
+        _repo.getStartWatching(trackingState),
+        _repo.getResume(trackingState),
+        _repo.getComingSoon(trackingState),
+      ]);
+
+      final rawUpNext = results[0] as List<CurrentlyWatchingItem>;
+      final upNext = rawUpNext
           .where((item) =>
               !item.isCaughtUp && item.nextEpisode != null && item.isAired)
           .toList();
-      final comingSoon = await _repo.getComingSoon(trackingState);
+      final startWatching = results[1] as List<CurrentlyWatchingItem>;
+      final resume = results[2] as List<CurrentlyWatchingItem>;
+      final comingSoon = results[3] as List<ComingSoonItem>;
 
       return ScheduleState(
-        watching: watching,
+        upNext: upNext,
+        startWatching: startWatching,
+        resume: resume,
         comingSoon: comingSoon,
       );
     });

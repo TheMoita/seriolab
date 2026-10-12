@@ -1242,7 +1242,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                       ),
                     ),
                     subtitle: const Text(
-                      'Arquiva a série e retira-a de "A Ver Atualmente"',
+                      'Arquiva a série e move-a para a secção "Retomar"',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textMuted,

@@ -83,6 +83,13 @@ abstract class AppLocalizations {
   // Actions & Buttons
   String get seeAll;
   String get seeLess;
+
+  // Watchlist & Schedule
+  String get watchlistTab;
+  String get comingSoonTab;
+  String get upNextSection;
+  String get startWatchingSection;
+  String get resumeWatchingSection;
 }
 
 class _AppLocalizationsDelegate
@@ -219,6 +226,21 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get seeLess => 'Menos';
+
+  @override
+  String get watchlistTab => 'Lista para Assistir';
+
+  @override
+  String get comingSoonTab => 'Brevemente';
+
+  @override
+  String get upNextSection => 'Ver a Seguir';
+
+  @override
+  String get startWatchingSection => 'Começar a Ver';
+
+  @override
+  String get resumeWatchingSection => 'Retomar';
 }
 
 /// English strings
@@ -336,6 +358,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seeLess => 'Less';
+
+  @override
+  String get watchlistTab => 'Watchlist';
+
+  @override
+  String get comingSoonTab => 'Coming Soon';
+
+  @override
+  String get upNextSection => 'Up Next';
+
+  @override
+  String get startWatchingSection => 'Start Watching';
+
+  @override
+  String get resumeWatchingSection => 'Resume';
 }
 
 /// Spanish strings
@@ -453,4 +490,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get seeLess => 'Menos';
+
+  @override
+  String get watchlistTab => 'Lista para Ver';
+
+  @override
+  String get comingSoonTab => 'Próximamente';
+
+  @override
+  String get upNextSection => 'Siguiente';
+
+  @override
+  String get startWatchingSection => 'Empezar a Ver';
+
+  @override
+  String get resumeWatchingSection => 'Reanudar';
 }

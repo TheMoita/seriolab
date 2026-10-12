@@ -196,6 +196,62 @@ void main() {
         );
       }
     });
+
+    test('getStartWatching returns shows in watchlist with 0 episodes watched starting from S1E1', () async {
+      final tracked = TrackedShow(
+        showId: 95396,
+        name: 'Severance',
+        status: TrackingStatus.watchlist,
+        addedAt: fixedDate,
+        updatedAt: fixedDate,
+      );
+
+      final trackingState = TrackingState(
+        shows: {95396: tracked},
+        watched: const {},
+      );
+
+      final startList = await scheduleRepo.getStartWatching(trackingState);
+      expect(startList, isNotEmpty);
+      expect(startList.first.showId, 95396);
+      expect(startList.first.nextEpisode, isNotNull);
+      expect(startList.first.nextEpisode!.seasonNumber, 1);
+      expect(startList.first.nextEpisode!.episodeNumber, 1);
+      expect(startList.first.episodeIdentifier, 'T1 • E1');
+    });
+
+    test('getResume returns dropped shows with next unwatched episode', () async {
+      final tracked = TrackedShow(
+        showId: 95396,
+        name: 'Severance',
+        status: TrackingStatus.dropped,
+        addedAt: fixedDate,
+        updatedAt: fixedDate,
+      );
+
+      // Watched S1E1
+      final trackingState = TrackingState(
+        shows: {95396: tracked},
+        watched: {
+          95396: {
+            const EpisodeKey(1, 1): WatchedEpisode(
+              showId: 95396,
+              key: const EpisodeKey(1, 1),
+              runtime: 55,
+              watchedAt: fixedDate,
+            ),
+          },
+        },
+      );
+
+      final resumeList = await scheduleRepo.getResume(trackingState);
+      expect(resumeList, isNotEmpty);
+      expect(resumeList.first.showId, 95396);
+      expect(resumeList.first.nextEpisode, isNotNull);
+      expect(resumeList.first.nextEpisode!.seasonNumber, 1);
+      expect(resumeList.first.nextEpisode!.episodeNumber, 2);
+      expect(resumeList.first.episodeIdentifier, 'T1 • E2');
+    });
   });
 
   group('ScheduleScreen UI and Tab Switching Tests', () {
@@ -219,10 +275,10 @@ void main() {
       expect(find.widgetWithText(AppBar, 'Agenda'), findsOneWidget);
 
       // Both tabs are rendered
-      expect(find.text('A Ver Atualmente'), findsOneWidget);
+      expect(find.text('Lista para Assistir'), findsOneWidget);
       expect(find.text('Brevemente'), findsOneWidget);
 
-      // Empty state for A Ver Atualmente is displayed by default
+      // Empty state for Lista para Assistir is displayed by default
       expect(
         find.text('Nenhuma série com episódios pendentes para ver.'),
         findsOneWidget,
@@ -284,7 +340,7 @@ void main() {
       );
 
       final fakeState = ScheduleState(
-        watching: [watchingItem],
+        upNext: [watchingItem],
         comingSoon: [comingSoonItem],
       );
 
@@ -303,7 +359,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // In Tab 1 ("A Ver Atualmente"):
+      // In Tab 1 ("Lista para Assistir" -> section "VER A SEGUIR"):
+      expect(find.text('VER A SEGUIR'), findsOneWidget);
       expect(find.text('Severance'), findsWidgets);
       expect(find.text('T2 • E4'), findsOneWidget);
       expect(find.text('The Grim Barbarity of Magnetism and Artifacts'), findsOneWidget);
@@ -319,6 +376,104 @@ void main() {
       expect(find.text('T3 • E1'), findsOneWidget);
       expect(find.text('Through the Valley'), findsOneWidget);
       expect(find.text('T3 Estreia em 2 semanas'), findsOneWidget);
+    });
+
+    testWidgets(
+        'renders distinct sections for Ver a Seguir, Começar a Ver, and Retomar',
+        (tester) async {
+      final upNextItem = CurrentlyWatchingItem(
+        trackedShow: TrackedShow(
+          showId: 95396,
+          name: 'Severance',
+          status: TrackingStatus.watching,
+          addedAt: now,
+          updatedAt: now,
+        ),
+        showDetails: const ShowDetails(id: 95396, name: 'Severance'),
+        nextEpisode: Episode(
+          id: 101,
+          showId: 95396,
+          seasonNumber: 2,
+          episodeNumber: 4,
+          name: 'Waffle Party',
+          airDate: now.subtract(const Duration(days: 1)),
+        ),
+        isAired: true,
+      );
+
+      final startWatchingItem = CurrentlyWatchingItem(
+        trackedShow: TrackedShow(
+          showId: 100088,
+          name: 'The Last of Us',
+          status: TrackingStatus.watchlist,
+          addedAt: now,
+          updatedAt: now,
+        ),
+        showDetails: const ShowDetails(id: 100088, name: 'The Last of Us'),
+        nextEpisode: Episode(
+          id: 201,
+          showId: 100088,
+          seasonNumber: 1,
+          episodeNumber: 1,
+          name: 'When You\'re Lost in the Darkness',
+          airDate: now.subtract(const Duration(days: 300)),
+        ),
+        isAired: true,
+      );
+
+      final resumeItem = CurrentlyWatchingItem(
+        trackedShow: TrackedShow(
+          showId: 1399,
+          name: 'Game of Thrones',
+          status: TrackingStatus.dropped,
+          addedAt: now,
+          updatedAt: now,
+        ),
+        showDetails: const ShowDetails(id: 1399, name: 'Game of Thrones'),
+        nextEpisode: Episode(
+          id: 301,
+          showId: 1399,
+          seasonNumber: 3,
+          episodeNumber: 9,
+          name: 'The Rains of Castamere',
+          airDate: now.subtract(const Duration(days: 1000)),
+        ),
+        isAired: true,
+      );
+
+      final multiState = ScheduleState(
+        upNext: [upNextItem],
+        startWatching: [startWatchingItem],
+        resume: [resumeItem],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            scheduleControllerProvider.overrideWith(
+              () => _FakeScheduleController(multiState),
+            ),
+          ],
+          child: const MaterialApp(
+            home: ScheduleScreen(),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // All 3 section headers are displayed
+      expect(find.text('VER A SEGUIR'), findsOneWidget);
+      expect(find.text('COMEÇAR A VER'), findsOneWidget);
+      expect(find.text('RETOMAR'), findsOneWidget);
+
+      // Section-specific cards and badges
+      expect(find.text('Severance'), findsWidgets);
+      expect(find.text('The Last of Us'), findsWidgets);
+      expect(find.text('Game of Thrones'), findsWidgets);
+
+      expect(find.text('Começar'), findsOneWidget);
+      expect(find.text('Pausada'), findsOneWidget);
     });
   });
 }

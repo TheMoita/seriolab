@@ -17,6 +17,12 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
   @override
   Future<List<CurrentlyWatchingItem>> getCurrentlyWatching(
     TrackingState trackingState,
+  ) =>
+      getUpNext(trackingState);
+
+  @override
+  Future<List<CurrentlyWatchingItem>> getUpNext(
+    TrackingState trackingState,
   ) async {
     final now = _clock();
     final watchingShows = trackingState.byStatus(TrackingStatus.watching);
@@ -41,9 +47,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
 
           // 3. Strict Inclusion Criterion:
           // A série SÓ é incluída se existir pelo menos 1 episódio já transmitido
-          // que ainda NÃO foi visto pelo utilizador (hasUnwatchedAiredEpisodes == true).
-          // Se todos os episódios emitidos já foram vistos (o utilizador está "em dia" / "caught up"):
-          // A série é EXCLUÍDA de "A Ver Atualmente".
+          // que ainda NÃO foi visto pelo utilizador.
           if (unwatchedAired.isEmpty) {
             return null;
           }
@@ -58,6 +62,115 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
           );
         } catch (_) {
           return null;
+        }
+      }),
+    );
+
+    final items = results.whereType<CurrentlyWatchingItem>().toList();
+    items.sort(
+        (a, b) => b.trackedShow.updatedAt.compareTo(a.trackedShow.updatedAt));
+
+    return items;
+  }
+
+  @override
+  Future<List<CurrentlyWatchingItem>> getStartWatching(
+    TrackingState trackingState,
+  ) async {
+    final now = _clock();
+    // Séries em 'plan_to_watch' ('watchlist') que ainda não têm nenhum episódio visto
+    final watchlistShows = trackingState
+        .byStatus(TrackingStatus.watchlist)
+        .where((tracked) => trackingState.watchedRegularCount(tracked.showId) == 0)
+        .toList();
+
+    if (watchlistShows.isEmpty) return const [];
+
+    final results = await Future.wait(
+      watchlistShows.map((tracked) async {
+        try {
+          final showWithEpisodes =
+              await showRepository.getShowWithEpisodes(tracked.showId);
+          final show = showWithEpisodes.show;
+          final episodes = showWithEpisodes.episodes;
+
+          // Selecionar 1º episódio (preferencialmente temporada 1, excluindo especiais)
+          final regularEpisodes =
+              episodes.where((e) => e.seasonNumber > 0).toList();
+          final firstEpisode = regularEpisodes.isNotEmpty
+              ? regularEpisodes.first
+              : (episodes.isNotEmpty ? episodes.first : null);
+
+          final isAired =
+              firstEpisode != null ? firstEpisode.isAiredAt(now) : true;
+
+          return CurrentlyWatchingItem(
+            trackedShow: tracked,
+            showDetails: show,
+            nextEpisode: firstEpisode,
+            isAired: isAired,
+            isCaughtUp: false,
+          );
+        } catch (_) {
+          return CurrentlyWatchingItem(
+            trackedShow: tracked,
+            isAired: true,
+            isCaughtUp: false,
+          );
+        }
+      }),
+    );
+
+    final items = results.whereType<CurrentlyWatchingItem>().toList();
+    items.sort(
+        (a, b) => b.trackedShow.addedAt.compareTo(a.trackedShow.addedAt));
+
+    return items;
+  }
+
+  @override
+  Future<List<CurrentlyWatchingItem>> getResume(
+    TrackingState trackingState,
+  ) async {
+    final now = _clock();
+    // Séries marcadas como 'dropped' ('Abandonadas')
+    final droppedShows = trackingState.byStatus(TrackingStatus.dropped);
+    if (droppedShows.isEmpty) return const [];
+
+    final results = await Future.wait(
+      droppedShows.map((tracked) async {
+        try {
+          final showWithEpisodes =
+              await showRepository.getShowWithEpisodes(tracked.showId);
+          final show = showWithEpisodes.show;
+          final episodes = showWithEpisodes.episodes;
+
+          final regularEpisodes =
+              episodes.where((e) => e.seasonNumber > 0).toList();
+          final candidateEpisodes =
+              regularEpisodes.isNotEmpty ? regularEpisodes : episodes;
+
+          // Próximo episódio por assistir
+          final unwatched = candidateEpisodes
+              .where((ep) => !trackingState.isWatched(tracked.showId, ep.key))
+              .toList();
+
+          final nextEp = unwatched.isNotEmpty ? unwatched.first : null;
+          final isAired = nextEp != null ? nextEp.isAiredAt(now) : true;
+
+          return CurrentlyWatchingItem(
+            trackedShow: tracked,
+            showDetails: show,
+            nextEpisode: nextEp,
+            isAired: isAired,
+            isCaughtUp: unwatched.isEmpty,
+          );
+        } catch (_) {
+          return CurrentlyWatchingItem(
+            trackedShow: tracked,
+            isAired: true,
+            isCaughtUp: false,
+          );
         }
       }),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_network_image.dart';
@@ -87,9 +88,12 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen>
   @override
   Widget build(BuildContext context) {
     final scheduleAsync = ref.watch(scheduleControllerProvider);
+    final settings = ref.watch(settingsControllerProvider);
+    final l10n =
+        AppLocalizations.of(context, settingsLanguage: settings.language);
 
-    final watchingCount =
-        scheduleAsync.value?.watching.length ?? 0;
+    final watchlistCount =
+        scheduleAsync.value?.watchlistTotalCount ?? 0;
     final comingSoonCount =
         scheduleAsync.value?.comingSoon.length ?? 0;
 
@@ -126,10 +130,10 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('A Ver Atualmente'),
-                  if (watchingCount > 0) ...[
+                  Text(l10n.watchlistTab),
+                  if (watchlistCount > 0) ...[
                     const SizedBox(width: 6),
-                    _CountBadge(count: watchingCount),
+                    _CountBadge(count: watchlistCount),
                   ],
                 ],
               ),
@@ -138,7 +142,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Brevemente'),
+                  Text(l10n.comingSoonTab),
                   if (comingSoonCount > 0) ...[
                     const SizedBox(width: 6),
                     _CountBadge(count: comingSoonCount),
@@ -164,9 +168,11 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen>
         data: (state) => TabBarView(
           controller: _tabController,
           children: [
-            // Tab 1: "A Ver Atualmente"
+            // Tab 1: "Lista para Assistir" / Watchlist
             _WatchingListView(
-              items: state.watching,
+              upNext: state.upNext,
+              startWatching: state.startWatching,
+              resume: state.resume,
               onExploreTap: widget.onExploreTap,
               onMarkWatched: _handleMarkWatched,
               onRefresh: () =>
@@ -216,22 +222,70 @@ class _CountBadge extends StatelessWidget {
   }
 }
 
-class _WatchingListView extends StatelessWidget {
+enum _WatchlistSectionType {
+  upNext,
+  startWatching,
+  resume,
+}
+
+class _WatchlistSectionHeader extends StatelessWidget {
+  const _WatchlistSectionHeader({
+    required this.title,
+    required this.icon,
+    required this.count,
+  });
+
+  final String title;
+  final IconData icon;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 10),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Text(
+            title.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(width: 8),
+          _CountBadge(count: count),
+        ],
+      ),
+    );
+  }
+}
+
+class _WatchingListView extends ConsumerWidget {
   const _WatchingListView({
-    required this.items,
+    List<CurrentlyWatchingItem>? upNext,
+    this.startWatching = const [],
+    this.resume = const [],
+    List<CurrentlyWatchingItem>? items,
     required this.onExploreTap,
     required this.onMarkWatched,
     required this.onRefresh,
-  });
+  }) : upNext = upNext ?? items ?? const [];
 
-  final List<CurrentlyWatchingItem> items;
+  final List<CurrentlyWatchingItem> upNext;
+  final List<CurrentlyWatchingItem> startWatching;
+  final List<CurrentlyWatchingItem> resume;
   final VoidCallback? onExploreTap;
   final void Function(ShowDetails, Episode) onMarkWatched;
   final RefreshCallback onRefresh;
 
   @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isEmpty = upNext.isEmpty && startWatching.isEmpty && resume.isEmpty;
+    if (isEmpty) {
       return EmptyState(
         icon: Icons.check_circle_outline_rounded,
         title: 'Estás em dia!',
@@ -241,18 +295,63 @@ class _WatchingListView extends StatelessWidget {
       );
     }
 
+    final settings = ref.watch(settingsControllerProvider);
+    final l10n =
+        AppLocalizations.of(context, settingsLanguage: settings.language);
+
     return SeriolabRefreshIndicator(
       onRefresh: onRefresh,
-      child: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return _CurrentlyWatchingCard(
-            item: item,
-            onMarkWatched: onMarkWatched,
-          );
-        },
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+        children: [
+          // Secção 1: "Ver a Seguir" (Up Next)
+          if (upNext.isNotEmpty) ...[
+            _WatchlistSectionHeader(
+              title: l10n.upNextSection,
+              icon: Icons.play_circle_outline_rounded,
+              count: upNext.length,
+            ),
+            ...upNext.map(
+              (item) => _CurrentlyWatchingCard(
+                item: item,
+                onMarkWatched: onMarkWatched,
+                sectionType: _WatchlistSectionType.upNext,
+              ),
+            ),
+          ],
+
+          // Secção 2: "Começar a Ver" (Start Watching)
+          if (startWatching.isNotEmpty) ...[
+            _WatchlistSectionHeader(
+              title: l10n.startWatchingSection,
+              icon: Icons.bookmark_added_outlined,
+              count: startWatching.length,
+            ),
+            ...startWatching.map(
+              (item) => _CurrentlyWatchingCard(
+                item: item,
+                onMarkWatched: onMarkWatched,
+                sectionType: _WatchlistSectionType.startWatching,
+              ),
+            ),
+          ],
+
+          // Secção 3: "Retomar" (Resume Watching)
+          if (resume.isNotEmpty) ...[
+            _WatchlistSectionHeader(
+              title: l10n.resumeWatchingSection,
+              icon: Icons.replay_rounded,
+              count: resume.length,
+            ),
+            ...resume.map(
+              (item) => _CurrentlyWatchingCard(
+                item: item,
+                onMarkWatched: onMarkWatched,
+                sectionType: _WatchlistSectionType.resume,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -262,10 +361,12 @@ class _CurrentlyWatchingCard extends ConsumerWidget {
   const _CurrentlyWatchingCard({
     required this.item,
     required this.onMarkWatched,
+    this.sectionType = _WatchlistSectionType.upNext,
   });
 
   final CurrentlyWatchingItem item;
   final void Function(ShowDetails, Episode) onMarkWatched;
+  final _WatchlistSectionType sectionType;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -387,27 +488,75 @@ class _CurrentlyWatchingCard extends ConsumerWidget {
                         ),
                       ),
                     ] else if (ep != null) ...[
-                      // Episode identifier + Temporal badge
+                      // Episode identifier + Temporal badge or Section badge
                       Row(
                         children: [
                           Text(
                             item.episodeIdentifier, // e.g. T2 • E4
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.secondary,
+                              color: sectionType == _WatchlistSectionType.resume
+                                  ? AppColors.danger
+                                  : (sectionType ==
+                                          _WatchlistSectionType.startWatching
+                                      ? AppColors.primary
+                                      : AppColors.secondary),
                             ),
                           ),
                           const SizedBox(width: 8),
-                          _TemporalBadge(
-                            isAired: item.isAired,
-                            airDate: ep.airDate,
-                          ),
+                          if (sectionType == _WatchlistSectionType.resume)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.danger.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'Pausada',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.danger,
+                                ),
+                              ),
+                            )
+                          else if (sectionType ==
+                              _WatchlistSectionType.startWatching)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    AppColors.primary.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'Começar',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            )
+                          else
+                            _TemporalBadge(
+                              isAired: item.isAired,
+                              airDate: ep.airDate,
+                            ),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        epTitle.isNotEmpty ? epTitle : 'Episódio ${ep.episodeNumber}',
+                        epTitle.isNotEmpty
+                            ? epTitle
+                            : 'Episódio ${ep.episodeNumber}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -416,9 +565,13 @@ class _CurrentlyWatchingCard extends ConsumerWidget {
                         ),
                       ),
                     ] else ...[
-                      const Text(
-                        'Em andamento',
-                        style: TextStyle(
+                      Text(
+                        sectionType == _WatchlistSectionType.startWatching
+                            ? 'Começar a ver (Episódio 1)'
+                            : (sectionType == _WatchlistSectionType.resume
+                                ? 'Retomar série'
+                                : 'Em andamento'),
+                        style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
                         ),
@@ -429,10 +582,11 @@ class _CurrentlyWatchingCard extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
 
-              // Quick action: mark as watched when already aired
+              // Quick action: mark as watched
               if (item.nextEpisode != null &&
-                  item.isAired &&
-                  item.showDetails != null)
+                  item.showDetails != null &&
+                  (item.isAired ||
+                      sectionType != _WatchlistSectionType.upNext))
                 IconButton(
                   icon: const Icon(
                     Icons.check_circle_outline_rounded,
