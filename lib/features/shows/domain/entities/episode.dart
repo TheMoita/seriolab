@@ -20,8 +20,11 @@ enum ShowStatus {
   bool get isFinished => this == ended || this == canceled;
 
   static ShowStatus fromTmdb(String? value) {
+    if (value == null) return unknown;
+    final normalized = value.trim().toLowerCase();
+    if (normalized == 'cancelled') return canceled;
     for (final s in values) {
-      if (s.tmdbValue == value && s != unknown) return s;
+      if (s.tmdbValue.toLowerCase() == normalized && s != unknown) return s;
     }
     return unknown;
   }

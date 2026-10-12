@@ -89,6 +89,54 @@ void main() {
         showFinished: true,
       );
       expect(status3, TrackingStatus.watching);
+
+      // 4. Catching up with a returning/ongoing show keeps it in watching (up to date)
+      final status4 = TrackingController.nextStatusFor(
+        current: TrackingStatus.watching,
+        markedWatched: true,
+        watchedRegular: 10,
+        airedEpisodes: 10,
+        showFinished: false,
+        totalEpisodes: 10,
+        seriesStatus: ShowStatus.returning,
+      );
+      expect(status4, TrackingStatus.watching);
+
+      // 5. Catching up with an in-production show keeps it in watching
+      final status5 = TrackingController.nextStatusFor(
+        current: TrackingStatus.watching,
+        markedWatched: true,
+        watchedRegular: 10,
+        airedEpisodes: 10,
+        showFinished: false,
+        totalEpisodes: 10,
+        seriesStatus: ShowStatus.inProduction,
+      );
+      expect(status5, TrackingStatus.watching);
+
+      // 6. Catching up with a planned show keeps it in watching
+      final status6 = TrackingController.nextStatusFor(
+        current: TrackingStatus.watching,
+        markedWatched: true,
+        watchedRegular: 10,
+        airedEpisodes: 10,
+        showFinished: false,
+        totalEpisodes: 10,
+        seriesStatus: ShowStatus.planned,
+      );
+      expect(status6, TrackingStatus.watching);
+
+      // 7. Catching up with a canceled show moves it to completed
+      final status7 = TrackingController.nextStatusFor(
+        current: TrackingStatus.watching,
+        markedWatched: true,
+        watchedRegular: 10,
+        airedEpisodes: 10,
+        showFinished: true,
+        totalEpisodes: 10,
+        seriesStatus: ShowStatus.canceled,
+      );
+      expect(status7, TrackingStatus.completed);
     });
 
     test('SeasonDetails.averageUserRating computes arithmetic mean of rated episodes', () {
@@ -367,6 +415,86 @@ void main() {
       state = container.read(trackingControllerProvider).value!;
       expect(state.show(showDetails.id), isNull);
       expect(state.watchedFor(showDetails.id), isEmpty);
+    });
+
+    test('marking all aired episodes of returning show keeps status as watching and marks it up to date', () async {
+      final inMemoryRepo = InMemoryTrackingRepository();
+      final testRepo = ShowRepositoryImpl(
+        remote: MockShowRemoteDataSource(latency: Duration.zero),
+        isUsingMockData: true,
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          trackingRepositoryProvider.overrideWithValue(inMemoryRepo),
+          showRepositoryProvider.overrideWithValue(testRepo),
+          demoSeedingEnabledProvider.overrideWithValue(false),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(trackingControllerProvider.future);
+      final notifier = container.read(trackingControllerProvider.notifier);
+
+      final showWithEpisodes = await testRepo.getShowWithEpisodes(95396); // Severance (Returning Series)
+      final showDetails = showWithEpisodes.show;
+      expect(showDetails.status, ShowStatus.returning);
+      expect(showDetails.status.isFinished, isFalse);
+
+      final now = DateTime.now();
+      final airedEpisodes =
+          showWithEpisodes.episodes.where((e) => e.isAiredAt(now)).toList();
+      expect(airedEpisodes, isNotEmpty);
+
+      // Mark all aired episodes of Severance as watched via setEpisodesWatched
+      await notifier.setEpisodesWatched(showDetails, airedEpisodes, watched: true);
+
+      final state = container.read(trackingControllerProvider).value!;
+      // All aired episodes are watched
+      expect(state.watchedFor(showDetails.id).length, airedEpisodes.length);
+      expect(state.progress(showDetails.id), 1.0);
+
+      // Crucial: status must be watching (NOT completed), and isUpToDate must be true
+      expect(state.show(showDetails.id)?.status, TrackingStatus.watching);
+      expect(state.isUpToDate(showDetails.id), isTrue);
+
+      // Appears in byStatus(watching) and NOT in byStatus(completed)
+      expect(state.byStatus(TrackingStatus.watching).map((s) => s.showId), contains(showDetails.id));
+      expect(state.byStatus(TrackingStatus.completed).map((s) => s.showId), isNot(contains(showDetails.id)));
+    });
+
+    test('marking all aired episodes of ended show transitions status to completed', () async {
+      final inMemoryRepo = InMemoryTrackingRepository();
+      final testRepo = ShowRepositoryImpl(
+        remote: MockShowRemoteDataSource(latency: Duration.zero),
+        isUsingMockData: true,
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          trackingRepositoryProvider.overrideWithValue(inMemoryRepo),
+          showRepositoryProvider.overrideWithValue(testRepo),
+          demoSeedingEnabledProvider.overrideWithValue(false),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(trackingControllerProvider.future);
+      final notifier = container.read(trackingControllerProvider.notifier);
+
+      final showWithEpisodes = await testRepo.getShowWithEpisodes(1396); // Breaking Bad (Ended)
+      final showDetails = showWithEpisodes.show;
+      expect(showDetails.status, ShowStatus.ended);
+      expect(showDetails.status.isFinished, isTrue);
+
+      // Mark all episodes of Breaking Bad as watched
+      await notifier.setEpisodesWatched(showDetails, showWithEpisodes.episodes, watched: true);
+
+      final state = container.read(trackingControllerProvider).value!;
+      expect(state.progress(showDetails.id), 1.0);
+      expect(state.show(showDetails.id)?.status, TrackingStatus.completed);
+      expect(state.byStatus(TrackingStatus.completed).map((s) => s.showId), contains(showDetails.id));
+      expect(state.byStatus(TrackingStatus.watching).map((s) => s.showId), isNot(contains(showDetails.id)));
     });
   });
 }

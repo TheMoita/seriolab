@@ -374,8 +374,14 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                     label: Text(
                       tracked != null
                           ? switch (tracked.status) {
-                              TrackingStatus.watchlist => 'Na Minha Lista (Quero Ver)',
-                              TrackingStatus.watching => 'A Ver Atualmente',
+                              TrackingStatus.watchlist =>
+                                'Na Minha Lista (Quero Ver)',
+                              TrackingStatus.watching => (show.airedEpisodeCount > 0 &&
+                                      (trackingState?.watchedRegularCount(show.id) ?? 0) >=
+                                          show.airedEpisodeCount &&
+                                      !show.status.isFinished)
+                                  ? 'Em Dia (A Ver)'
+                                  : 'A Ver Atualmente',
                               TrackingStatus.completed => 'Série Terminada',
                               TrackingStatus.dropped => 'Série Abandonada',
                             }
@@ -422,7 +428,12 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    '$watchedCount de ${show.totalEpisodeCount} episódios vistos',
+                                    (show.airedEpisodeCount > 0 &&
+                                            watchedCount >=
+                                                show.airedEpisodeCount &&
+                                            !show.status.isFinished)
+                                        ? '$watchedCount de ${show.totalEpisodeCount} episódios vistos • Em dia'
+                                        : '$watchedCount de ${show.totalEpisodeCount} episódios vistos',
                                     style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
@@ -1182,6 +1193,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (modalCtx) {
+        final trackingState = ref.read(trackingControllerProvider).value;
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1212,8 +1224,18 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 4),
-                            StatusChip(status: tracked.status, compact: true),
+                            StatusChip(
+                              status: tracked.status,
+                              compact: true,
+                              customLabel: (tracked.status ==
+                                          TrackingStatus.watching &&
+                                      show.airedEpisodeCount > 0 &&
+                                      (trackingState?.watchedRegularCount(show.id) ?? 0) >=
+                                          show.airedEpisodeCount &&
+                                      !show.status.isFinished)
+                                  ? 'Em dia'
+                                  : null,
+                            ),
                           ],
                         ),
                       ),

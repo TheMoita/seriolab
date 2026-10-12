@@ -65,6 +65,7 @@ class UserLibraryRepositoryImpl implements UserLibraryRepository {
       airedEpisodes: show.airedEpisodeCount,
       showFinished: show.status.isFinished,
       totalEpisodes: show.totalEpisodeCount,
+      seriesStatus: show.status,
     );
 
     final now = DateTime.now();

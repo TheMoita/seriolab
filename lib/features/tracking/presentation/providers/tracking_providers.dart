@@ -99,10 +99,16 @@ class TrackingController extends AsyncNotifier<TrackingState> {
       name: show.name,
       posterUrl: show.posterUrl,
       status: status,
-      airedEpisodeCount: show.airedEpisodeCount,
-      episodeRuntime: show.episodeRuntime,
+      airedEpisodeCount: show.airedEpisodeCount > 0
+          ? show.airedEpisodeCount
+          : (show.totalEpisodeCount > 0
+              ? show.totalEpisodeCount
+              : (existing?.airedEpisodeCount ?? 0)),
+      episodeRuntime: show.episodeRuntime > 0
+          ? show.episodeRuntime
+          : (existing?.episodeRuntime ?? 45),
       showStatus: show.status,
-      network: show.primaryNetwork,
+      network: show.primaryNetwork ?? existing?.network,
       addedAt: existing?.addedAt ?? now,
       updatedAt: now,
       overallUserRating: existing?.overallUserRating ?? show.overallUserRating,
@@ -657,6 +663,18 @@ class TrackingController extends AsyncNotifier<TrackingState> {
         }
       });
 
+  /// Calculates the next [TrackingStatus] for a show based on watched episodes
+  /// and production status.
+  ///
+  /// Business rules:
+  /// - Watching an episode moves an untracked, watchlist, or dropped show to "watching".
+  /// - If all available episodes are marked watched:
+  ///   * If the show is finished ([ShowStatus.ended] or [ShowStatus.canceled]),
+  ///     it transitions to [TrackingStatus.completed].
+  ///   * If the show is still ongoing/returning ([ShowStatus.returning],
+  ///     [ShowStatus.inProduction], or [ShowStatus.planned]), it remains in
+  ///     [TrackingStatus.watching] (up-to-date), as new episodes will air in the future.
+  /// - Unmarking an episode on a completed show reverts it to [TrackingStatus.watching].
   static TrackingStatus nextStatusFor({
     required TrackingStatus? current,
     required bool markedWatched,
@@ -664,6 +682,7 @@ class TrackingController extends AsyncNotifier<TrackingState> {
     required int airedEpisodes,
     required bool showFinished,
     int totalEpisodes = 0,
+    ShowStatus? seriesStatus,
   }) {
     var status = current ?? TrackingStatus.watching;
     if (markedWatched &&
@@ -671,10 +690,22 @@ class TrackingController extends AsyncNotifier<TrackingState> {
             status == TrackingStatus.dropped)) {
       status = TrackingStatus.watching;
     }
-    final caughtUp = airedEpisodes > 0 && watchedRegular >= airedEpisodes;
-    final allCompleted =
-        (totalEpisodes > 0 && watchedRegular >= totalEpisodes) ||
-            (caughtUp && showFinished);
+
+    // Determine if the show has concluded its entire run (Ended or Canceled)
+    final isFinished = seriesStatus != null
+        ? (seriesStatus == ShowStatus.ended ||
+            seriesStatus == ShowStatus.canceled ||
+            seriesStatus.isFinished)
+        : showFinished;
+
+    final effectiveAired = airedEpisodes > 0 ? airedEpisodes : totalEpisodes;
+    final caughtUp = effectiveAired > 0 && watchedRegular >= effectiveAired;
+    final allEpisodesWatched =
+        caughtUp || (totalEpisodes > 0 && watchedRegular >= totalEpisodes);
+
+    // Only transition to completed if the show is finished AND all available/aired episodes are watched.
+    final allCompleted = isFinished && allEpisodesWatched;
+
     if (allCompleted) {
       status = TrackingStatus.completed;
     } else if (!allCompleted && status == TrackingStatus.completed) {
@@ -696,6 +727,7 @@ class TrackingController extends AsyncNotifier<TrackingState> {
         airedEpisodes: show.airedEpisodeCount,
         showFinished: show.status.isFinished,
         totalEpisodes: show.totalEpisodeCount,
+        seriesStatus: show.status,
       );
 }
 

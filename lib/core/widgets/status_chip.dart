@@ -7,15 +7,19 @@ class StatusChip extends StatelessWidget {
     super.key,
     required this.status,
     this.compact = false,
+    this.customLabel,
   });
 
   final TrackingStatus status;
   final bool compact;
+  final String? customLabel;
 
   Color get color => status.color;
 
   @override
   Widget build(BuildContext context) {
+    final label = customLabel ?? status.actionLabel;
+
     if (compact) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -30,7 +34,7 @@ class StatusChip extends StatelessWidget {
             Icon(status.icon, size: 12, color: color),
             const SizedBox(width: 4),
             Text(
-              status.actionLabel,
+              label,
               style: TextStyle(
                 color: color,
                 fontSize: 11,
@@ -55,7 +59,7 @@ class StatusChip extends StatelessWidget {
           Icon(status.icon, size: 14, color: color),
           const SizedBox(width: 6),
           Text(
-            status.actionLabel,
+            label,
             style: TextStyle(
               color: color,
               fontSize: 12,

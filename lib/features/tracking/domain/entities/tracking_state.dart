@@ -87,6 +87,16 @@ class TrackingState {
     return (watchedRegularCount(showId) / total).clamp(0.0, 1.0);
   }
 
+  /// Whether the user has watched all aired/available episodes of an ongoing show.
+  bool isUpToDate(int showId) {
+    final s = shows[showId];
+    if (s == null) return false;
+    if (s.showStatus.isFinished) return false;
+    final total = s.airedEpisodeCount;
+    if (total <= 0) return false;
+    return watchedRegularCount(showId) >= total;
+  }
+
   List<TrackedShow> byStatus(TrackingStatus status) =>
       shows.values.where((s) => s.status == status).toList()
         ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
