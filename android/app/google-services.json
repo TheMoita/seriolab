@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "686239497156-bkvuctfomd96j78br8ge277b3qe2dg3f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.afonsodias.series_app",
+            "certificate_hash": "09b9e57eb4448c39af348e63ca76661a329acce0"
+          }
+        },
+        {
           "client_id": "686239497156-tp2m4tqbubp9ic3lq74parcok577mra2.apps.googleusercontent.com",
           "client_type": 3
         }
