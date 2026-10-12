@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Configuration for Seriolab, reading credentials from `.env` via `flutter_dotenv`
@@ -6,13 +5,20 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class AppConfig {
   const AppConfig._();
 
-  /// Fallback TMDB v3 key used when neither `.env` nor `--dart-define`
-  /// provide one (e.g. the `.env` asset was not bundled in a release build).
-  static const String _fallbackTmdbApiKey = '***REMOVED***';
+  /// Compile-time TMDB key supplied via `--dart-define=TMDB_API_KEY=...`.
+  static const String tmdbApiKeyFromEnvironment = String.fromEnvironment(
+    'TMDB_API_KEY',
+    defaultValue: '',
+  );
 
-  /// TMDB credential read from `.env` or `--dart-define`.
+  /// TMDB credential read from `--dart-define` at compile time,
+  /// or from `.env` via `flutter_dotenv` in local development.
   /// Accepts either a v3 API key or a v4 "Read Access Token".
   static String get tmdbApiKey {
+    if (tmdbApiKeyFromEnvironment.trim().isNotEmpty &&
+        !tmdbApiKeyFromEnvironment.contains('your_tmdb_api_key')) {
+      return tmdbApiKeyFromEnvironment.trim();
+    }
     try {
       final key = dotenv.isInitialized ? dotenv.env['TMDB_API_KEY'] : null;
       if (key != null &&
@@ -21,12 +27,7 @@ class AppConfig {
         return key.trim();
       }
     } catch (_) {}
-    const envVal = String.fromEnvironment('TMDB_API_KEY');
-    if (envVal.isNotEmpty && !envVal.contains('your_tmdb_api_key')) {
-      return envVal.trim();
-    }
-    debugPrint('[AppConfig] TMDB_API_KEY ausente no .env/dart-define — a usar chave de fallback.');
-    return _fallbackTmdbApiKey;
+    return '';
   }
 
   /// Whether a non-empty TMDB API key is configured.

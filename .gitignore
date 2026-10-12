@@ -11,8 +11,22 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+# --- Credenciais e Chaves de Assinatura ---
+*.jks
+*.keystore
+key.properties
+keystore.properties
+android/key.properties
+
+# --- Variáveis de Ambiente e Segredos Locais ---
 .env
-!.env.example
+*.env
+.env.*
+!*.env.example
+
+# --- Firebase Admin & Service Accounts ---
+*service-account*.json
+*serviceAccount*.json
 
 # IntelliJ related
 *.iml

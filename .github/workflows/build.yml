@@ -40,10 +40,11 @@ jobs:
       - name: Configure environment (.env)
         run: |
           TMDB_KEY="${{ secrets.TMDB_API_KEY }}"
-          if [ -z "$TMDB_KEY" ]; then
-            TMDB_KEY="***REMOVED***"
+          if [ -n "$TMDB_KEY" ]; then
+            echo "TMDB_API_KEY=$TMDB_KEY" > .env
+          else
+            touch .env
           fi
-          echo "TMDB_API_KEY=$TMDB_KEY" > .env
           echo "TMDB_BASE_URL=https://api.themoviedb.org/3" >> .env
           echo "TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p/w500" >> .env
           echo "TMDB_LANGUAGE=pt-PT" >> .env
@@ -59,10 +60,11 @@ jobs:
 
       - name: Ensure TMDB .env before build
         run: |
-          if [ ! -f .env ] || ! grep -q '^TMDB_API_KEY=.\+' .env; then
-            echo "TMDB_API_KEY=***REMOVED***" > .env
+          if [ ! -f .env ]; then
+            touch .env
             echo "TMDB_BASE_URL=https://api.themoviedb.org/3" >> .env
             echo "TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p/w500" >> .env
+            echo "TMDB_LANGUAGE=pt-PT" >> .env
           fi
           echo "Variáveis presentes no .env:"
           cut -d'=' -f1 .env
@@ -87,14 +89,10 @@ jobs:
 
       - name: Build Android Release APK
         run: |
-          TMDB_KEY="${{ secrets.TMDB_API_KEY }}"
-          if [ -z "$TMDB_KEY" ]; then
-            TMDB_KEY="***REMOVED***"
-          fi
           flutter build apk --release \
             --build-name=1.0.${{ github.run_number }} \
             --build-number=${{ github.run_number }} \
-            --dart-define=TMDB_API_KEY="$TMDB_KEY"
+            --dart-define=TMDB_API_KEY="${{ secrets.TMDB_API_KEY }}"
 
       - name: Rename Release APK
         run: |
