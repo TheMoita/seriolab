@@ -79,12 +79,10 @@ jobs:
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "A descodificar release keystore a partir dos GitHub Secrets..."
             echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
-            cat <<EOF > android/key.properties
-storePassword=$KEYSTORE_PASSWORD
-keyPassword=$KEY_PASSWORD
-keyAlias=$KEY_ALIAS
-storeFile=app/upload-keystore.jks
-EOF
+            echo "storePassword=$KEYSTORE_PASSWORD" > android/key.properties
+            echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
+            echo "keyAlias=$KEY_ALIAS" >> android/key.properties
+            echo "storeFile=app/upload-keystore.jks" >> android/key.properties
             echo "android/key.properties configurado com sucesso."
           else
             echo "KEYSTORE_BASE64 não configurado nos Secrets. A usar debug keystore como fallback..."
