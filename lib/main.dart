@@ -17,13 +17,16 @@ import 'features/settings/presentation/providers/settings_providers.dart';
 import 'features/tracking/data/repositories/in_memory_tracking_repository.dart';
 import 'features/tracking/data/repositories/sqflite_tracking_repository.dart';
 import 'features/tracking/domain/repositories/tracking_repository.dart';
+import 'firebase_options.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('pt_PT', null);
 
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     FirebaseFirestore.instance.settings = const Settings(
       persistenceEnabled: true,
     );
