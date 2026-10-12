@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -5,6 +8,20 @@ plugins {
     // END: FlutterFire Configuration
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val keystorePropertiesFile = if (rootProject.file("key.properties").exists()) {
+    rootProject.file("key.properties")
+} else if (file("key.properties").exists()) {
+    file("key.properties")
+} else null
+
+val keystoreProperties = Properties()
+val hasReleaseKeystore = if (keystorePropertiesFile != null && keystorePropertiesFile.exists()) {
+    FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
+    true
+} else {
+    false
 }
 
 android {
@@ -35,18 +52,30 @@ android {
     }
 
     signingConfigs {
-        val keystoreFile = file("debug.keystore")
-        if (keystoreFile.exists()) {
+        val debugKeystoreFile = file("debug.keystore")
+        if (debugKeystoreFile.exists()) {
             getByName("debug") {
-                storeFile = keystoreFile
+                storeFile = debugKeystoreFile
                 storePassword = "android"
                 keyAlias = "androiddebugkey"
                 keyPassword = "android"
             }
         }
         create("release") {
-            if (keystoreFile.exists()) {
-                storeFile = keystoreFile
+            if (hasReleaseKeystore) {
+                val storePath = keystoreProperties.getProperty("storeFile") ?: "upload-keystore.jks"
+                val resolvedStoreFile = when {
+                    rootProject.file(storePath).exists() -> rootProject.file(storePath)
+                    file(storePath).exists() -> file(storePath)
+                    file(storePath.removePrefix("app/")).exists() -> file(storePath.removePrefix("app/"))
+                    else -> file(storePath)
+                }
+                storeFile = resolvedStoreFile
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            } else if (debugKeystoreFile.exists()) {
+                storeFile = debugKeystoreFile
                 storePassword = "android"
                 keyAlias = "androiddebugkey"
                 keyPassword = "android"
