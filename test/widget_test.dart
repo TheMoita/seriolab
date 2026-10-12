@@ -40,8 +40,8 @@ void main() {
     expect(find.text('Agenda'), findsOneWidget);
     expect(find.text('Perfil'), findsOneWidget);
 
-    // Default tab is Início (Letterboxd-style Home, localized in Portuguese)
-    expect(find.text('POPULARES ESTA SEMANA'), findsOneWidget);
+    // Default tab is Início (Letterboxd-style Home, localized in English by default)
+    expect(find.text('POPULAR THIS WEEK'), findsOneWidget);
 
     // Tap on Explorar tab
     await tester.tap(find.text('Explorar'));

@@ -27,11 +27,12 @@ abstract class AppLocalizations {
 
   /// Resolves localizations based on a language string (e.g. 'pt-PT', 'en-US', 'es-ES').
   static AppLocalizations fromLanguageCode(String? language) {
-    if (language == null) return const AppLocalizationsPt();
+    if (language == null) return const AppLocalizationsEn();
     final code = language.toLowerCase();
-    if (code.startsWith('en')) return const AppLocalizationsEn();
+    if (code.startsWith('pt')) return const AppLocalizationsPt();
     if (code.startsWith('es')) return const AppLocalizationsEs();
-    return const AppLocalizationsPt();
+    if (code.startsWith('en')) return const AppLocalizationsEn();
+    return const AppLocalizationsEn();
   }
 
   static const LocalizationsDelegate<AppLocalizations> delegate =
@@ -90,6 +91,11 @@ abstract class AppLocalizations {
   String get upNextSection;
   String get startWatchingSection;
   String get resumeWatchingSection;
+
+  // Settings & Localization
+  String get language;
+  String get applicationLanguage;
+  String get contentAndLanguagePreferences;
 }
 
 class _AppLocalizationsDelegate
@@ -241,6 +247,15 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get resumeWatchingSection => 'Retomar';
+
+  @override
+  String get language => 'Idioma';
+
+  @override
+  String get applicationLanguage => 'Idioma da Aplicação';
+
+  @override
+  String get contentAndLanguagePreferences => 'Preferências de Conteúdo & Idioma';
 }
 
 /// English strings
@@ -373,6 +388,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resumeWatchingSection => 'Resume';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get applicationLanguage => 'App Language';
+
+  @override
+  String get contentAndLanguagePreferences => 'Content & Language Preferences';
 }
 
 /// Spanish strings
@@ -505,4 +529,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get resumeWatchingSection => 'Reanudar';
+
+  @override
+  String get language => 'Idioma';
+
+  @override
+  String get applicationLanguage => 'Idioma de la Aplicación';
+
+  @override
+  String get contentAndLanguagePreferences => 'Preferencias de Contenido e Idioma';
 }

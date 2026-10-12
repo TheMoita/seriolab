@@ -9,8 +9,18 @@ import 'package:seriolab/features/shows/data/datasources/mock/mock_show_remote_d
 import 'package:seriolab/features/shows/data/repositories/show_repository_impl.dart';
 import 'package:seriolab/features/shows/domain/entities/episode.dart';
 import 'package:seriolab/features/shows/domain/entities/show.dart';
+import 'package:seriolab/features/settings/domain/entities/user_settings.dart';
+import 'package:seriolab/features/settings/presentation/providers/settings_providers.dart';
 import 'package:seriolab/features/tracking/domain/entities/tracking_entities.dart';
 import 'package:seriolab/features/tracking/domain/entities/tracking_state.dart';
+
+class _FakeSettingsNotifier extends SettingsNotifier {
+  _FakeSettingsNotifier(this._initial);
+  final UserSettings _initial;
+
+  @override
+  UserSettings build() => _initial;
+}
 
 void main() {
   final now = DateTime(2026, 10, 11, 12, 0, 0);
@@ -259,6 +269,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            settingsControllerProvider.overrideWith(
+              () => _FakeSettingsNotifier(
+                UserSettings.defaultSettings.copyWith(language: 'pt-PT'),
+              ),
+            ),
             scheduleControllerProvider.overrideWith(
               () => _FakeScheduleController(const ScheduleState()),
             ),
@@ -347,6 +362,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            settingsControllerProvider.overrideWith(
+              () => _FakeSettingsNotifier(
+                UserSettings.defaultSettings.copyWith(language: 'pt-PT'),
+              ),
+            ),
             scheduleControllerProvider.overrideWith(
               () => _FakeScheduleController(fakeState),
             ),
@@ -450,6 +470,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            settingsControllerProvider.overrideWith(
+              () => _FakeSettingsNotifier(
+                UserSettings.defaultSettings.copyWith(language: 'pt-PT'),
+              ),
+            ),
             scheduleControllerProvider.overrideWith(
               () => _FakeScheduleController(multiState),
             ),
@@ -474,6 +499,28 @@ void main() {
 
       expect(find.text('Começar'), findsOneWidget);
       expect(find.text('Pausada'), findsOneWidget);
+    });
+
+    testWidgets('renders tabs in English by default when no settings override is present',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            scheduleControllerProvider.overrideWith(
+              () => _FakeScheduleController(const ScheduleState()),
+            ),
+          ],
+          child: const MaterialApp(
+            home: ScheduleScreen(),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // In English by default without any override
+      expect(find.text('Watchlist'), findsOneWidget);
+      expect(find.text('Coming Soon'), findsOneWidget);
     });
   });
 }

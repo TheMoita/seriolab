@@ -21,7 +21,12 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('pt_PT', null);
+  await Future.wait([
+    initializeDateFormatting('en_US', null),
+    initializeDateFormatting('pt_PT', null),
+    initializeDateFormatting('pt_BR', null),
+    initializeDateFormatting('es_ES', null),
+  ]);
 
   try {
     await Firebase.initializeApp(
@@ -89,6 +94,10 @@ class SeriolabApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark(),
       locale: locale,
+      localeResolutionCallback: (deviceLocale, supportedLocales) {
+        // Enforce the user-selected locale or fallback to English, ignoring device OS locale
+        return locale;
+      },
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -96,24 +105,29 @@ class SeriolabApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
+        Locale('en', 'US'),
         Locale('pt', 'PT'),
         Locale('pt', 'BR'),
-        Locale('en', 'US'),
         Locale('es', 'ES'),
       ],
       home: resolveHome(),
     );
   }
 
-  static Locale _resolveLocale(String language) {
-    if (language.contains('-')) {
-      final parts = language.split('-');
+  static Locale _resolveLocale(String? language) {
+    if (language == null || language.isEmpty) {
+      return const Locale('en', 'US');
+    }
+    final normalized = language.replaceAll('_', '-');
+    if (normalized.contains('-')) {
+      final parts = normalized.split('-');
       return Locale(parts[0], parts[1]);
     }
-    return switch (language.toLowerCase()) {
+    return switch (normalized.toLowerCase()) {
       'en' => const Locale('en', 'US'),
+      'pt' => const Locale('pt', 'PT'),
       'es' => const Locale('es', 'ES'),
-      _ => const Locale('pt', 'PT'),
+      _ => const Locale('en', 'US'),
     };
   }
 }

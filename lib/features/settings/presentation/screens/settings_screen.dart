@@ -16,6 +16,7 @@ import '../providers/settings_providers.dart';
 import '../widgets/avatar_selection_sheet.dart';
 import '../widgets/edit_profile_sheet.dart';
 import '../widgets/export_watchlist_sheet.dart';
+import '../widgets/language_selector_bottom_sheet.dart';
 import '../widgets/settings_group_card.dart';
 import '../widgets/user_avatar_widget.dart';
 
@@ -163,13 +164,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _packageInfoFuture = PackageInfo.fromPlatform();
   }
 
-  static const Map<String, String> _languages = {
-    'pt-PT': 'Português (Portugal) 🇵🇹',
-    'pt-BR': 'Português (Brasil) 🇧🇷',
-    'en-US': 'English (US) 🇺🇸',
-    'es-ES': 'Español 🇪🇸',
-  };
-
   static const Map<String, String> _regions = {
     'PT': 'Portugal 🇵🇹',
     'BR': 'Brasil 🇧🇷',
@@ -181,80 +175,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   };
 
   Future<void> _selectLanguage(BuildContext context, String current) async {
-    final effectiveCurrent = current == 'pt'
-        ? 'pt-PT'
-        : (current == 'en'
-            ? 'en-US'
-            : (current == 'es' ? 'es-ES' : current));
-
-    final selected = await showModalBottomSheet<String>(
-      context: context,
-      showDragHandle: false,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const ModalDragHandle(topPadding: 0, bottomPadding: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Idioma da Aplicação',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        onPressed: () => Navigator.pop(ctx),
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(),
-                ..._languages.entries.map((entry) {
-                  final isCurrent =
-                      entry.key == effectiveCurrent || entry.key == current;
-                  return ListTile(
-                    title: Text(
-                      entry.value,
-                      style: TextStyle(
-                        fontWeight:
-                            isCurrent ? FontWeight.w700 : FontWeight.w500,
-                        color: isCurrent
-                            ? AppColors.primary
-                            : AppColors.textPrimary,
-                      ),
-                    ),
-                    trailing: isCurrent
-                        ? const Icon(Icons.check_rounded,
-                            color: AppColors.primary)
-                        : null,
-                    onTap: () => Navigator.pop(ctx, entry.key),
-                  );
-                }),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
-    if (selected != null) {
-      ref.read(settingsControllerProvider.notifier).setLanguage(selected);
-    }
+    await LanguageSelectorBottomSheet.show(context);
   }
 
   Future<void> _selectRegion(BuildContext context, String current) async {
@@ -749,7 +670,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
                 subtitle: Text(
-                  _languages[settings.language] ?? settings.language,
+                  LanguageSelectorBottomSheet.getDisplayName(settings.language),
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,

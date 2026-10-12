@@ -194,7 +194,7 @@ class UserSettings {
       'pt' => streamingRegion == 'BR' ? 'pt-BR' : 'pt-PT',
       'en' => 'en-US',
       'es' => 'es-ES',
-      _ => 'pt-PT',
+      _ => 'en-US',
     };
   }
 
@@ -267,7 +267,7 @@ class UserSettings {
     avatarId: 'tv_retro',
     avatarType: AvatarType.preset,
     avatarValue: 'tv_retro',
-    language: 'pt',
+    language: 'en-US',
     streamingRegion: 'PT',
     hideSpoilersForUnwatched: true,
     groupSpecialEpisodes: true,

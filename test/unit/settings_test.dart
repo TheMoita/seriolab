@@ -16,10 +16,10 @@ void main() {
       expect(settings.displayName, 'Afonso Dias');
       expect(settings.username, 'afonsodias');
       expect(settings.bio, '');
-      expect(settings.language, 'pt');
+      expect(settings.language, 'en-US');
       expect(settings.streamingRegion, 'PT');
       expect(settings.showOriginalTitles, isFalse);
-      expect(settings.tmdbLanguageCode, 'pt-PT');
+      expect(settings.tmdbLanguageCode, 'en-US');
       expect(settings.hideSpoilersForUnwatched, isTrue);
       expect(settings.groupSpecialEpisodes, isTrue);
       expect(settings.episodeReleaseReminders, isTrue);
