@@ -5,11 +5,13 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/modal_drag_handle.dart';
 import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
+import '../../../main/presentation/screens/main_screen.dart';
 import '../../../settings/domain/entities/user_settings.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../settings/presentation/widgets/seriolab_avatar_view.dart';
 import '../../domain/auth_validators.dart';
 import '../providers/auth_providers.dart';
+import '../widgets/auth_gate.dart';
 
 /// Screen allowing new users to create a Seriolab account with custom username,
 /// email, password, and preset avatar selection.
@@ -44,6 +46,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!mounted) return;
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
+    } else if (context.findAncestorWidgetOfExactType<AuthGate>() == null) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute<void>(builder: (_) => const MainScreen()),
+        (route) => false,
+      );
     }
   }
 

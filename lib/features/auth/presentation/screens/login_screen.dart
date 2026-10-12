@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/seriolab_loader.dart';
 import '../../../../core/widgets/seriolab_logo.dart';
+import '../../../main/presentation/screens/main_screen.dart';
 import '../../domain/auth_validators.dart';
 import '../providers/auth_providers.dart';
+import '../widgets/auth_gate.dart';
 import '../widgets/social_auth_button.dart';
 import 'register_screen.dart';
 
@@ -35,30 +37,93 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) return;
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
+    } else if (context.findAncestorWidgetOfExactType<AuthGate>() == null) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute<void>(builder: (_) => const MainScreen()),
+        (route) => false,
+      );
     }
   }
 
   Future<void> _handleEmailLogin() async {
+    if (ref.read(authControllerProvider).isLoading) return;
     ref.read(authControllerProvider.notifier).clearError();
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    final success = await ref.read(authControllerProvider.notifier).signInWithEmail(
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
+    try {
+      final success = await ref.read(authControllerProvider.notifier).signInWithEmail(
+            email: _emailController.text,
+            password: _passwordController.text,
+          );
 
-    if (success && mounted) {
-      _navigateToMain();
+      if (!mounted) return;
+
+      if (success) {
+        _navigateToMain();
+      } else {
+        final errorMsg = ref.read(authControllerProvider).errorMessage;
+        if (errorMsg != null && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMsg),
+              backgroundColor: AppColors.danger,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Erro detalhado no login com email: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Falha ao autenticar com email: $e'),
+            backgroundColor: AppColors.danger,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _handleGoogleLogin() async {
+    if (ref.read(authControllerProvider).isLoading) return;
     ref.read(authControllerProvider.notifier).clearError();
-    final success =
-        await ref.read(authControllerProvider.notifier).signInWithGoogle();
 
-    if (success && mounted) {
-      _navigateToMain();
+    try {
+      final success =
+          await ref.read(authControllerProvider.notifier).signInWithGoogle();
+
+      if (!mounted) return;
+
+      if (success) {
+        _navigateToMain();
+      } else {
+        final errorMsg = ref.read(authControllerProvider).errorMessage;
+        if (errorMsg != null && mounted) {
+          final displayMsg = errorMsg.startsWith('Falha')
+              ? errorMsg
+              : 'Falha ao autenticar com o Google: $errorMsg';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(displayMsg),
+              backgroundColor: AppColors.danger,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Erro detalhado no Google Sign-In: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Falha ao autenticar com o Google: $e'),
+            backgroundColor: AppColors.danger,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -263,7 +328,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     SocialAuthButton(
                       label: 'Continuar com o Google',
                       isLoading: authState.isLoading,
-                      onPressed: _handleGoogleLogin,
+                      onPressed:
+                          authState.isLoading ? null : _handleGoogleLogin,
                     ),
                     const SizedBox(height: 24),
 
@@ -280,14 +346,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () {
-                            ref.read(authControllerProvider.notifier).clearError();
-                            Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => const RegisterScreen(),
-                              ),
-                            );
-                          },
+                          onTap: authState.isLoading
+                              ? null
+                              : () {
+                                  ref
+                                      .read(authControllerProvider.notifier)
+                                      .clearError();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => const RegisterScreen(),
+                                    ),
+                                  );
+                                },
                           child: const Text(
                             'Regista-te',
                             style: TextStyle(

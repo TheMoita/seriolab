@@ -168,7 +168,7 @@ class AuthController extends Notifier<AuthState> {
     try {
       final user = await _service.signInWithGoogle();
       if (user == null) {
-        // User cancelled picker
+        // Utilizador cancelou a seleção
         state = state.copyWith(isLoading: false);
         return false;
       }
@@ -180,12 +180,16 @@ class AuthController extends Notifier<AuthState> {
       await _syncUserToProfile(user);
       return true;
     } on AuthException catch (e) {
+      debugPrint(
+        'Erro detalhado no Google Sign-In (AuthController AuthException): ${e.message}',
+      );
       state = state.copyWith(isLoading: false, errorMessage: e.message);
       return false;
     } catch (e) {
+      debugPrint('Erro detalhado no Google Sign-In (AuthController): $e');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Erro ao autenticar com Google: $e',
+        errorMessage: 'Falha ao autenticar com o Google: $e',
       );
       return false;
     }
