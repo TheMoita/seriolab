@@ -108,7 +108,7 @@ class _ExportWatchlistSheetState extends ConsumerState<ExportWatchlistSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Exportar Watchlist',
+                  'Export Watchlist',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
@@ -124,7 +124,7 @@ class _ExportWatchlistSheetState extends ConsumerState<ExportWatchlistSheet> {
             ),
             const SizedBox(height: 6),
             Text(
-              '${shows.length} séries e ${watchedEpisodes.length} episódios registados prontos para exportação.',
+              '${shows.length} shows and ${watchedEpisodes.length} episodes ready for export.',
               style: const TextStyle(
                 fontSize: 13,
                 color: AppColors.textSecondary,
@@ -156,7 +156,7 @@ class _ExportWatchlistSheetState extends ConsumerState<ExportWatchlistSheet> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'Formato JSON',
+                          'JSON Format',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -182,7 +182,7 @@ class _ExportWatchlistSheetState extends ConsumerState<ExportWatchlistSheet> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'Formato CSV',
+                          'CSV Format',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -239,7 +239,7 @@ class _ExportWatchlistSheetState extends ConsumerState<ExportWatchlistSheet> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          'Dados copiados em ${_exportAsJson ? 'JSON' : 'CSV'} para a área de transferência!',
+                          'Data copied in ${_exportAsJson ? 'JSON' : 'CSV'} to clipboard!',
                         ),
                       ],
                     ),
@@ -257,7 +257,7 @@ class _ExportWatchlistSheetState extends ConsumerState<ExportWatchlistSheet> {
               ),
               icon: const Icon(Icons.copy_rounded, size: 18),
               label: const Text(
-                'Copiar para Área de Transferência',
+                'Copy to Clipboard',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
               ),
             ),

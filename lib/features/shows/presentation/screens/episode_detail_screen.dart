@@ -80,9 +80,9 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
   }) async {
     final result = await RatingModal.show(
       context,
-      title: 'Avaliar Episódio',
+      title: 'Rate Episode',
       itemName: '${episode.code} - ${episode.title}',
-      badgeText: 'T${widget.seasonNumber} • E${widget.episodeNumber}',
+      badgeText: 'S${widget.seasonNumber} • E${widget.episodeNumber}',
       initialRating: currentRating,
       initialReview: currentReview,
       initialHasSpoilers: currentHasSpoilers,
@@ -111,10 +111,10 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
             widget.episodeNumber,
           ),
           userId: settings.username.isNotEmpty ? settings.username : 'user',
-          username: settings.username.isNotEmpty ? settings.username : 'membro',
+          username: settings.username.isNotEmpty ? settings.username : 'member',
           userDisplayName: settings.displayName.isNotEmpty
               ? settings.displayName
-              : 'Membro Seriolab',
+              : 'Seriolab Member',
           userAvatarId: settings.avatarId,
           userAvatarType: settings.avatarType,
           userAvatarValue: settings.avatarValue,
@@ -132,8 +132,8 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
           SnackBar(
             content: Text(
               result.rating != null
-                  ? 'Avaliação de ${result.rating!.toStringAsFixed(1)} ★ guardada para ${episode.code}!'
-                  : 'Registo do episódio ${episode.code} guardado!',
+                  ? 'Rating of ${result.rating!.toStringAsFixed(1)} ★ saved for ${episode.code}!'
+                  : 'Log for episode ${episode.code} saved!',
             ),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
@@ -148,7 +148,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Avaliação do episódio ${episode.code} removida.'),
+            content: Text('Rating for episode ${episode.code} removed.'),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
           ),
@@ -200,7 +200,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
         FocusScope.of(context).unfocus();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Comentário publicado com sucesso!'),
+            content: Text('Comment posted successfully!'),
             duration: Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
           ),
@@ -210,7 +210,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao publicar comentário: $e'),
+            content: Text('Error posting comment: $e'),
             backgroundColor: AppColors.danger,
           ),
         );
@@ -225,26 +225,26 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
   }
 
   String _getRatingQualifier(double score) {
-    if (score >= 10.0) return 'Obra-Prima ★★★';
-    if (score >= 9.5) return 'Obra-Prima';
-    if (score >= 9.0) return 'Brilhante / Excelente';
-    if (score >= 8.5) return 'Excelente';
-    if (score >= 8.0) return 'Muito Bom';
-    if (score >= 7.5) return 'Bom +';
-    if (score >= 7.0) return 'Bom';
-    if (score >= 6.5) return 'Acima da Média';
-    if (score >= 6.0) return 'Razoável +';
-    if (score >= 5.5) return 'Razoável';
-    if (score >= 5.0) return 'Mediano';
-    if (score >= 4.5) return 'Abaixo da Média';
-    if (score >= 4.0) return 'Fraco +';
-    if (score >= 3.5) return 'Fraco';
-    if (score >= 3.0) return 'Muito Fraco';
-    if (score >= 2.5) return 'Mau';
-    if (score >= 2.0) return 'Muito Mau';
-    if (score >= 1.5) return 'Terrível';
-    if (score >= 1.0) return 'Pavoroso';
-    return 'Insuportável';
+    if (score >= 10.0) return 'Masterpiece ★★★';
+    if (score >= 9.5) return 'Masterpiece';
+    if (score >= 9.0) return 'Brilliant / Amazing';
+    if (score >= 8.5) return 'Great';
+    if (score >= 8.0) return 'Very Good';
+    if (score >= 7.5) return 'Good +';
+    if (score >= 7.0) return 'Good';
+    if (score >= 6.5) return 'Above Average';
+    if (score >= 6.0) return 'Decent +';
+    if (score >= 5.5) return 'Decent';
+    if (score >= 5.0) return 'Average';
+    if (score >= 4.5) return 'Below Average';
+    if (score >= 4.0) return 'Mediocre +';
+    if (score >= 3.5) return 'Mediocre';
+    if (score >= 3.0) return 'Poor';
+    if (score >= 2.5) return 'Bad';
+    if (score >= 2.0) return 'Very Bad';
+    if (score >= 1.5) return 'Terrible';
+    if (score >= 1.0) return 'Awful';
+    return 'Unwatchable';
   }
 
   @override
@@ -260,7 +260,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
           showId: widget.seriesId,
           seasonNumber: widget.seasonNumber,
           episodeNumber: widget.episodeNumber,
-          name: 'Episódio ${widget.episodeNumber}',
+          name: 'Episode ${widget.episodeNumber}',
         );
     final episode = epDetails?.episode ?? fallbackEp;
 
@@ -501,7 +501,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      'T${widget.seasonNumber} • E${widget.episodeNumber}',
+                      'S${widget.seasonNumber} • E${widget.episodeNumber}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
@@ -636,7 +636,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                 size: 18,
               ),
               label: const Text(
-                'Episódio Visto',
+                'Episode Watched',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
@@ -681,7 +681,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                 size: 18,
               ),
               label: const Text(
-                'Marcar como Visto',
+                'Mark as Watched',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -711,7 +711,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Sinopse',
+          'Overview',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w800,
@@ -741,7 +741,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Sinopse oculta para evitar spoilers',
+                  'Overview hidden to prevent spoilers',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
@@ -750,7 +750,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Ainda não marcaste este episódio como visto. Podes revelar a sinopse se preferires.',
+                  'You haven\'t marked this episode as watched yet. You can reveal the overview if you prefer.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 12,
@@ -766,7 +766,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                   },
                   icon: const Icon(Icons.remove_red_eye_rounded, size: 16),
                   label: const Text(
-                    'Revelar Sinopse',
+                    'Reveal Overview',
                     style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                   style: FilledButton.styleFrom(
@@ -788,7 +788,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
           Text(
             hasOverview
                 ? rawOverview
-                : 'Nenhuma sinopse disponível para este episódio.',
+                : 'No overview available for this episode.',
             style: TextStyle(
               fontSize: 14,
               color: hasOverview
@@ -818,7 +818,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
         // Crew: Directors & Writers
         if (directors.isNotEmpty || writers.isNotEmpty) ...[
           const Text(
-            'Equipa Técnica',
+            'Crew',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
@@ -849,7 +849,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Realização: ${directors.map((d) => d.name).join(', ')}',
+                        'Director: ${directors.map((d) => d.name).join(', ')}',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -878,7 +878,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Argumento: ${writers.map((w) => w.name).join(', ')}',
+                        'Writer: ${writers.map((w) => w.name).join(', ')}',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -899,7 +899,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Atores Convidados',
+                'Guest Stars',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
@@ -1015,7 +1015,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'A Tua Avaliação',
+                    'Your Rating',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
@@ -1039,7 +1039,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                   ),
                   child: const Text(
-                    'Editar Registo',
+                    'Edit Log',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -1118,7 +1118,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
-                          'Contém Spoilers',
+                          'Contains Spoilers',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
@@ -1141,7 +1141,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
             ],
             if (loggedAt != null)
               Text(
-                'Registado em ${Formatters.fullDate(loggedAt)}',
+                'Logged on ${Formatters.fullDate(loggedAt)}',
                 style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.textMuted,
@@ -1149,7 +1149,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
               ),
           ] else ...[
             const Text(
-              'Ainda não avaliaste este episódio',
+              'You haven\'t rated this episode yet',
               style: TextStyle(
                 fontSize: 13,
                 color: AppColors.textSecondary,
@@ -1174,7 +1174,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                   size: 18,
                 ),
                 label: const Text(
-                  'Registar / Avaliar Episódio',
+                  'Log / Rate Episode',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
@@ -1222,7 +1222,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
             Row(
               children: [
                 const Text(
-                  'Comunidade',
+                  'Community',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
@@ -1253,7 +1253,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
               Row(
                 children: [
                   const Text(
-                    'Média: ',
+                    'Average: ',
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textMuted,
@@ -1284,7 +1284,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
             ),
             child: const Center(
               child: Text(
-                'Ainda não existem comentários para este episódio. Sê o primeiro a partilhar a tua opinião!',
+                'No comments for this episode yet. Be the first to share your thoughts!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
@@ -1366,7 +1366,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
               ),
               const SizedBox(width: 8),
               const Text(
-                'Deixar um comentário',
+                'Leave a comment',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -1385,7 +1385,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
               color: AppColors.textPrimary,
             ),
             decoration: const InputDecoration(
-              hintText: 'Escreve a tua opinião sobre o episódio...',
+              hintText: 'Share your thoughts about this episode...',
               hintStyle: TextStyle(
                 fontSize: 12,
                 color: AppColors.textMuted,
@@ -1435,7 +1435,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'Contém Spoilers',
+                        'Contains Spoilers',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -1460,7 +1460,7 @@ class _EpisodeDetailScreenState extends ConsumerState<EpisodeDetailScreen> {
                       )
                     : const Icon(Icons.send_rounded, size: 14),
                 label: const Text(
-                  'Comentar',
+                  'Post',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
                 ),
                 style: FilledButton.styleFrom(

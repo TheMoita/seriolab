@@ -203,7 +203,7 @@ class _CommentCardWidgetState extends ConsumerState<CommentCardWidget> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Não foi possível traduzir o comentário de momento.'),
+            content: const Text('Unable to translate comment at this time.'),
             backgroundColor: AppColors.surfaceHigh,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -218,7 +218,7 @@ class _CommentCardWidgetState extends ConsumerState<CommentCardWidget> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Erro ao contactar o serviço de tradução.'),
+            content: const Text('Error connecting to translation service.'),
             backgroundColor: AppColors.surfaceHigh,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -326,7 +326,7 @@ class _CommentCardWidgetState extends ConsumerState<CommentCardWidget> {
                   ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
-                  tooltip: 'Opções do comentário',
+                  tooltip: 'Comment options',
                   color: AppColors.surfaceHigh,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -359,7 +359,7 @@ class _CommentCardWidgetState extends ConsumerState<CommentCardWidget> {
                           ),
                           SizedBox(width: 8),
                           Text(
-                            'Denunciar comentário',
+                            'Report comment',
                             style: TextStyle(
                               fontSize: 13,
                               color: AppColors.danger,
@@ -404,7 +404,7 @@ class _CommentCardWidgetState extends ConsumerState<CommentCardWidget> {
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Aviso de Spoiler — Toca para ver',
+                        'Spoiler Warning — Tap to reveal',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -433,7 +433,7 @@ class _CommentCardWidgetState extends ConsumerState<CommentCardWidget> {
             if (_isShowingTranslation) ...[
               const SizedBox(height: 4),
               Text(
-                'Traduzido automaticamente',
+                'Automatically translated',
                 style: TextStyle(
                   fontSize: 11,
                   fontStyle: FontStyle.italic,
@@ -541,7 +541,7 @@ class _CommentCardWidgetState extends ConsumerState<CommentCardWidget> {
                           ),
                           const SizedBox(width: 5),
                           const Text(
-                            'A traduzir...',
+                            'Translating...',
                             style: TextStyle(
                               fontSize: 11,
                               color: AppColors.textMuted,
@@ -557,7 +557,7 @@ class _CommentCardWidgetState extends ConsumerState<CommentCardWidget> {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            _isShowingTranslation ? 'Ver original' : 'Traduzir',
+                            _isShowingTranslation ? 'View original' : 'Translate',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,

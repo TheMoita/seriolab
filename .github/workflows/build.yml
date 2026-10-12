@@ -47,7 +47,7 @@ jobs:
           fi
           echo "TMDB_BASE_URL=https://api.themoviedb.org/3" >> .env
           echo "TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p/w500" >> .env
-          echo "TMDB_LANGUAGE=pt-PT" >> .env
+          echo "TMDB_LANGUAGE=en-US" >> .env
 
       - name: Install dependencies
         run: flutter pub get
@@ -64,7 +64,7 @@ jobs:
             touch .env
             echo "TMDB_BASE_URL=https://api.themoviedb.org/3" >> .env
             echo "TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p/w500" >> .env
-            echo "TMDB_LANGUAGE=pt-PT" >> .env
+            echo "TMDB_LANGUAGE=en-US" >> .env
           fi
           echo "Variáveis presentes no .env:"
           cut -d'=' -f1 .env

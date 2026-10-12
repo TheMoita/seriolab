@@ -30,12 +30,12 @@ void main() {
       expect(settings.averageRating, 0.0);
     });
 
-    test('tmdbLanguageCode maps properly for regions and languages', () {
+    test('tmdbLanguageCode maps properly to en-US for consistent English catalog', () {
       final ptBr = UserSettings.defaultSettings.copyWith(
         language: 'pt',
         streamingRegion: 'BR',
       );
-      expect(ptBr.tmdbLanguageCode, 'pt-BR');
+      expect(ptBr.tmdbLanguageCode, 'en-US');
 
       final en = UserSettings.defaultSettings.copyWith(
         language: 'en',
@@ -45,7 +45,7 @@ void main() {
       final es = UserSettings.defaultSettings.copyWith(
         language: 'es',
       );
-      expect(es.tmdbLanguageCode, 'es-ES');
+      expect(es.tmdbLanguageCode, 'en-US');
     });
 
     test('toJson and fromJson preserves all fields', () {

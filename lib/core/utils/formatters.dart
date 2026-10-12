@@ -2,11 +2,11 @@ import 'package:intl/intl.dart';
 
 /// Presentation helpers (pt-PT).
 abstract final class Formatters {
-  static final DateFormat _fullDate = DateFormat("d 'de' MMMM 'de' y", 'pt_PT');
-  static final DateFormat _shortDate = DateFormat('d MMM y', 'pt_PT');
-  static final DateFormat _dayMonth = DateFormat('d MMM', 'pt_PT');
+  static final DateFormat _fullDate = DateFormat('MMMM d, y', 'en_US');
+  static final DateFormat _shortDate = DateFormat('MMM d, y', 'en_US');
+  static final DateFormat _dayMonth = DateFormat('MMM d', 'en_US');
   static final DateFormat _weekdayDate =
-      DateFormat("EEEE, d 'de' MMMM", 'pt_PT');
+      DateFormat('EEEE, MMMM d', 'en_US');
 
   static DateTime dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
@@ -15,37 +15,37 @@ abstract final class Formatters {
     try {
       return _fullDate.format(d);
     } catch (_) {
-      return '${d.day}/${d.month}/${d.year}';
+      return '${d.month}/${d.day}/${d.year}';
     }
   }
 
   static String shortDate(DateTime? d) {
-    if (d == null) return 'Data por anunciar';
+    if (d == null) return 'TBA';
     try {
       return _shortDate.format(d);
     } catch (_) {
-      return '${d.day}/${d.month}/${d.year}';
+      return '${d.month}/${d.day}/${d.year}';
     }
   }
   static String dayMonth(DateTime d) => _dayMonth.format(d);
 
-  /// "Hoje", "Amanhã" or e.g. "Sexta-feira, 16 de outubro".
+  /// "Today", "Tomorrow" or e.g. "Friday, October 16".
   static String relativeDayHeader(DateTime day, {DateTime? now}) {
     final today = dateOnly(now ?? DateTime.now());
     final diff = dateOnly(day).difference(today).inDays;
-    if (diff == 0) return 'Hoje';
-    if (diff == 1) return 'Amanhã';
-    if (diff == -1) return 'Ontem';
+    if (diff == 0) return 'Today';
+    if (diff == 1) return 'Tomorrow';
+    if (diff == -1) return 'Yesterday';
     return _capitalize(_weekdayDate.format(day));
   }
 
-  /// "hoje", "amanhã", "em 5 dias".
+  /// "Today", "Tomorrow", "In 5 days".
   static String countdown(DateTime day, {DateTime? now}) {
     final today = dateOnly(now ?? DateTime.now());
     final diff = dateOnly(day).difference(today).inDays;
-    if (diff <= 0) return 'Hoje';
-    if (diff == 1) return 'Amanhã';
-    return 'Em $diff dias';
+    if (diff <= 0) return 'Today';
+    if (diff == 1) return 'Tomorrow';
+    return 'In $diff days';
   }
 
   /// Total watch time, e.g. "3d 4h" or "45 min".
@@ -70,26 +70,26 @@ abstract final class Formatters {
   static String percent(double ratio) => '${(ratio * 100).round()}%';
 
   static String compactNumber(num value) =>
-      NumberFormat.compact(locale: 'pt_PT').format(value);
+      NumberFormat.compact(locale: 'en_US').format(value);
 
-  /// Relative time, e.g. "agora mesmo", "há 2h", "ontem", "há 3 dias".
+  /// Relative time, e.g. "just now", "2h ago", "yesterday", "3d ago".
   static String timeAgo(DateTime timestamp, {DateTime? now}) {
     final current = now ?? DateTime.now();
     final difference = current.difference(timestamp);
 
     if (difference.inSeconds < 60) {
-      return 'agora mesmo';
+      return 'just now';
     } else if (difference.inMinutes < 60) {
-      return 'há ${difference.inMinutes}m';
+      return '${difference.inMinutes}m ago';
     } else if (difference.inHours < 24) {
-      return 'há ${difference.inHours}h';
+      return '${difference.inHours}h ago';
     } else if (difference.inDays == 1) {
-      return 'ontem';
+      return 'yesterday';
     } else if (difference.inDays < 7) {
-      return 'há ${difference.inDays} dias';
+      return '${difference.inDays}d ago';
     } else if (difference.inDays < 30) {
       final weeks = (difference.inDays / 7).floor();
-      return weeks == 1 ? 'há 1 semana' : 'há $weeks semanas';
+      return weeks == 1 ? '1 week ago' : '$weeks weeks ago';
     } else {
       return shortDate(timestamp);
     }

@@ -39,6 +39,11 @@ class InMemoryTrackingRepository implements TrackingRepository {
   }
 
   @override
+  Future<void> unmarkAllWatched(int showId) async {
+    _episodes.removeWhere((k, _) => k.$1 == showId);
+  }
+
+  @override
   Future<String?> readMeta(String key) async => _meta[key];
 
   @override

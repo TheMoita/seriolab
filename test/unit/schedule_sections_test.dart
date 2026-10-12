@@ -54,7 +54,7 @@ void main() {
 
       expect(item.showId, 95396);
       expect(item.showName, 'Severance');
-      expect(item.episodeIdentifier, 'T2 • E4');
+      expect(item.episodeIdentifier, 'S2 • E4');
       expect(item.episodeTitle, 'Waffle Party');
       expect(item.isAired, isTrue);
       expect(item.isCaughtUp, isFalse);
@@ -72,7 +72,7 @@ void main() {
         isSeasonPremiere: true,
       );
 
-      expect(item.episodeIdentifier, 'T3 • E1');
+      expect(item.episodeIdentifier, 'S3 • E1');
       expect(item.isSeasonPremiere, isTrue);
       expect(item.isAiredToday, isFalse);
     });
@@ -141,7 +141,7 @@ void main() {
       expect(item.nextEpisode, isNotNull);
       expect(item.nextEpisode!.seasonNumber, 1);
       expect(item.nextEpisode!.episodeNumber, 4);
-      expect(item.episodeIdentifier, 'T1 • E4');
+      expect(item.episodeIdentifier, 'S1 • E4');
       expect(item.isAired, isTrue);
     });
 
@@ -227,7 +227,7 @@ void main() {
       expect(startList.first.nextEpisode, isNotNull);
       expect(startList.first.nextEpisode!.seasonNumber, 1);
       expect(startList.first.nextEpisode!.episodeNumber, 1);
-      expect(startList.first.episodeIdentifier, 'T1 • E1');
+      expect(startList.first.episodeIdentifier, 'S1 • E1');
     });
 
     test('getResume returns dropped shows with next unwatched episode', () async {
@@ -260,7 +260,7 @@ void main() {
       expect(resumeList.first.nextEpisode, isNotNull);
       expect(resumeList.first.nextEpisode!.seasonNumber, 1);
       expect(resumeList.first.nextEpisode!.episodeNumber, 2);
-      expect(resumeList.first.episodeIdentifier, 'T1 • E2');
+      expect(resumeList.first.episodeIdentifier, 'S1 • E2');
     });
   });
 
@@ -286,30 +286,30 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // AppBar title is Agenda
-      expect(find.widgetWithText(AppBar, 'Agenda'), findsOneWidget);
+      // AppBar title is Schedule
+      expect(find.widgetWithText(AppBar, 'Schedule'), findsOneWidget);
 
       // Both tabs are rendered
-      expect(find.text('Lista para Assistir'), findsOneWidget);
-      expect(find.text('Brevemente'), findsOneWidget);
+      expect(find.text('Watchlist'), findsOneWidget);
+      expect(find.text('Coming Soon'), findsOneWidget);
 
-      // Empty state for Lista para Assistir is displayed by default
+      // Empty state for Watchlist is displayed by default
       expect(
-        find.text('Nenhuma série com episódios pendentes para ver.'),
+        find.text('No pending episodes to watch.'),
         findsOneWidget,
       );
-      expect(find.text('Estás em dia!'), findsOneWidget);
+      expect(find.text('All caught up!'), findsOneWidget);
 
-      // Tap on Brevemente tab
-      await tester.tap(find.text('Brevemente'));
+      // Tap on Coming Soon tab
+      await tester.tap(find.text('Coming Soon'));
       await tester.pumpAndSettle();
 
-      // Empty state for Brevemente is displayed
+      // Empty state for Coming Soon is displayed
       expect(
-        find.text('Nenhuma estreia agendada para breve nas tuas séries.'),
+        find.text('No premieres scheduled soon for your tracked shows.'),
         findsOneWidget,
       );
-      expect(find.text('Sem estreias agendadas'), findsOneWidget);
+      expect(find.text('No upcoming premieres'), findsOneWidget);
     });
 
     testWidgets('renders active cards with episode code, badges and actions',
@@ -379,23 +379,23 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // In Tab 1 ("Lista para Assistir" -> section "VER A SEGUIR"):
-      expect(find.text('VER A SEGUIR'), findsOneWidget);
+      // In Tab 1 ("Watchlist" -> section "UP NEXT"):
+      expect(find.text('UP NEXT'), findsOneWidget);
       expect(find.text('Severance'), findsWidgets);
-      expect(find.text('T2 • E4'), findsOneWidget);
+      expect(find.text('S2 • E4'), findsOneWidget);
       expect(find.text('The Grim Barbarity of Magnetism and Artifacts'), findsOneWidget);
-      expect(find.text('Disponível'), findsOneWidget);
+      expect(find.text('Available'), findsOneWidget);
       // Quick mark-as-watched button exists
-      expect(find.byTooltip('Marcar como visto'), findsOneWidget);
+      expect(find.byTooltip('Mark as watched'), findsOneWidget);
 
-      // Switch to Tab 2 ("Brevemente"):
-      await tester.tap(find.text('Brevemente'));
+      // Switch to Tab 2 ("Coming Soon"):
+      await tester.tap(find.text('Coming Soon'));
       await tester.pumpAndSettle();
 
       expect(find.text('The Last of Us'), findsWidgets);
-      expect(find.text('T3 • E1'), findsOneWidget);
+      expect(find.text('S3 • E1'), findsOneWidget);
       expect(find.text('Through the Valley'), findsOneWidget);
-      expect(find.text('T3 Estreia em 2 semanas'), findsOneWidget);
+      expect(find.text('S3 Premieres in 2 weeks'), findsOneWidget);
     });
 
     testWidgets(
@@ -488,17 +488,17 @@ void main() {
       await tester.pumpAndSettle();
 
       // All 3 section headers are displayed
-      expect(find.text('VER A SEGUIR'), findsOneWidget);
-      expect(find.text('COMEÇAR A VER'), findsOneWidget);
-      expect(find.text('RETOMAR'), findsOneWidget);
+      expect(find.text('UP NEXT'), findsOneWidget);
+      expect(find.text('START WATCHING'), findsOneWidget);
+      expect(find.text('RESUME'), findsOneWidget);
 
       // Section-specific cards and badges
       expect(find.text('Severance'), findsWidgets);
       expect(find.text('The Last of Us'), findsWidgets);
       expect(find.text('Game of Thrones'), findsWidgets);
 
-      expect(find.text('Começar'), findsOneWidget);
-      expect(find.text('Pausada'), findsOneWidget);
+      expect(find.text('Start'), findsOneWidget);
+      expect(find.text('Paused'), findsOneWidget);
     });
 
     testWidgets('renders tabs in English by default when no settings override is present',

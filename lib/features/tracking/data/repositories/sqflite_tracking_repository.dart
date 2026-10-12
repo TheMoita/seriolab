@@ -75,6 +75,15 @@ class SqfliteTrackingRepository implements TrackingRepository {
   }
 
   @override
+  Future<void> unmarkAllWatched(int showId) async {
+    await _db.delete(
+      AppDatabase.watchedEpisodes,
+      where: 'show_id = ?',
+      whereArgs: [showId],
+    );
+  }
+
+  @override
   Future<String?> readMeta(String key) async {
     final rows = await _db.query(AppDatabase.meta,
         where: 'key = ?', whereArgs: [key], limit: 1);

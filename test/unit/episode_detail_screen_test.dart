@@ -45,28 +45,28 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
 
     // Verify season and episode badge
-    expect(find.text('T1 • E1'), findsOneWidget);
+    expect(find.text('S1 • E1'), findsOneWidget);
 
     // Verify Quick Action button
-    expect(find.text('Marcar como Visto'), findsOneWidget);
+    expect(find.text('Mark as Watched'), findsOneWidget);
 
-    // Verify Synopsis section
-    expect(find.text('Sinopse'), findsOneWidget);
+    // Verify Overview section
+    expect(find.text('Overview'), findsOneWidget);
 
     // Verify personal rating CTA and clean unrated placeholder
-    expect(find.text('A Tua Avaliação'), findsOneWidget);
-    expect(find.text('Ainda não avaliaste este episódio'), findsOneWidget);
-    expect(find.text('Registar / Avaliar Episódio'), findsOneWidget);
+    expect(find.text('Your Rating'), findsOneWidget);
+    expect(find.text('You haven\'t rated this episode yet'), findsOneWidget);
+    expect(find.text('Log / Rate Episode'), findsOneWidget);
 
     // Toggle watched state
-    await tester.tap(find.text('Marcar como Visto'));
+    await tester.tap(find.text('Mark as Watched'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('Episódio Visto'), findsOneWidget);
+    expect(find.text('Episode Watched'), findsOneWidget);
 
     // Dismiss the optional review bottom sheet to continue testing EpisodeDetailScreen
-    if (find.text('Agora não').evaluate().isNotEmpty) {
-      await tester.tap(find.text('Agora não'));
+    if (find.text('Not now').evaluate().isNotEmpty) {
+      await tester.tap(find.text('Not now'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
     }
@@ -76,42 +76,42 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     // Verify Community reviews section
-    expect(find.text('Comunidade'), findsOneWidget);
+    expect(find.text('Community'), findsOneWidget);
 
     // Verify empty state is displayed initially
     expect(
       find.text(
-        'Ainda não existem comentários para este episódio. Sê o primeiro a partilhar a tua opinião!',
+        'No comments for this episode yet. Be the first to share your thoughts!',
       ),
       findsOneWidget,
     );
 
     // Verify comment input bar
-    expect(find.text('Deixar um comentário'), findsOneWidget);
-    expect(find.text('Contém Spoilers'), findsOneWidget);
-    expect(find.text('Comentar'), findsOneWidget);
+    expect(find.text('Leave a comment'), findsOneWidget);
+    expect(find.text('Contains Spoilers'), findsOneWidget);
+    expect(find.text('Post'), findsOneWidget);
 
     // Add a comment with spoiler
     await tester.enterText(
-      find.widgetWithText(TextField, 'Escreve a tua opinião sobre o episódio...'),
-      'Reviravolta chocante no final!',
+      find.widgetWithText(TextField, 'Share your thoughts about this episode...'),
+      'Shocking twist at the end!',
     );
     await tester.pump(const Duration(milliseconds: 100));
-    await tester.tap(find.text('Contém Spoilers'));
+    await tester.tap(find.text('Contains Spoilers'));
     await tester.pump(const Duration(milliseconds: 100));
-    await tester.tap(find.text('Comentar'));
+    await tester.tap(find.text('Post'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
 
     // Verify spoiler warning card in community section
-    expect(find.text('Aviso de Spoiler — Toca para ver'), findsOneWidget);
+    expect(find.text('Spoiler Warning — Tap to reveal'), findsOneWidget);
 
     // Tap spoiler warning to reveal spoiler comment
     await tester.tap(
-      find.text('Aviso de Spoiler — Toca para ver'),
+      find.text('Spoiler Warning — Tap to reveal'),
       warnIfMissed: false,
     );
     await tester.pump();
-    expect(find.text('Reviravolta chocante no final!'), findsOneWidget);
+    expect(find.text('Shocking twist at the end!'), findsOneWidget);
   });
 }

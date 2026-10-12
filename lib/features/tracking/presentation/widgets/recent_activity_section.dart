@@ -9,19 +9,19 @@ import '../../../shows/presentation/screens/episode_detail_screen.dart';
 import '../../domain/entities/tracking_entities.dart';
 import '../providers/tracking_providers.dart';
 
-/// Formats the watch date into a relative presentation string (pt-PT).
+/// Formats the watch date into a relative presentation string.
 String formatRelativeWatchedAt(DateTime watchedAt, {DateTime? now}) {
   final current = now ?? DateTime.now();
   final today = Formatters.dateOnly(current);
   final date = Formatters.dateOnly(watchedAt);
   final diffDays = today.difference(date).inDays;
 
-  if (diffDays == 0) return 'Hoje';
-  if (diffDays == 1) return 'Ontem';
-  if (diffDays > 1 && diffDays < 7) return 'há $diffDays dias';
+  if (diffDays == 0) return 'Today';
+  if (diffDays == 1) return 'Yesterday';
+  if (diffDays > 1 && diffDays < 7) return '$diffDays days ago';
   if (diffDays >= 7 && diffDays < 30) {
     final weeks = (diffDays / 7).floor();
-    return weeks == 1 ? 'há 1 semana' : 'há $weeks semanas';
+    return weeks == 1 ? '1 week ago' : '$weeks weeks ago';
   }
   return Formatters.shortDate(watchedAt);
 }
@@ -61,7 +61,7 @@ class RecentActivitySection extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'ATIVIDADE RECENTE',
+              'RECENT ACTIVITY',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
@@ -80,7 +80,7 @@ class RecentActivitySection extends ConsumerWidget {
               ),
               child: const Center(
                 child: Text(
-                  'Ainda sem atividade recente',
+                  'No recent activity yet',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -100,7 +100,7 @@ class RecentActivitySection extends ConsumerWidget {
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'ATIVIDADE RECENTE',
+            'RECENT ACTIVITY',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w800,
@@ -152,7 +152,7 @@ class _RecentEpisodeCard extends ConsumerWidget {
     );
 
     final epDetails = epDetailsAsync.value;
-    final showName = trackedShow?.name ?? 'Série';
+    final showName = trackedShow?.name ?? 'Show';
     final stillUrl = epDetails?.stillHighResUrl ??
         epDetails?.episode.stillUrl ??
         trackedShow?.posterUrl;
@@ -270,7 +270,7 @@ class _RecentEpisodeCard extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          'T${episode.key.season} • E${episode.key.episode}',
+                          'S${episode.key.season} • E${episode.key.episode}',
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -309,7 +309,7 @@ class _RecentEpisodeCard extends ConsumerWidget {
                           Text(
                             episodeName != null && episodeName.isNotEmpty
                                 ? episodeName
-                                : 'Episódio ${episode.key.episode}',
+                                : 'Episode ${episode.key.episode}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(

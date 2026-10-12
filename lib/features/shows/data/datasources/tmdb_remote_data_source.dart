@@ -176,7 +176,7 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
         final ep = seasonDetails.episodes.firstWhere(
           (ep) => ep.episodeNumber == episodeNumber,
           orElse: () => throw CatalogException(
-            'Episódio não encontrado',
+            'Episode not found',
             statusCode: 404,
           ),
         );
@@ -185,7 +185,7 @@ class TmdbRemoteDataSource implements ShowRemoteDataSource {
           stillHighResUrl: ep.stillUrl,
         );
       } catch (_) {
-        throw CatalogException('Falha ao carregar detalhes do episódio: $e');
+        throw CatalogException('Failed to load episode details: $e');
       }
     }
   }

@@ -67,7 +67,7 @@ class AppConfig {
         return lang.trim();
       }
     } catch (_) {}
-    return const String.fromEnvironment('TMDB_LANGUAGE', defaultValue: 'pt-PT');
+    return const String.fromEnvironment('TMDB_LANGUAGE', defaultValue: 'en-US');
   }
 
   /// Forces the mock catalogue even if a key is configured.

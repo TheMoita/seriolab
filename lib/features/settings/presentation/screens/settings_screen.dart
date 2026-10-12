@@ -57,7 +57,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Tens a versão mais recente instalada (v$versionToDisplay).',
+              'You have the latest version installed (v$versionToDisplay).',
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             backgroundColor: AppColors.surfaceHigh,
@@ -73,7 +73,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text(
-              'Nenhuma versão encontrada no repositório.',
+              'No releases found in the repository.',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
             backgroundColor: AppColors.surfaceHigh,
@@ -89,7 +89,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text(
-              'Limite de pedidos ao GitHub atingido. Tenta mais tarde.',
+              'GitHub API request limit reached. Please try again later.',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
             backgroundColor: AppColors.surfaceHigh,
@@ -105,7 +105,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text(
-              'Sem ligação à internet.',
+              'No internet connection.',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
             backgroundColor: AppColors.surfaceHigh,
@@ -121,7 +121,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              result.errorMessage ?? 'Não foi possível verificar atualizações de momento.',
+              result.errorMessage ?? 'Unable to check for updates right now.',
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             backgroundColor: AppColors.surfaceHigh,
@@ -139,7 +139,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
-            'Não foi possível verificar atualizações de momento.',
+            'Unable to check for updates right now.',
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
           backgroundColor: AppColors.surfaceHigh,
@@ -166,12 +166,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   static const Map<String, String> _regions = {
     'PT': 'Portugal 🇵🇹',
-    'BR': 'Brasil 🇧🇷',
-    'US': 'Estados Unidos 🇺🇸',
-    'GB': 'Reino Unido 🇬🇧',
-    'ES': 'Espanha 🇪🇸',
-    'FR': 'França 🇫🇷',
-    'DE': 'Alemanha 🇩🇪',
+    'BR': 'Brazil 🇧🇷',
+    'US': 'United States 🇺🇸',
+    'GB': 'United Kingdom 🇬🇧',
+    'ES': 'Spain 🇪🇸',
+    'FR': 'France 🇫🇷',
+    'DE': 'Germany 🇩🇪',
   };
 
   Future<void> _selectLanguage(BuildContext context, String current) async {
@@ -201,7 +201,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Região de Streaming',
+                        'Streaming Region',
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
@@ -291,7 +291,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   color: AppColors.secondary, size: 22),
               SizedBox(width: 10),
               Text(
-                'Limpar Cache',
+                'Clear Cache',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -301,13 +301,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ],
           ),
           content: const Text(
-            'Desejas limpar a cache de posters e capas? Isto libertará cerca de 42.8 MB de memória sem afetar as tuas séries guardadas.',
+            'Do you want to clear the poster and image cache? This will free up approximately 42.8 MB of memory without affecting your tracked shows.',
             style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancelar',
+              child: const Text('Cancel',
                   style: TextStyle(color: AppColors.textSecondary)),
             ),
             FilledButton(
@@ -323,7 +323,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         Icon(Icons.check_circle_rounded,
                             color: AppColors.secondary, size: 20),
                         SizedBox(width: 10),
-                        Text('42.8 MB de cache de imagens libertados!'),
+                        Text('42.8 MB of image cache cleared!'),
                       ],
                     ),
                     duration: Duration(seconds: 3),
@@ -334,7 +334,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Limpar Agora'),
+              child: const Text('Clear Now'),
             ),
           ],
         );
@@ -373,7 +373,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Fechar',
+              child: const Text('Close',
                   style: TextStyle(color: AppColors.primary)),
             ),
           ],
@@ -397,7 +397,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Icon(Icons.logout_rounded, color: AppColors.danger, size: 22),
               SizedBox(width: 10),
               Text(
-                'Terminar Sessão',
+                'Sign Out',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -407,14 +407,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ],
           ),
           content: const Text(
-            'Tens a certeza que pretendes terminar a sessão no Seriolab?',
+            'Are you sure you want to sign out of Seriolab?',
             style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
               child: const Text(
-                'Cancelar',
+                'Cancel',
                 style: TextStyle(color: AppColors.textSecondary),
               ),
             ),
@@ -435,7 +435,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 backgroundColor: AppColors.danger,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Terminar Sessão'),
+              child: const Text('Sign Out'),
             ),
           ],
         );
@@ -451,16 +451,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Definições'),
+        title: const Text('Settings'),
       ),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 48),
         children: [
           // -----------------------------------------------------------------
-          // a) Conta & Perfil
+          // a) Account & Profile
           // -----------------------------------------------------------------
           SettingsGroupCard(
-            title: 'Conta & Perfil',
+            title: 'Account & Profile',
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
@@ -556,7 +556,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Personalizar Avatar',
+                  'Customize Avatar',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -564,7 +564,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
                 subtitle: const Text(
-                  'Carregar foto, escolher de série TMDB ou ícones',
+                  'Upload photo, choose from TMDB shows or icons',
                   style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
                 trailing: const Icon(
@@ -581,7 +581,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Editar Perfil e Avatar',
+                  'Edit Profile & Avatar',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -589,7 +589,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
                 subtitle: const Text(
-                  'Alterar nome, username, biografia e ícone',
+                  'Change display name, username, bio and icon',
                   style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
                 trailing: const Icon(
@@ -618,7 +618,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                   subtitle: Text(
-                    'Autenticado via ${authState.user!.provider.label}',
+                    'Signed in via ${authState.user!.provider.label}',
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -632,7 +632,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     size: 22,
                   ),
                   title: const Text(
-                    'Terminar Sessão',
+                    'Sign Out',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -640,7 +640,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                   subtitle: const Text(
-                    'Termina a sessão ativa no Seriolab',
+                    'Sign out of your active Seriolab session',
                     style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                   ),
                   onTap: _confirmSignOut,
@@ -653,7 +653,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // b) Preferências de Conteúdo & Idioma
           // -----------------------------------------------------------------
           SettingsGroupCard(
-            title: 'Preferências de Conteúdo & Idioma',
+            title: 'Content & Language Preferences',
             children: [
               ListTile(
                 leading: const Icon(
@@ -662,7 +662,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Idioma da Aplicação',
+                  'App Language',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -690,7 +690,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Região de Streaming',
+                  'Streaming Region',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -718,7 +718,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Ver títulos no idioma original',
+                  'Show titles in original language',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -726,7 +726,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
                 subtitle: const Text(
-                  'Apresenta os nomes originais de séries e episódios em vez dos títulos traduzidos',
+                  'Displays original names of series and episodes instead of localized titles',
                   style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -743,7 +743,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // c) Proteção Anti-Spoiler & Exibição
           // -----------------------------------------------------------------
           SettingsGroupCard(
-            title: 'Proteção Anti-Spoiler & Exibição',
+            title: 'Anti-Spoiler Protection & Display',
             children: [
               SwitchListTile(
                 secondary: const Icon(
@@ -752,7 +752,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Ocultar sinopses de episódios por ver',
+                  'Hide overviews for unwatched episodes',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -760,7 +760,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
                 subtitle: const Text(
-                  'Desfoca descrições e títulos sensíveis para evitar revelações da trama.',
+                  'Blurs sensitive descriptions and titles to prevent plot spoilers.',
                   style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
                 activeThumbColor: AppColors.primary,
@@ -774,7 +774,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Agrupar especiais e extras separadamente',
+                  'Group specials and extras separately',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -782,7 +782,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
                 subtitle: const Text(
-                  'Mantém a Temporada 0 e conteúdos adicionais numa secção dedicada.',
+                  'Keeps Season 0 and extra content in a dedicated section.',
                   style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
                 activeThumbColor: AppColors.primary,
@@ -796,7 +796,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // d) Notificações
           // -----------------------------------------------------------------
           SettingsGroupCard(
-            title: 'Notificações',
+            title: 'Notifications',
             children: [
               SwitchListTile(
                 secondary: const Icon(
@@ -805,7 +805,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Lembrete no dia de estreia',
+                  'Reminder on premiere day',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -813,7 +813,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
                 subtitle: const Text(
-                  'Recebe alertas de novos episódios das séries que estás a acompanhar.',
+                  'Get notifications for new episodes of shows you are watching.',
                   style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
                 activeThumbColor: AppColors.secondary,
@@ -830,7 +830,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: Text(
-                  'Hora do Lembrete',
+                  'Reminder Time',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -840,7 +840,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
                 subtitle: Text(
-                  'Receber avisos às ${settings.formattedReminderTime}',
+                  'Receive alerts at ${settings.formattedReminderTime}',
                   style: TextStyle(
                     fontSize: 12,
                     color: settings.episodeReleaseReminders
@@ -891,7 +891,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // e) Armazenamento & Dados
           // -----------------------------------------------------------------
           SettingsGroupCard(
-            title: 'Armazenamento & Dados',
+            title: 'Storage & Data',
             children: [
               ListTile(
                 leading: const Icon(
@@ -900,7 +900,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Limpar Cache de Imagens',
+                  'Clear Image Cache',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -909,8 +909,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 subtitle: Text(
                   _cacheCleared
-                      ? 'Cache limpo recentemente (0.0 MB)'
-                      : 'Liberta cerca de 42.8 MB de posters e miniaturas',
+                      ? 'Cache recently cleared (0.0 MB)'
+                      : 'Frees approximately 42.8 MB of posters and thumbnails',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -926,7 +926,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text(_cacheCleared ? 'Limpo' : 'Limpar'),
+                  child: Text(_cacheCleared ? 'Cleared' : 'Clear'),
                 ),
               ),
               ListTile(
@@ -936,7 +936,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Exportar Watchlist',
+                  'Export Watchlist',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -944,7 +944,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
                 subtitle: const Text(
-                  'Exporta o teu progresso e histórico em formato JSON ou CSV',
+                  'Export your progress and history in JSON or CSV format',
                   style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
                 trailing: const Icon(
@@ -958,10 +958,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
 
           // -----------------------------------------------------------------
-          // f) Sobre & Versão
+          // f) About & Version
           // -----------------------------------------------------------------
           SettingsGroupCard(
-            title: 'Sobre & Versão',
+            title: 'About & Version',
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
@@ -1007,7 +1007,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const Padding(
                 padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: Text(
-                  'Seriolab é a aplicação definitiva para maratonistas e amantes de séries de televisão. Acompanha o teu progresso, próximos lançamentos e estatísticas com privacidade total.',
+                  'Seriolab is the ultimate app for TV show marathons and enthusiasts. Track your progress, upcoming releases, and stats with total privacy.',
                   style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -1026,7 +1026,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         size: 22,
                       ),
                 title: const Text(
-                  'Verificar Atualizações',
+                  'Check for Updates',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1035,8 +1035,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 subtitle: Text(
                   _isCheckingUpdate
-                      ? 'A verificar novas versões no GitHub...'
-                      : 'Procurar novas versões e atualizações da app',
+                      ? 'Checking for new releases on GitHub...'
+                      : 'Search for new app versions and updates',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -1058,7 +1058,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Termos de Serviço',
+                  'Terms of Service',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1071,8 +1071,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   color: AppColors.textMuted,
                 ),
                 onTap: () => _showInfoDialog(
-                  'Termos de Serviço',
-                  'Bem-vindo ao Seriolab!\n\n1. O Seriolab é uma aplicação gratuita para registo e tracking pessoal de séries de televisão.\n2. Todo o conteúdo catalogado (títulos, posters e sinopses) é fornecido para fins informativos.\n3. Não hospedamos nem transmitimos conteúdos audiovisuais.\n4. O uso da aplicação destina-se a fins estritamente pessoais.',
+                  'Terms of Service',
+                  'Welcome to Seriolab!\n\n1. Seriolab is a free app for personal tracking of TV series.\n2. All catalog content (titles, posters, and overviews) is provided for informational purposes.\n3. We do not host or stream video content.\n4. App usage is strictly intended for personal use.',
                 ),
               ),
               ListTile(
@@ -1082,7 +1082,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Política de Privacidade',
+                  'Privacy Policy',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1095,8 +1095,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   color: AppColors.textMuted,
                 ),
                 onTap: () => _showInfoDialog(
-                  'Política de Privacidade',
-                  'A tua privacidade é prioridade máxima no Seriolab:\n\n• Os teus dados de visualização, progresso e notas são guardados localmente no teu dispositivo.\n• Não recolhemos nem comercializamos os teus hábitos de consumo com terceiros.\n• Os pedidos de catálogo contactam as APIs de catálogo exclusivamente para descarregar metadados públicos.',
+                  'Privacy Policy',
+                  'Your privacy is top priority in Seriolab:\n\n• Your viewing data, progress, and ratings are saved locally on your device.\n• We do not collect or sell your viewing habits to third parties.\n• Catalog requests contact public APIs exclusively to download public metadata.',
                 ),
               ),
               ListTile(
@@ -1106,7 +1106,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: 22,
                 ),
                 title: const Text(
-                  'Créditos & Agradecimentos',
+                  'Credits & Acknowledgements',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1119,8 +1119,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   color: AppColors.textMuted,
                 ),
                 onTap: () => _showInfoDialog(
-                  'Créditos & Dados',
-                  'Seriolab • Desenvolvido com Flutter & Dart.\n\nDados de séries e posters fornecidos por The Movie Database (TMDB) e TVMaze API.\n\nConstruído com paixão para todos os apaixonados por televisão.',
+                  'Credits & Data',
+                  'Seriolab • Developed with Flutter & Dart.\n\nTV show data and posters provided by The Movie Database (TMDB) and TVMaze API.\n\nBuilt with passion for all television lovers.',
                 ),
               ),
             ],

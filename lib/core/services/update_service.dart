@@ -178,16 +178,16 @@ class UpdateService {
 
   /// Default user-friendly release notes when no notes or only technical data are available.
   static const String defaultReleaseNotes =
-      'Esta versão inclui melhorias de desempenho, correções de estabilidade e novas funcionalidades para a tua experiência no Seriolab.';
+      'This version includes performance improvements, stability fixes, and new features for your Seriolab experience.';
 
   /// Sanitizes and formats raw GitHub release notes into clean, user-friendly notes:
   /// - Strips markdown links and raw URLs
   /// - Strips commit hashes and PR / author mentions
   /// - Filters out automated changelog lines (Full Changelog, Dependabot, Merge PR, etc.)
   /// - Converts raw bullet markers (- or *) into clean bullets with friendly prefixes:
-  ///   • "Novo:" / "Novidades:"
-  ///   • "Melhorias:"
-  ///   • "Correções:"
+  ///   • "What's New:" / "New:"
+  ///   • "Improvements:"
+  ///   • "Fixes:"
   /// - Returns [defaultReleaseNotes] if the notes are empty or only contained technical data.
   static String formatReleaseNotes(String? rawBody) {
     if (rawBody == null || rawBody.trim().isEmpty) {
@@ -278,18 +278,18 @@ class UpdateService {
 
       // Check category prefixes
       String formattedItem;
-      if (RegExp(r'^(novidades)\s*:\s*', caseSensitive: false).hasMatch(line)) {
-        final content = line.replaceFirst(RegExp(r'^(novidades)\s*:\s*', caseSensitive: false), '').trim();
-        formattedItem = content.isNotEmpty ? '• Novidades: ${_capitalize(content)}' : '';
-      } else if (RegExp(r'^(feat(\([^\)]*\))?|novo|novidade)\s*:\s*', caseSensitive: false).hasMatch(line)) {
-        final content = line.replaceFirst(RegExp(r'^(feat(\([^\)]*\))?|novo|novidade)\s*:\s*', caseSensitive: false), '').trim();
-        formattedItem = content.isNotEmpty ? '• Novo: ${_capitalize(content)}' : '';
-      } else if (RegExp(r'^(fix(\([^\)]*\))?|bug(\([^\)]*\))?|correç[ãa]o|correç[õo]es|correcao|correcoes)\s*:\s*', caseSensitive: false).hasMatch(line)) {
-        final content = line.replaceFirst(RegExp(r'^(fix(\([^\)]*\))?|bug(\([^\)]*\))?|correç[ãa]o|correç[õo]es|correcao|correcoes)\s*:\s*', caseSensitive: false), '').trim();
-        formattedItem = content.isNotEmpty ? '• Correções: ${_capitalize(content)}' : '';
-      } else if (RegExp(r'^(perf(\([^\)]*\))?|refactor(\([^\)]*\))?|melhoria|melhorias)\s*:\s*', caseSensitive: false).hasMatch(line)) {
-        final content = line.replaceFirst(RegExp(r'^(perf(\([^\)]*\))?|refactor(\([^\)]*\))?|melhoria|melhorias)\s*:\s*', caseSensitive: false), '').trim();
-        formattedItem = content.isNotEmpty ? '• Melhorias: ${_capitalize(content)}' : '';
+      if (RegExp(r'^(novidades|what\x27s new)\s*:\s*', caseSensitive: false).hasMatch(line)) {
+        final content = line.replaceFirst(RegExp(r'^(novidades|what\x27s new)\s*:\s*', caseSensitive: false), '').trim();
+        formattedItem = content.isNotEmpty ? '• What\'s New: ${_capitalize(content)}' : '';
+      } else if (RegExp(r'^(feat(\([^\)]*\))?|novo|novidade|new)\s*:\s*', caseSensitive: false).hasMatch(line)) {
+        final content = line.replaceFirst(RegExp(r'^(feat(\([^\)]*\))?|novo|novidade|new)\s*:\s*', caseSensitive: false), '').trim();
+        formattedItem = content.isNotEmpty ? '• New: ${_capitalize(content)}' : '';
+      } else if (RegExp(r'^(fix(\([^\)]*\))?|bug(\([^\)]*\))?|correç[ãa]o|correç[õo]es|correcao|correcoes|fixes)\s*:\s*', caseSensitive: false).hasMatch(line)) {
+        final content = line.replaceFirst(RegExp(r'^(fix(\([^\)]*\))?|bug(\([^\)]*\))?|correç[ãa]o|correç[õo]es|correcao|correcoes|fixes)\s*:\s*', caseSensitive: false), '').trim();
+        formattedItem = content.isNotEmpty ? '• Fixes: ${_capitalize(content)}' : '';
+      } else if (RegExp(r'^(perf(\([^\)]*\))?|refactor(\([^\)]*\))?|melhoria|melhorias|improvements)\s*:\s*', caseSensitive: false).hasMatch(line)) {
+        final content = line.replaceFirst(RegExp(r'^(perf(\([^\)]*\))?|refactor(\([^\)]*\))?|melhoria|melhorias|improvements)\s*:\s*', caseSensitive: false), '').trim();
+        formattedItem = content.isNotEmpty ? '• Improvements: ${_capitalize(content)}' : '';
       } else if (hadBullet) {
         formattedItem = '• ${_capitalize(line)}';
       } else {
@@ -321,7 +321,7 @@ class UpdateService {
       final packageInfo = await _packageInfoFetcher();
       currentVersion = packageInfo.version;
     } catch (e) {
-      debugPrint('[UpdateService] Erro ao ler PackageInfo: $e');
+      debugPrint('[UpdateService] Error reading PackageInfo: $e');
     }
 
     final cleanLocalVersion = currentVersion
@@ -407,31 +407,31 @@ class UpdateService {
       if (releaseData == null) {
         if (response.statusCode == 404) {
           debugPrint(
-            '[UpdateService] Repositório privado ou sem releases públicas encontradas no GitHub (404)',
+            '[UpdateService] Private repository or no public releases found on GitHub (404)',
           );
           return UpdateCheckResult(
             status: UpdateCheckStatus.noReleaseFound,
             statusCode: 404,
             currentVersion: cleanLocalVersion,
-            errorMessage: 'Nenhuma versão encontrada no repositório.',
+            errorMessage: 'No releases found in repository.',
           );
         } else if (response.statusCode == 403) {
-          debugPrint('[UpdateService] Rate Limit da API do GitHub atingido (403)');
+          debugPrint('[UpdateService] GitHub API rate limit reached (403)');
           return UpdateCheckResult(
             status: UpdateCheckStatus.rateLimitExceeded,
             statusCode: 403,
             currentVersion: cleanLocalVersion,
-            errorMessage: 'Limite de pedidos ao GitHub atingido. Tenta mais tarde.',
+            errorMessage: 'GitHub API rate limit exceeded. Please try again later.',
           );
         } else {
           debugPrint(
-            '[UpdateService] Resposta não tratada da API do GitHub: Status ${response.statusCode}',
+            '[UpdateService] Unhandled GitHub API response: Status ${response.statusCode}',
           );
           return UpdateCheckResult(
             status: UpdateCheckStatus.unknownError,
             statusCode: response.statusCode,
             currentVersion: cleanLocalVersion,
-            errorMessage: 'Não foi possível verificar atualizações de momento.',
+            errorMessage: 'Could not check for updates at this moment.',
           );
         }
       }
@@ -465,9 +465,9 @@ class UpdateService {
 
       final hasUpdate = isRemoteVersionNewer(cleanLocalVersion, tagName);
 
-      debugPrint('[UpdateService] Versão local lida: $cleanLocalVersion');
-      debugPrint('[UpdateService] Tag recebida do GitHub: $tagName');
-      debugPrint('[UpdateService] Resultado da comparação booleana: $hasUpdate');
+      debugPrint('[UpdateService] Local version read: $cleanLocalVersion');
+      debugPrint('[UpdateService] Tag received from GitHub: $tagName');
+      debugPrint('[UpdateService] Boolean comparison result: $hasUpdate');
 
       final cleanLatestVersion = tagName
           .replaceAll(RegExp(r'^[vV]'), '')
@@ -493,25 +493,25 @@ class UpdateService {
         statusCode: 200,
       );
     } on SocketException catch (e) {
-      debugPrint('[UpdateService] Erro real de rede (SocketException): $e');
+      debugPrint('[UpdateService] Network error (SocketException): $e');
       return UpdateCheckResult(
         status: UpdateCheckStatus.networkError,
         currentVersion: cleanLocalVersion,
-        errorMessage: 'Sem ligação à internet.',
+        errorMessage: 'No internet connection.',
       );
     } on http.ClientException catch (e) {
-      debugPrint('[UpdateService] Erro de cliente HTTP (ClientException): $e');
+      debugPrint('[UpdateService] HTTP client error (ClientException): $e');
       return UpdateCheckResult(
         status: UpdateCheckStatus.networkError,
         currentVersion: cleanLocalVersion,
-        errorMessage: 'Sem ligação à internet.',
+        errorMessage: 'No internet connection.',
       );
     } catch (e, stack) {
-      debugPrint('[UpdateService] Erro ao verificar atualizações: $e\n$stack');
+      debugPrint('[UpdateService] Error checking for updates: $e\n$stack');
       return UpdateCheckResult(
         status: UpdateCheckStatus.unknownError,
         currentVersion: cleanLocalVersion,
-        errorMessage: 'Não foi possível verificar atualizações de momento.',
+        errorMessage: 'Could not check for updates at this moment.',
       );
     }
   }

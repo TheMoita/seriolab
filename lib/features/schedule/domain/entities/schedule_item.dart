@@ -28,10 +28,10 @@ class CurrentlyWatchingItem {
   String? get backdropUrl => showDetails?.backdropUrl;
   String? get network => trackedShow.network ?? showDetails?.primaryNetwork;
 
-  /// Episode identifier, e.g. "T2 • E4"
+  /// Episode identifier, e.g. "S2 • E4"
   String get episodeIdentifier {
     if (nextEpisode == null) return '';
-    return 'T${nextEpisode!.seasonNumber} • E${nextEpisode!.episodeNumber}';
+    return 'S${nextEpisode!.seasonNumber} • E${nextEpisode!.episodeNumber}';
   }
 
   String get episodeTitle => nextEpisode?.name ?? '';
@@ -88,12 +88,12 @@ class ComingSoonItem {
   final bool isSeasonPremiere;
   final ShowDetails? showDetails;
 
-  /// Episode identifier, e.g. "T2 • E4" or "T3"
+  /// Episode identifier, e.g. "S2 • E4" or "Season 3"
   String get episodeIdentifier {
     if (episodeNumber != null) {
-      return 'T$seasonNumber • E$episodeNumber';
+      return 'S$seasonNumber • E$episodeNumber';
     }
-    return 'Temporada $seasonNumber';
+    return 'Season $seasonNumber';
   }
 
   /// Whether this release date has arrived today (allowing quick mark as watched).

@@ -32,7 +32,7 @@ final topFiveFavoritesProvider = FutureProvider<List<ShowDetails>>((ref) async {
     if (Firebase.apps.isNotEmpty) {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
-        debugPrint('Top 5: Utilizador não autenticado no Firebase Auth. Devolvendo lista vazia.');
+        debugPrint('Top 5: User not authenticated in Firebase Auth. Returning empty list.');
         return const [];
       }
     }
@@ -48,13 +48,13 @@ final topFiveFavoritesProvider = FutureProvider<List<ShowDetails>>((ref) async {
         final show = await showRepo.getShowDetails(id);
         results.add(show);
       } catch (e, stackTrace) {
-        debugPrint('Erro ao carregar Top 5 ($id): $e');
+        debugPrint('Error loading Top 5 ($id): $e');
         debugPrint('Stack: $stackTrace');
       }
     }
     return results;
   } catch (e, stackTrace) {
-    debugPrint('Erro ao carregar Top 5: $e');
+    debugPrint('Error loading Top 5: $e');
     debugPrint('Stack: $stackTrace');
     return const [];
   }

@@ -101,9 +101,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/ggFHVNu6YYI5L9pCfOacjizRGt.jpg',
     backdropPath: '/tsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg',
     overview:
-        'Walter White, um professor de química do secundário com um cancro '
-        'terminal, junta-se a um antigo aluno para produzir e vender '
-        'metanfetamina e garantir o futuro financeiro da família.',
+        'Walter White, a high school chemistry teacher diagnosed with '
+        'terminal cancer, teams up with a former student to manufacture '
+        'and sell crystal meth to secure his family\'s financial future.',
     genreIds: [18, 80],
     status: ShowStatus.ended,
     networks: ['AMC'],
@@ -141,9 +141,8 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/jH29N46bKk6mR289Q16t17kZ7XF.jpg',
     backdropPath: '/9xxLWtn8UjNalT2fN64qXm2eZ2U.jpg',
     overview:
-        'Mark lidera uma equipa na Lumon Industries, cujos funcionários '
-        'foram submetidos a um procedimento que separa cirurgicamente as '
-        'memórias do trabalho das da vida pessoal.',
+        'Mark leads a team of office workers at Lumon Industries whose '
+        'memories have been surgically divided between their work and personal lives.',
     genreIds: [18, 9648, 10765],
     status: ShowStatus.returning,
     networks: ['Apple TV+'],
@@ -181,9 +180,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/uKvVjK1ohzi2eH39Vatg0vUa411.jpg',
     backdropPath: '/uDgy6hyPd82kOHh6I95FLtLnj6p.jpg',
     overview:
-        'Vinte anos após o colapso da civilização, Joel, um sobrevivente '
-        'endurecido, é contratado para tirar Ellie, uma rapariga de 14 anos, '
-        'de uma zona de quarentena opressiva.',
+        'Twenty years after modern civilization was destroyed, Joel, a '
+        'hardened survivor, is hired to smuggle 14-year-old Ellie out of '
+        'an oppressive quarantine zone.',
     genreIds: [18, 10759, 10765],
     status: ShowStatus.returning,
     networks: ['HBO'],
@@ -221,9 +220,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/dqZENchTd7lp5zht7BdlqM7RBhD.jpg',
     backdropPath: '/2rmK7mnchw9Xr3XdiTFSxTTvYQI.jpg',
     overview:
-        'Depois de derrotar o Rei Demónio, a maga elfa Frieren parte numa '
-        'nova viagem para compreender os humanos e o tempo que passou com '
-        'os seus antigos companheiros.',
+        'After defeating the Demon King, elven mage Frieren embarks on a '
+        'journey to understand humans and reminisce about the time spent '
+        'with her former companions.',
     genreIds: [16, 10759, 10765, 18],
     status: ShowStatus.returning,
     networks: ['Nippon TV'],
@@ -238,10 +237,10 @@ final List<MockShowSeed> mockCatalog = [
       MockSeasonSeed.relative(-35, episodes: 12),
     ],
     cast: [
-      _c(11, 'Atsumi Tanezaki', 'Frieren (voz)'),
-      _c(12, 'Kana Ichinose', 'Fern (voz)'),
-      _c(13, 'Chiaki Kobayashi', 'Stark (voz)'),
-      _c(14, 'Nobuhiko Okamoto', 'Himmel (voz)'),
+      _c(11, 'Atsumi Tanezaki', 'Frieren (voice)'),
+      _c(12, 'Kana Ichinose', 'Fern (voice)'),
+      _c(13, 'Chiaki Kobayashi', 'Stark (voice)'),
+      _c(14, 'Nobuhiko Okamoto', 'Himmel (voice)'),
     ],
   ),
   MockShowSeed(
@@ -250,9 +249,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/7O4iVfOMQmdCSPxSwiqx5Yq46Q9.jpg',
     backdropPath: '/5kkw5RT1OjMm9VO2um9829lB2.jpg',
     overview:
-        'No Japão de 1600, o senhor Yoshii Toranaga luta pela sobrevivência '
-        'enquanto os seus inimigos no Conselho de Regentes se unem contra '
-        'ele — e um misterioso navio europeu dá à costa.',
+        'In Japan in the year 1600, Lord Yoshii Toranaga fights for his life '
+        'as his enemies on the Council of Regents unite against him, '
+        'when a mysterious European ship is found marooned in a fishing village.',
     genreIds: [18, 10768],
     status: ShowStatus.returning,
     networks: ['FX'],
@@ -288,9 +287,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/r3A7evKLNp7LM8A80eWz6v2bI7b.jpg',
     backdropPath: '/3r1hX66sE554J9W1h23z4B17L6.jpg',
     overview:
-        'Um jovem chef de alta cozinha regressa a Chicago para gerir a '
-        'sandwicharia da família após uma tragédia, enfrentando uma equipa '
-        'caótica e o seu próprio passado.',
+        'A young fine-dining chef returns home to Chicago to run his '
+        'family sandwich shop after a heartbreaking death, wrestling with '
+        'a chaotic kitchen staff and his own past.',
     genreIds: [18, 35],
     status: ShowStatus.returning,
     networks: ['FX'],
@@ -317,9 +316,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/fqldf2t8ztc9aiwn3k6mlX3tvRT.jpg',
     backdropPath: '/2OMB0ynKlyIen9NxLQ0RdtP9whP.jpg',
     overview:
-        'Entre a utópica Piltover e a opressiva cidade subterrânea de Zaun, '
-        'as irmãs Vi e Jinx acabam em lados opostos de uma guerra de '
-        'tecnologias mágicas e convicções inconciliáveis.',
+        'Set in the utopian region of Piltover and the oppressed underground of Zaun, '
+        'two sisters fight on rival sides of a war between magic technologies '
+        'and incompatible convictions.',
     genreIds: [16, 10765, 10759, 18],
     status: ShowStatus.ended,
     networks: ['Netflix'],
@@ -332,10 +331,10 @@ final List<MockShowSeed> mockCatalog = [
       MockSeasonSeed.at(DateTime(2024, 11, 9), episodes: 9, intervalDays: 0),
     ],
     cast: [
-      _c(23, 'Hailee Steinfeld', 'Vi (voz)'),
-      _c(24, 'Ella Purnell', 'Jinx (voz)'),
-      _c(25, 'Kevin Alejandro', 'Jayce (voz)'),
-      _c(26, 'Katie Leung', 'Caitlyn (voz)'),
+      _c(23, 'Hailee Steinfeld', 'Vi (voice)'),
+      _c(24, 'Ella Purnell', 'Jinx (voice)'),
+      _c(25, 'Kevin Alejandro', 'Jayce (voice)'),
+      _c(26, 'Katie Leung', 'Caitlyn (voice)'),
     ],
   ),
   MockShowSeed(
@@ -346,9 +345,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/fHpKWvE3aW4b3p7L7iC8uE23J1d.jpg',
     backdropPath: '/gmECkdGbhAuZPJyiU7Z6hv0621U.jpg',
     overview:
-        'Yuji Itadori, um estudante com força sobre-humana, engole um dedo '
-        'amaldiçoado para salvar os amigos e torna-se hospedeiro de Sukuna, '
-        'o mais poderoso dos espíritos amaldiçoados.',
+        'Yuji Itadori, a boy with tremendous physical strength, swallows '
+        'a cursed talisman to save a friend and becomes the host of Ryomen Sukuna, '
+        'the King of Curses.',
     genreIds: [16, 10759, 10765],
     status: ShowStatus.returning,
     networks: ['MBS'],
@@ -364,10 +363,10 @@ final List<MockShowSeed> mockCatalog = [
       MockSeasonSeed.relative(-28, episodes: 12),
     ],
     cast: [
-      _c(27, 'Junya Enoki', 'Yuji Itadori (voz)'),
-      _c(28, 'Yuma Uchida', 'Megumi Fushiguro (voz)'),
-      _c(29, 'Asami Seto', 'Nobara Kugisaki (voz)'),
-      _c(30, 'Yuichi Nakamura', 'Satoru Gojo (voz)'),
+      _c(27, 'Junya Enoki', 'Yuji Itadori (voice)'),
+      _c(28, 'Yuma Uchida', 'Megumi Fushiguro (voice)'),
+      _c(29, 'Asami Seto', 'Nobara Kugisaki (voice)'),
+      _c(30, 'Yuichi Nakamura', 'Satoru Gojo (voice)'),
     ],
   ),
   MockShowSeed(
@@ -376,9 +375,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/2zmTngn1tYC1AvfnflRJ1PO4qhG.jpg',
     backdropPath: '/n6bUvigpRFqSwmPp1m2YADdbRBc.jpg',
     overview:
-        'Num mundo onde os super-heróis são celebridades corruptas geridas '
-        'por uma megacorporação, um grupo de vigilantes decide expor a '
-        'verdade sobre os "Sete".',
+        'A fun and irreverent take on what happens when superheroes, '
+        'who are as popular as celebrities, abuse their superpowers rather '
+        'than use them for good.',
     genreIds: [10765, 10759, 35],
     status: ShowStatus.returning,
     networks: ['Prime Video'],
@@ -406,9 +405,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/7QMsOTMUswlwxJP0rTTZfmz2tX2.jpg',
     backdropPath: '/etj5CuMuam3U9KuV405cqWymVOq.jpg',
     overview:
-        'Duzentos anos antes de Game of Thrones, a Casa Targaryen está no '
-        'auge do seu poder — até que uma disputa pela sucessão ameaça '
-        'mergulhar Westeros numa guerra civil.',
+        'The Targaryen dynasty is at the absolute apex of its power, '
+        'with more than 15 dragons under their yoke. Most empires fall '
+        'from the heights — that is how the Dance of the Dragons begins.',
     genreIds: [10765, 18, 10759],
     status: ShowStatus.returning,
     networks: ['HBO'],
@@ -435,9 +434,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/6b9u8kQpP8Wf6yG26Q3y9E8fF1T.jpg',
     backdropPath: '/r0A5r6Q075zX5F8H4b1cT6sD7l0.jpg',
     overview:
-        'Um grupo de agentes do MI5 caídos em desgraça, liderados pelo '
-        'brilhante mas insuportável Jackson Lamb, é relegado para a '
-        '"Slough House" — mas não desiste de provar o seu valor.',
+        'A dysfunctional team of MI5 agents and their obnoxious boss, '
+        'the notorious Jackson Lamb, navigate the espionage world to defend '
+        'England from sinister forces.',
     genreIds: [80, 18, 35],
     status: ShowStatus.returning,
     networks: ['Apple TV+'],
@@ -465,9 +464,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/49WJfeN0moxb9IPfGn8AIqMGskD.jpg',
     backdropPath: '/56v2KjBlU4XaOv9rVYEQypROD7P.jpg',
     overview:
-        'Quando um rapaz desaparece em Hawkins, Indiana, os amigos, a '
-        'família e a polícia local enfrentam forças sobrenaturais e '
-        'experiências governamentais secretas.',
+        'When a young boy vanishes, a small town uncovers a mystery '
+        'involving secret experiments, terrifying supernatural forces '
+        'and one strange little girl.',
     genreIds: [18, 10765, 9648],
     status: ShowStatus.ended,
     networks: ['Netflix'],
@@ -495,9 +494,8 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/59SVNwL2O74e204k1A4bT5A3vN2.jpg',
     backdropPath: '/ajztm40qDP5rTwDrqjM1a9807.jpg',
     overview:
-        'Nos anos que antecedem Rogue One, o ladrão Cassian Andor descobre '
-        'a sua causa enquanto a rebelião contra o Império começa a ganhar '
-        'forma pela galáxia.',
+        'The story of the rebel spy Cassian Andor\'s formative years of the '
+        'Rebellion and his difficult missions for the cause.',
     genreIds: [10765, 10768, 18, 10759],
     status: ShowStatus.ended,
     networks: ['Disney+'],
@@ -522,9 +520,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/7duLrh2GqN2LffO9B2z26Pj5zZt.jpg',
     backdropPath: '/wPcuu7e02zU3e0q3k1m4v6x8b1.jpg',
     overview:
-        'A família Roy controla um dos maiores conglomerados de media do '
-        'mundo — e os quatro filhos de Logan Roy disputam implacavelmente '
-        'a sucessão do patriarca.',
+        'The Roy family is known for controlling the biggest media and '
+        'entertainment company in the world. However, their world changes '
+        'when their aging father steps down from the company.',
     genreIds: [18, 35],
     status: ShowStatus.ended,
     networks: ['HBO'],
@@ -553,9 +551,8 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/apbrkOxJw8cmxi003W3j7T8B2A6.jpg',
     backdropPath: '/3lBDg3i6nn5R2NK74LzZ7wD9dYJ.jpg',
     overview:
-        'O desaparecimento de duas crianças numa pequena cidade alemã '
-        'revela as relações fraturadas, a vida dupla e o passado sombrio de '
-        'quatro famílias ligadas através do tempo.',
+        'A missing child sets four families on a frantic hunt for answers '
+        'as they unearth a mind-bending mystery that spans three generations.',
     genreIds: [80, 18, 10765, 9648],
     status: ShowStatus.ended,
     networks: ['Netflix'],
@@ -585,9 +582,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/npdB6eFz4qt9CdEiEgXOsvQg6la.jpg',
     backdropPath: '/k2Lcq8mN29FkE9FvA9l840B0r8w.jpg',
     overview:
-        'Denji, um jovem afogado em dívidas, funde-se com o seu demónio de '
-        'estimação Pochita e torna-se o Chainsaw Man, sendo recrutado por '
-        'uma organização governamental de caçadores de demónios.',
+        'Denji is a young man who lives a poverty-stricken life working as '
+        'a Devil Hunter to pay off his deceased father\'s debt, until an unexpected '
+        'betrayal transforms him into Chainsaw Man.',
     genreIds: [16, 10759, 10765],
     status: ShowStatus.returning,
     networks: ['TV Tokyo'],
@@ -599,9 +596,9 @@ final List<MockShowSeed> mockCatalog = [
       MockSeasonSeed.at(DateTime(2022, 10, 12), episodes: 12),
     ],
     cast: [
-      _c(59, 'Kikunosuke Toya', 'Denji (voz)'),
-      _c(60, 'Tomori Kusunoki', 'Makima (voz)'),
-      _c(61, 'Fairouz Ai', 'Power (voz)'),
+      _c(59, 'Kikunosuke Toya', 'Denji (voice)'),
+      _c(60, 'Tomori Kusunoki', 'Makima (voice)'),
+      _c(61, 'Fairouz Ai', 'Power (voice)'),
     ],
   ),
   MockShowSeed(
@@ -610,9 +607,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/5bFK5d3mVTAvBC0bVzpOxN8gzNs.jpg',
     backdropPath: '/4N21P34X4lU1s23Y4c5D6e7F8g.jpg',
     overview:
-        'Um treinador de futebol americano universitário é contratado para '
-        'treinar um clube da Premier League inglesa, apesar de não saber '
-        'nada sobre o desporto.',
+        'An American college football coach heads to London to manage a '
+        'struggling Premier League football club, despite having no experience '
+        'in the sport.',
     genreIds: [35, 18],
     status: ShowStatus.returning,
     networks: ['Apple TV+'],
@@ -643,9 +640,9 @@ final List<MockShowSeed> mockCatalog = [
     posterPath: '/wJ5h1lS6d1qR124A1Y27mHkQ0q.jpg',
     backdropPath: '/8sNi5RkxWpmfT4tH7hO5n09l8Wq.jpg',
     overview:
-        'O espião Twilight tem de formar uma família falsa para cumprir uma '
-        'missão — sem saber que a filha adotiva lê mentes e que a esposa é '
-        'uma assassina profissional.',
+        'World peace is at stake and secret agent Twilight must undergo '
+        'his most difficult mission yet — pretend to be a family man, unaware '
+        'his adopted daughter reads minds and his wife is an assassin.',
     genreIds: [16, 35, 10759, 10751],
     status: ShowStatus.returning,
     networks: ['TV Tokyo'],
@@ -659,9 +656,9 @@ final List<MockShowSeed> mockCatalog = [
       MockSeasonSeed.relative(-1, episodes: 13),
     ],
     cast: [
-      _c(66, 'Takuya Eguchi', 'Loid Forger (voz)'),
-      _c(67, 'Atsumi Tanezaki', 'Anya Forger (voz)'),
-      _c(68, 'Saori Hayami', 'Yor Forger (voz)'),
+      _c(66, 'Takuya Eguchi', 'Loid Forger (voice)'),
+      _c(67, 'Atsumi Tanezaki', 'Anya Forger (voice)'),
+      _c(68, 'Saori Hayami', 'Yor Forger (voice)'),
     ],
   ),
 ];

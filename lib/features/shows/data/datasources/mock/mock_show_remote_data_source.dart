@@ -29,7 +29,7 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
 
   MockShowSeed _seed(int id) => _catalog.firstWhere(
         (s) => s.id == id,
-        orElse: () => throw CatalogException('Série $id não encontrada',
+        orElse: () => throw CatalogException('Show $id not found',
             statusCode: 404),
       );
 
@@ -44,15 +44,15 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
       final number = i + 1;
       final title = i < season.titles.length
           ? season.titles[i]
-          : (number == 1 ? 'Estreia da temporada' : 'Episódio $number');
+          : (number == 1 ? 'Season Premiere' : 'Episode $number');
       final finale = number == season.episodes;
       return Episode(
         id: seed.id * 10000 + seasonNumber * 100 + number,
         showId: seed.id,
         seasonNumber: seasonNumber,
         episodeNumber: number,
-        name: finale && i >= season.titles.length ? 'Final da temporada' : title,
-        overview: 'Temporada $seasonNumber, episódio $number de ${seed.name}.',
+        name: finale && i >= season.titles.length ? 'Season Finale' : title,
+        overview: 'Season $seasonNumber, episode $number of ${seed.name}.',
         airDate: premiere.add(Duration(days: season.intervalDays * i)),
         runtime: seed.runtime + (finale ? 12 : 0),
         rating: (seed.rating - 0.4 + (number % 5) * 0.15).clamp(0.0, 10.0),
@@ -108,7 +108,7 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
         for (var s = 1; s <= seed.seasons.length; s++)
           SeasonSummary(
             seasonNumber: s,
-            name: 'Temporada $s',
+            name: 'Season $s',
             episodeCount: seed.seasons[s - 1].episodes,
             airDate: seed.seasons[s - 1].premiereDate(today),
           ),
@@ -238,13 +238,13 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
       _respond(() {
         final seed = _seed(showId);
         if (seasonNumber < 1 || seasonNumber > seed.seasons.length) {
-          throw CatalogException('Temporada $seasonNumber não encontrada',
+          throw CatalogException('Season $seasonNumber not found',
               statusCode: 404);
         }
         return SeasonDetails(
           showId: showId,
           seasonNumber: seasonNumber,
-          name: 'Temporada $seasonNumber',
+          name: 'Season $seasonNumber',
           airDate: seed.seasons[seasonNumber - 1].premiereDate(_today),
           episodes: _episodesFor(seed, seasonNumber),
         );
@@ -263,7 +263,7 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
         final ep = episodes.firstWhere(
           (e) => e.episodeNumber == episodeNumber,
           orElse: () => throw CatalogException(
-            'Episódio S${seasonNumber}E$episodeNumber não encontrado',
+            'Episode S${seasonNumber}E$episodeNumber not found',
             statusCode: 404,
           ),
         );
@@ -272,8 +272,8 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
           guestStars: const [
             CastMember(
               id: 991,
-              name: 'Participação Especial',
-              character: 'Personagem Convidado',
+              name: 'Special Guest',
+              character: 'Guest Character',
             ),
           ],
           crew: [
@@ -281,13 +281,13 @@ class MockShowRemoteDataSource implements ShowRemoteDataSource {
               id: 992,
               name: seed.networks.isNotEmpty
                   ? seed.networks.first
-                  : 'Realizador Seriolab',
+                  : 'Seriolab Director',
               job: 'Director',
               department: 'Directing',
             ),
             const CrewMember(
               id: 993,
-              name: 'Argumentista Principal',
+              name: 'Head Writer',
               job: 'Writer',
               department: 'Writing',
             ),

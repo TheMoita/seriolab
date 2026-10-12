@@ -240,13 +240,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Verify initial tab counts and empty state on the active "A ver" tab
-      expect(find.text('Quero ver (1)'), findsOneWidget);
-      expect(find.text('A ver (0)'), findsOneWidget);
-      expect(find.text('Terminadas (0)'), findsOneWidget);
-      expect(find.text('Nenhuma série em "A ver"'), findsOneWidget);
+      // Verify initial tab counts and empty state on the active "Watching" tab
+      expect(find.text('Plan to Watch (1)'), findsOneWidget);
+      expect(find.text('Watching (0)'), findsOneWidget);
+      expect(find.text('Completed (0)'), findsOneWidget);
+      expect(find.text('No shows in "Watching"'), findsOneWidget);
 
-      // Now mutate the state optimistically using TrackingController to "A ver"
+      // Now mutate the state optimistically using TrackingController to "Watching"
       const showDetails = ShowDetails(
         id: 1396,
         name: 'Breaking Bad',
@@ -267,9 +267,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Counters in the TabBar MUST update in real time!
-      expect(find.text('Quero ver (0)'), findsOneWidget);
-      expect(find.text('A ver (1)'), findsOneWidget);
-      expect(find.text('Terminadas (0)'), findsOneWidget);
+      expect(find.text('Plan to Watch (0)'), findsOneWidget);
+      expect(find.text('Watching (1)'), findsOneWidget);
+      expect(find.text('Completed (0)'), findsOneWidget);
       expect(find.text('Breaking Bad'), findsAtLeastNWidgets(1));
     });
   });

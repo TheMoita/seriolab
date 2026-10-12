@@ -33,7 +33,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         return UserSettings.defaultSettings.copyWith(language: savedLang);
       }
     } catch (e) {
-      debugPrint('Falha ao carregar definições: $e');
+      debugPrint('Failed to load settings: $e');
     }
     return UserSettings.defaultSettings;
   }
@@ -45,7 +45,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       await _trackingRepo.writeMeta(_storageKey, raw);
       await _trackingRepo.writeMeta(_languageKey, settings.language);
     } catch (e) {
-      debugPrint('Falha ao guardar definições: $e');
+      debugPrint('Failed to save settings: $e');
     }
   }
 }

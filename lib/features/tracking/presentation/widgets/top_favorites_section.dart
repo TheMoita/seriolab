@@ -115,8 +115,8 @@ class TopFavoritesSection extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       isEditable
-                          ? 'Sem séries no Top 5. Toca num espaço para adicionar as tuas favoritas.'
-                          : 'Sem séries no Top 5.',
+                          ? 'No shows in Top 5. Tap a slot to add your favorites.'
+                          : 'No shows in Top 5.',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -190,7 +190,7 @@ class TopFavoritesSection extends ConsumerWidget {
                       ),
                       const SizedBox(width: 10),
                       const Text(
-                        'Opções de Favorito',
+                        'Favorite Options',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
@@ -211,7 +211,7 @@ class TopFavoritesSection extends ConsumerWidget {
                     Icons.open_in_new_rounded,
                     color: AppColors.secondary,
                   ),
-                  title: const Text('Ver Detalhes da Série'),
+                  title: const Text('View Show Details'),
                   onTap: () {
                     Navigator.pop(modalCtx);
                     Navigator.of(context).push(
@@ -226,8 +226,8 @@ class TopFavoritesSection extends ConsumerWidget {
                     Icons.swap_vert_rounded,
                     color: AppColors.secondary,
                   ),
-                  title: const Text('Mudar Posição / Reordenar'),
-                  subtitle: const Text('Mover para outro slot (1 a 5)'),
+                  title: const Text('Change Position / Reorder'),
+                  subtitle: const Text('Move to another slot (1 to 5)'),
                   onTap: () {
                     Navigator.pop(modalCtx);
                     _showReorderDialog(context, ref, index);
@@ -238,7 +238,7 @@ class TopFavoritesSection extends ConsumerWidget {
                     Icons.swap_horiz_rounded,
                     color: AppColors.primary,
                   ),
-                  title: const Text('Substituir por outra série'),
+                  title: const Text('Replace with another show'),
                   onTap: () {
                     Navigator.pop(modalCtx);
                     _openAddFavoriteSheet(context, targetSlot: index);
@@ -250,7 +250,7 @@ class TopFavoritesSection extends ConsumerWidget {
                     color: AppColors.danger,
                   ),
                   title: const Text(
-                    'Remover do Top 5',
+                    'Remove from Top 5',
                     style: TextStyle(color: AppColors.danger),
                   ),
                   onTap: () {
@@ -260,7 +260,7 @@ class TopFavoritesSection extends ConsumerWidget {
                     Navigator.pop(modalCtx);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Série removida do Top 5.'),
+                        content: Text('Show removed from Top 5.'),
                         duration: Duration(seconds: 2),
                       ),
                     );
@@ -296,7 +296,7 @@ class TopFavoritesSection extends ConsumerWidget {
               children: [
                 const ModalDragHandle(topPadding: 0, bottomPadding: 16),
                 const Text(
-                  'Mover para nova posição:',
+                  'Move to new position:',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
@@ -338,7 +338,7 @@ class TopFavoritesSection extends ConsumerWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      'Série movida para a posição #${targetIdx + 1}.',
+                                      'Show moved to position #${targetIdx + 1}.',
                                     ),
                                     duration: const Duration(seconds: 2),
                                   ),
@@ -415,7 +415,7 @@ class _FavoriteSlotTile extends ConsumerWidget {
               ),
             ),
             error: (e, stackTrace) {
-              debugPrint('Erro ao carregar Top 5: $e');
+              debugPrint('Error loading Top 5: $e');
               debugPrint('Stack: $stackTrace');
               return Container(
                 decoration: BoxDecoration(
@@ -429,7 +429,7 @@ class _FavoriteSlotTile extends ConsumerWidget {
                       color: AppColors.textMuted,
                       size: 20,
                     ),
-                    tooltip: 'Erro ao carregar série. Toca para recarregar.',
+                    tooltip: 'Error loading show. Tap to reload.',
                     onPressed: () => ref.invalidate(showDetailsProvider(showId)),
                   ),
                 ),
@@ -523,7 +523,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Série colocada na posição #${widget.targetSlot! + 1} do Top 5.',
+            'Show placed in slot #${widget.targetSlot! + 1} of Top 5.',
           ),
           duration: const Duration(seconds: 2),
         ),
@@ -558,8 +558,8 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
               children: [
                 Text(
                   widget.targetSlot != null
-                      ? 'Escolher para o Top 5 (#${widget.targetSlot! + 1})'
-                      : 'Adicionar aos Favoritos',
+                      ? 'Choose for Top 5 (#${widget.targetSlot! + 1})'
+                      : 'Add to Favorites',
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
@@ -581,7 +581,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
               onChanged: (val) => setState(() => _query = val.trim()),
               style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'Pesquisar série...',
+                hintText: 'Search shows...',
                 prefixIcon: const Icon(Icons.search_rounded,
                     color: AppColors.textMuted, size: 20),
                 suffixIcon: _query.isNotEmpty
@@ -631,7 +631,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
       ),
       error: (e, _) => Center(
         child: Text(
-          'Erro ao pesquisar: $e',
+          'Error searching: $e',
           style: const TextStyle(color: AppColors.danger),
         ),
       ),
@@ -639,7 +639,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
         if (shows.isEmpty) {
           return const Center(
             child: Text(
-              'Nenhuma série encontrada.',
+              'No shows found.',
               style: TextStyle(color: AppColors.textSecondary),
             ),
           );
@@ -679,7 +679,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
               ),
               trailing: isAlreadyFavorite
                   ? const Chip(
-                      label: Text('No Top 5',
+                      label: Text('In Top 5',
                           style: TextStyle(
                               fontSize: 10, color: AppColors.secondary)),
                     )
@@ -693,7 +693,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
                       ),
                       onPressed: () => _onSelectShow(show.id),
                       child: Text(
-                        widget.targetSlot != null ? 'Escolher' : 'Adicionar',
+                        widget.targetSlot != null ? 'Choose' : 'Add',
                         style: const TextStyle(
                             fontSize: 12, fontWeight: FontWeight.w700),
                       ),
@@ -720,7 +720,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 6),
             child: Text(
-              'AS TUAS SÉRIES FAVORITAS',
+              'YOUR FAVORITE SHOWS',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
@@ -760,13 +760,13 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
                         ),
                       ),
                       subtitle: Text(
-                        '${show.year ?? ''} • Favorita ❤️',
+                        '${show.year ?? ''} • Favorite ❤️',
                         style: const TextStyle(
                             fontSize: 12, color: AppColors.textSecondary),
                       ),
                       trailing: isAlreadyFavorite
                           ? const Text(
-                              'No Top 5',
+                              'In Top 5',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -784,8 +784,8 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
                               ),
                               child: Text(
                                 widget.targetSlot != null
-                                    ? 'Escolher'
-                                    : 'Adicionar',
+                                    ? 'Choose'
+                                    : 'Add',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -808,7 +808,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 6),
             child: Text(
-              'SÉRIES NA TUA LISTA',
+              'SHOWS IN YOUR LIST',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
@@ -844,7 +844,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
               ),
               trailing: isAlreadyFavorite
                   ? const Text(
-                      'No Top 5',
+                      'In Top 5',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -861,7 +861,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
                         ),
                       ),
                       child: Text(
-                        widget.targetSlot != null ? 'Escolher' : 'Adicionar',
+                        widget.targetSlot != null ? 'Choose' : 'Add',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -877,7 +877,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 6),
           child: Text(
-            'SUGESTÕES POPULARES',
+            'POPULAR SUGGESTIONS',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -917,7 +917,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
             ),
             trailing: isAlreadyFavorite
                 ? const Text(
-                    'No Top 5',
+                    'In Top 5',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -934,7 +934,7 @@ class _AddFavoriteShowSheetState extends ConsumerState<_AddFavoriteShowSheet> {
                       ),
                     ),
                     child: Text(
-                      widget.targetSlot != null ? 'Escolher' : 'Adicionar',
+                      widget.targetSlot != null ? 'Choose' : 'Add',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,

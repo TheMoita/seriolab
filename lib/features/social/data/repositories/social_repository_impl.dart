@@ -35,7 +35,7 @@ class SocialRepositoryImpl implements SocialRepository {
       id: 'user_marta',
       username: 'martas',
       displayName: 'Marta Silva',
-      bio: 'Cineasta e viciada em Breaking Bad, Succession e Severance.',
+      bio: 'Filmmaker and obsessed with Breaking Bad, Succession, and Severance.',
       avatarId: 'cinema_popcorn',
       avatarType: AvatarType.preset,
       profileBannerUrl:
@@ -68,7 +68,7 @@ class SocialRepositoryImpl implements SocialRepository {
       id: 'user_diogo',
       username: 'diogof',
       displayName: 'Diogo Ferreira',
-      bio: 'Ficção científica e séries nórdicas. The Expanse, Dark e Severance no coração.',
+      bio: 'Sci-fi and Nordic noir lover. The Expanse, Dark, and Severance in my heart.',
       avatarId: 'tv_retro',
       avatarType: AvatarType.preset,
       profileBannerUrl:
@@ -95,7 +95,7 @@ class SocialRepositoryImpl implements SocialRepository {
       id: 'user_beatriz',
       username: 'bealima',
       displayName: 'Beatriz Lima',
-      bio: 'Anime, fantasia e comédia britânica. Fleabag é a melhor série de sempre.',
+      bio: 'Anime, fantasy, and British comedy. Fleabag is the best show ever.',
       avatarId: 'sparkles',
       avatarType: AvatarType.preset,
       profileBannerUrl:
@@ -122,7 +122,7 @@ class SocialRepositoryImpl implements SocialRepository {
       id: 'user_tiago',
       username: 'tiagocine',
       displayName: 'Tiago Ramos',
-      bio: 'Crítico de televisão e séries dramáticas. Better Call Saul > Breaking Bad.',
+      bio: 'TV critic and prestige drama enthusiast. Better Call Saul > Breaking Bad.',
       avatarId: 'film_roll',
       avatarType: AvatarType.preset,
       profileBannerUrl:
@@ -143,7 +143,7 @@ class SocialRepositoryImpl implements SocialRepository {
       id: 'user_sofia',
       username: 'sofiaseries',
       displayName: 'Sofia Martins',
-      bio: 'A maratonar uma série nova todas as semanas. Aberta a recomendações!',
+      bio: 'Binge-watching a new show every week. Open to recommendations!',
       avatarId: 'tv_modern',
       avatarType: AvatarType.preset,
       profileBannerUrl:
@@ -164,7 +164,7 @@ class SocialRepositoryImpl implements SocialRepository {
       id: 'user_andre',
       username: 'andre_silva',
       displayName: 'André Silva',
-      bio: 'Fã incondicional de sitcoms clássicos e comfort shows.',
+      bio: 'Unconditional fan of classic sitcoms and comfort shows.',
       avatarId: 'couch_potato',
       avatarType: AvatarType.preset,
       profileBannerUrl:

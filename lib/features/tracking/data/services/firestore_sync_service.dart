@@ -205,7 +205,7 @@ class FirestoreSyncService {
               favData = favSnapshot.data()!;
             }
           } catch (e, stackTrace) {
-            debugPrint('Erro ao carregar Top 5: $e');
+            debugPrint('Error loading Top 5: $e');
             debugPrint('Stack: $stackTrace');
           }
         }
@@ -231,15 +231,15 @@ class FirestoreSyncService {
               }
             }
           } on FirebaseException catch (e, stackTrace) {
-            debugPrint('Erro ao carregar Top 5: $e');
+            debugPrint('Error loading Top 5: $e');
             debugPrint('Stack: $stackTrace');
             if (e.code == 'failed-precondition' ||
                 (e.message?.contains('index') ?? false)) {
               debugPrint(
-                  '⚠️ [Firestore Index Required]: A query ordenada do Top 5 requer um índice composto. Cria-o no Firebase Console através do link presente na mensagem de erro: ${e.message}');
+                  '⚠️ [Firestore Index Required]: The Top 5 ordered query requires a composite index. Create it in the Firebase Console via the link in the error message: ${e.message}');
             }
           } catch (e, stackTrace) {
-            debugPrint('Erro ao carregar Top 5: $e');
+            debugPrint('Error loading Top 5: $e');
             debugPrint('Stack: $stackTrace');
           }
         }
@@ -253,7 +253,7 @@ class FirestoreSyncService {
           await syncFavorites(localSettings, uid: uid);
         }
       } catch (e, stackTrace) {
-        debugPrint('Erro ao carregar Top 5: $e');
+        debugPrint('Error loading Top 5: $e');
         debugPrint('Stack: $stackTrace');
       }
 
@@ -695,6 +695,36 @@ class FirestoreSyncService {
     }
   }
 
+  /// Deletes all watched episodes for a show from `users/{uid}/watched_episodes`.
+  Future<void> deleteWatchedEpisodesForShow(int showId, {String? uid}) async {
+    final firestore = _firestore;
+    final effectiveUid = uid ?? _resolvedUid;
+    if (firestore == null ||
+        effectiveUid == null ||
+        effectiveUid.trim().isEmpty) {
+      return;
+    }
+
+    try {
+      final watchedQuery = await firestore
+          .collection('users')
+          .doc(effectiveUid)
+          .collection('watched_episodes')
+          .where('showId', isEqualTo: showId)
+          .get();
+      if (watchedQuery.docs.isNotEmpty) {
+        final batch = firestore.batch();
+        for (final doc in watchedQuery.docs) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+      }
+    } catch (e) {
+      debugPrint(
+          'FirestoreSyncService: Error deleting watched episodes for show $showId: $e');
+    }
+  }
+
   /// Syncs user profile details to `users/{uid}` and `users/{uid}/profile/info`.
   Future<void> syncUserProfile(UserSettings settings, {String? uid}) async {
     final firestore = _firestore;
@@ -737,7 +767,7 @@ class FirestoreSyncService {
     final currentUser = Firebase.apps.isNotEmpty ? FirebaseAuth.instance.currentUser : null;
     final effectiveUid = uid ?? _resolvedUid ?? currentUser?.uid;
     if (firestore == null || effectiveUid == null || effectiveUid.trim().isEmpty) {
-      debugPrint('Top 5 / syncFavorites: Utilizador não autenticado. Nenhuma operação executada.');
+      debugPrint('Top 5 / syncFavorites: User not authenticated. No operation performed.');
       return;
     }
 
@@ -758,7 +788,7 @@ class FirestoreSyncService {
       final docRef = userDocRef.collection('favorites').doc('top_five');
       await docRef.set(favMap, SetOptions(merge: true));
     } catch (e, stackTrace) {
-      debugPrint('Erro ao carregar Top 5: $e');
+      debugPrint('Error syncing Top 5: $e');
       debugPrint('Stack: $stackTrace');
     }
   }
@@ -770,7 +800,7 @@ class FirestoreSyncService {
     final currentUser = Firebase.apps.isNotEmpty ? FirebaseAuth.instance.currentUser : null;
     final effectiveUid = uid ?? _resolvedUid ?? currentUser?.uid;
     if (effectiveUid == null || effectiveUid.trim().isEmpty) {
-      debugPrint('Top 5: Utilizador nulo/não autenticado. Devolvendo lista vazia.');
+      debugPrint('Top 5: Null/unauthenticated user. Returning empty list.');
       return const [];
     }
     if (firestore == null) {
@@ -817,15 +847,15 @@ class FirestoreSyncService {
           if (ids.isNotEmpty) return ids;
         }
       } on FirebaseException catch (e, stackTrace) {
-        debugPrint('Erro ao carregar Top 5: $e');
+        debugPrint('Error loading Top 5: $e');
         debugPrint('Stack: $stackTrace');
         if (e.code == 'failed-precondition' || (e.message?.contains('index') ?? false)) {
           debugPrint(
-              '⚠️ [Firestore Index Required]: A query ordenada do Top 5 requer um índice composto. Cria-o no Firebase Console através do link: ${e.message}');
+              '⚠️ [Firestore Index Required]: The Top 5 ordered query requires a composite index. Create it in the Firebase Console via the link: ${e.message}');
         }
       }
     } catch (e, stackTrace) {
-      debugPrint('Erro ao carregar Top 5: $e');
+      debugPrint('Error loading Top 5: $e');
       debugPrint('Stack: $stackTrace');
     }
 

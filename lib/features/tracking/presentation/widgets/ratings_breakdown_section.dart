@@ -140,8 +140,8 @@ class _RatingsBreakdownSectionState
                   const SizedBox(width: 4),
                   Text(
                     totalCount == 0
-                        ? 'Média: —'
-                        : 'Média: ${average.toStringAsFixed(1)} ★',
+                        ? 'Average: —'
+                        : 'Average: ${average.toStringAsFixed(1)} ★',
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w800,
@@ -190,7 +190,7 @@ class _RatingsBreakdownSectionState
                         Expanded(
                           child: Center(
                             child: Text(
-                              'Avalia séries nos detalhes para gerar o teu gráfico',
+                              'Rate shows on their details page to generate your chart',
                               style: TextStyle(
                                 fontSize: 11,
                                 color:
@@ -269,7 +269,7 @@ class _RatingsBreakdownSectionState
           ),
           SizedBox(width: 6),
           Text(
-            'Ainda não avaliaste nenhuma série',
+            'You haven\'t rated any shows yet',
             style: TextStyle(
               fontSize: 12,
               color: AppColors.textMuted,
@@ -285,7 +285,7 @@ class _RatingsBreakdownSectionState
       final count = distribution[key] ?? 0;
       final percent =
           total > 0 ? ((count / total) * 100).toStringAsFixed(1) : '0';
-      final seriesLabel = count == 1 ? 'série' : 'séries';
+      final seriesLabel = count == 1 ? 'show' : 'shows';
 
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),

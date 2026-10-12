@@ -128,9 +128,9 @@ void main() {
 * 7a3c89f perf: improve startup time
 ''';
       final formatted = UpdateService.formatReleaseNotes(raw);
-      expect(formatted, contains('• Novo: Add comments'));
-      expect(formatted, contains('• Correções: Crash on tap'));
-      expect(formatted, contains('• Melhorias: Improve startup time'));
+      expect(formatted, contains('• New: Add comments'));
+      expect(formatted, contains('• Fixes: Crash on tap'));
+      expect(formatted, contains('• Improvements: Improve startup time'));
       expect(formatted, isNot(contains('@themoita')));
       expect(formatted, isNot(contains('https://')));
       expect(formatted, isNot(contains('7a3c89f')));
@@ -146,10 +146,10 @@ void main() {
 - Melhorias: fluidez nas animações
 ''';
       final formatted = UpdateService.formatReleaseNotes(raw);
-      expect(formatted, contains('• Novo: Suporte a notificações em tempo real'));
-      expect(formatted, contains('• Novidades: Feed comunitário aprimorado'));
-      expect(formatted, contains('• Correções: Falha ao guardar série na biblioteca'));
-      expect(formatted, contains('• Melhorias: Fluidez nas animações'));
+      expect(formatted, contains('• New: Suporte a notificações em tempo real'));
+      expect(formatted, contains('• What\'s New: Feed comunitário aprimorado'));
+      expect(formatted, contains('• Fixes: Falha ao guardar série na biblioteca'));
+      expect(formatted, contains('• Improvements: Fluidez nas animações'));
     });
 
     test('Filters out automated GitHub text and section headings', () {
@@ -163,7 +163,7 @@ Merged pull request #12 from themoita/fix
 Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
 ''';
       final formatted = UpdateService.formatReleaseNotes(raw);
-      expect(formatted, '• Correções: Episode progress calculation');
+      expect(formatted, '• Fixes: Episode progress calculation');
       expect(formatted, isNot(contains("What's Changed")));
       expect(formatted, isNot(contains('Full Changelog')));
       expect(formatted, isNot(contains('Dependabot')));
@@ -351,7 +351,7 @@ Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
 
       final result = await service.checkForUpdatesResult();
       expect(result.status, UpdateCheckStatus.noReleaseFound);
-      expect(result.errorMessage, 'Nenhuma versão encontrada no repositório.');
+      expect(result.errorMessage, 'No releases found in repository.');
       expect(result.statusCode, 404);
     });
 
@@ -372,7 +372,7 @@ Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
 
       final result = await service.checkForUpdatesResult();
       expect(result.status, UpdateCheckStatus.rateLimitExceeded);
-      expect(result.errorMessage, 'Limite de pedidos ao GitHub atingido. Tenta mais tarde.');
+      expect(result.errorMessage, 'GitHub API rate limit exceeded. Please try again later.');
       expect(result.statusCode, 403);
     });
 
@@ -393,7 +393,7 @@ Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
 
       final result = await service.checkForUpdatesResult();
       expect(result.status, UpdateCheckStatus.networkError);
-      expect(result.errorMessage, 'Sem ligação à internet.');
+      expect(result.errorMessage, 'No internet connection.');
     });
 
     test('executeOtaUpdate delegates to OtaUpdate with destinationFilename', () {
@@ -424,7 +424,7 @@ Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
       const updateInfo = AppUpdateInfo(
         currentVersion: '1.0.14',
         latestVersion: '1.0.15',
-        releaseNotes: '- Novo leitor de atualizações\n- Correções de bugs',
+        releaseNotes: '- Novo: leitor de atualizações\n- Fix: bugs',
         apkDownloadUrl: 'https://example.com/seriolab.apk',
         releaseHtmlUrl: 'https://example.com/release',
         hasUpdate: true,
@@ -447,25 +447,25 @@ Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
       expect(find.byType(ModalDragHandle), findsOneWidget);
 
       // Verify Title
-      expect(find.text('Nova Atualização Disponível'), findsOneWidget);
+      expect(find.text('New Update Available'), findsOneWidget);
 
       // Verify version badge
       expect(find.text('v1.0.15'), findsOneWidget);
 
       // Verify subtitle
-      expect(find.text('Vê o que mudou nesta versão:'), findsOneWidget);
+      expect(find.text('See what changed in this version:'), findsOneWidget);
 
       // Verify formatted release notes
       expect(
-        find.text('• Novo leitor de atualizações\n• Correções de bugs'),
+        find.text('• New: Leitor de atualizações\n• Fixes: Bugs'),
         findsOneWidget,
       );
 
-      // Verify "Atualizar Agora" button
-      expect(find.text('Atualizar Agora'), findsOneWidget);
+      // Verify "Update Now" button
+      expect(find.text('Update Now'), findsOneWidget);
 
-      // Verify "Mais Tarde" button
-      final laterButton = find.text('Mais Tarde');
+      // Verify "Later" button
+      final laterButton = find.text('Later');
       expect(laterButton, findsOneWidget);
 
       await tester.tap(laterButton);
@@ -504,7 +504,7 @@ Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
         ),
       );
 
-      final updateButton = find.text('Atualizar Agora');
+      final updateButton = find.text('Update Now');
       expect(updateButton, findsOneWidget);
 
       await tester.tap(updateButton);
@@ -514,17 +514,16 @@ Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
       controller.add(OtaEvent(OtaStatus.DOWNLOADING, '45'));
       await tester.pump();
 
-      expect(find.text('A Descarregar Atualização...'), findsOneWidget);
+      expect(find.text('Downloading Update...'), findsOneWidget);
       expect(find.text('45%'), findsOneWidget);
-      expect(find.text('Cancelar Transferência'), findsOneWidget);
+      expect(find.text('Cancel Download'), findsOneWidget);
 
       // Emit installing event
       controller.add(OtaEvent(OtaStatus.INSTALLING, null));
       await tester.pump();
 
-      expect(find.text('A Iniciar Instalação'), findsOneWidget);
-      expect(find.text('Pronto'), findsOneWidget);
-      expect(find.text('Fechar'), findsOneWidget);
+      expect(find.text('Starting Installation'), findsOneWidget);
+      expect(find.text('Close'), findsOneWidget);
 
       await controller.close();
     });
@@ -556,7 +555,7 @@ Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
         ),
       );
 
-      await tester.tap(find.text('Atualizar Agora'));
+      await tester.tap(find.text('Update Now'));
       await tester.pump();
 
       // Emit permission not granted error
@@ -564,11 +563,11 @@ Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
       await tester.pump();
 
       expect(
-        find.textContaining('Permissão de instalação necessária'),
+        find.textContaining('Install permission required'),
         findsOneWidget,
       );
-      expect(find.text('Descarregar no Browser'), findsOneWidget);
-      expect(find.text('Atualizar Agora'), findsOneWidget);
+      expect(find.text('Download in Browser'), findsOneWidget);
+      expect(find.text('Update Now'), findsOneWidget);
 
       await controller.close();
     });
@@ -605,13 +604,13 @@ Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
         ),
       );
 
-      await tester.tap(find.text('Atualizar Agora'));
+      await tester.tap(find.text('Update Now'));
       await tester.pump();
 
       controller.add(OtaEvent(OtaStatus.DOWNLOADING, '20'));
       await tester.pump();
 
-      final cancelButton = find.text('Cancelar Transferência');
+      final cancelButton = find.text('Cancel Download');
       expect(cancelButton, findsOneWidget);
 
       await tester.ensureVisible(cancelButton);
@@ -619,8 +618,8 @@ Full Changelog: https://github.com/themoita/seriolab/compare/v1.0.14...v1.0.15
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('Atualizar Agora'), findsOneWidget);
-      expect(find.text('Nova Atualização Disponível'), findsOneWidget);
+      expect(find.text('Update Now'), findsOneWidget);
+      expect(find.text('New Update Available'), findsOneWidget);
 
       await controller.close();
     });

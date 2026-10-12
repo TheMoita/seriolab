@@ -46,9 +46,9 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
           appBar: AppBar(),
           body: EmptyState(
             icon: Icons.error_outline_rounded,
-            title: 'Erro ao carregar detalhes',
+            title: 'Error loading details',
             message: err.toString(),
-            actionLabel: 'Tentar novamente',
+            actionLabel: 'Try again',
             onAction: () => ref.refresh(showDetailsProvider(widget.showId)),
           ),
         ),
@@ -342,7 +342,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Série adicionada a "Quero Ver".'),
+                              content: Text('Show added to Watchlist.'),
                               duration: Duration(seconds: 2),
                             ),
                           );
@@ -375,17 +375,17 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                       tracked != null
                           ? switch (tracked.status) {
                               TrackingStatus.watchlist =>
-                                'Na Minha Lista (Quero Ver)',
+                                'In My Watchlist',
                               TrackingStatus.watching => (show.airedEpisodeCount > 0 &&
                                       (trackingState?.watchedRegularCount(show.id) ?? 0) >=
                                           show.airedEpisodeCount &&
                                       !show.status.isFinished)
-                                  ? 'Em Dia (A Ver)'
-                                  : 'A Ver Atualmente',
-                              TrackingStatus.completed => 'Série Terminada',
-                              TrackingStatus.dropped => 'Série Abandonada',
+                                  ? 'Up to Date (Watching)'
+                                  : 'Currently Watching',
+                              TrackingStatus.completed => 'Completed',
+                              TrackingStatus.dropped => 'Dropped',
                             }
-                          : 'Seguir / Quero Ver',
+                          : 'Add to Watchlist',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -432,8 +432,8 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                                             watchedCount >=
                                                 show.airedEpisodeCount &&
                                             !show.status.isFinished)
-                                        ? '$watchedCount de ${show.totalEpisodeCount} episódios vistos • Em dia'
-                                        : '$watchedCount de ${show.totalEpisodeCount} episódios vistos',
+                                        ? '$watchedCount of ${show.totalEpisodeCount} episodes watched • Up to date'
+                                        : '$watchedCount of ${show.totalEpisodeCount} episodes watched',
                                     style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
@@ -463,6 +463,67 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                                         : AppColors.secondary,
                                   ),
                                 ),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton.icon(
+                                    onPressed: () {
+                                      final effectiveAired =
+                                          show.airedEpisodeCount > 0
+                                              ? show.airedEpisodeCount
+                                              : show.totalEpisodeCount;
+                                      final allWatched = (effectiveAired > 0 &&
+                                              watchedCount >= effectiveAired) ||
+                                          (tracked.status ==
+                                              TrackingStatus.completed);
+                                      _confirmMarkEntireSeries(
+                                        context,
+                                        ref,
+                                        show,
+                                        markWatched: !allWatched,
+                                      );
+                                    },
+                                    style: TextButton.styleFrom(
+                                      visualDensity: VisualDensity.compact,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
+                                      foregroundColor: (show.airedEpisodeCount > 0 &&
+                                                  watchedCount >=
+                                                      show.airedEpisodeCount) ||
+                                              (tracked.status ==
+                                                  TrackingStatus.completed)
+                                          ? AppColors.danger
+                                          : AppColors.secondary,
+                                    ),
+                                    icon: Icon(
+                                      (show.airedEpisodeCount > 0 &&
+                                                  watchedCount >=
+                                                      show.airedEpisodeCount) ||
+                                              (tracked.status ==
+                                                  TrackingStatus.completed)
+                                          ? Icons.remove_done_rounded
+                                          : Icons.done_all_rounded,
+                                      size: 14,
+                                    ),
+                                    label: Text(
+                                      (show.airedEpisodeCount > 0 &&
+                                                  watchedCount >=
+                                                      show.airedEpisodeCount) ||
+                                              (tracked.status ==
+                                                  TrackingStatus.completed)
+                                          ? 'Mark all as unwatched'
+                                          : 'Mark all as watched',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -506,7 +567,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                 if (show.overview.isNotEmpty) ...[
                   const SizedBox(height: 20),
                   const Text(
-                    'Sinopse',
+                    'Overview',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -528,7 +589,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                 if (show.cast.isNotEmpty) ...[
                   const SizedBox(height: 24),
                   const Text(
-                    'Elenco Principal',
+                    'Top Cast',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -595,7 +656,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Episódios',
+                      'Episodes',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -604,7 +665,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                     ),
                     if (displayedSeasons.isNotEmpty)
                       Text(
-                        '${show.totalEpisodeCount} episódios',
+                        '${show.totalEpisodeCount} episodes',
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
@@ -628,8 +689,8 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                         return ChoiceChip(
                           label: Text(
                             s.isSpecials
-                                ? 'Especiais (${s.episodeCount})'
-                                : 'T${s.seasonNumber} (${s.episodeCount})',
+                                ? 'Specials (${s.episodeCount})'
+                                : 'S${s.seasonNumber} (${s.episodeCount})',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight:
@@ -678,7 +739,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                'Erro ao carregar episódios: $err',
+                'Error loading episodes: $err',
                 style: const TextStyle(color: AppColors.danger),
               ),
             ),
@@ -705,7 +766,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                   padding: EdgeInsets.all(32),
                   child: Center(
                     child: Text(
-                      'Sem episódios disponíveis.',
+                      'No episodes available.',
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
@@ -739,7 +800,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Temporada $_selectedSeasonNumber',
+                                  'Season $_selectedSeasonNumber',
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
@@ -777,16 +838,20 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                                             : AppColors.textMuted,
                                       ),
                                       const SizedBox(width: 4),
-                                      Text(
-                                        seasonAvg != null
-                                            ? 'Season Average: ${seasonAvg.toStringAsFixed(1)} ★ ($ratedCount ${ratedCount == 1 ? 'rated episode' : 'rated episodes'})'
-                                            : 'Season Average: — / 10',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          color: seasonAvg != null
-                                              ? AppColors.textPrimary
-                                              : AppColors.textSecondary,
+                                      Flexible(
+                                        child: Text(
+                                          seasonAvg != null
+                                              ? 'Season Average: ${seasonAvg.toStringAsFixed(1)} ★ ($ratedCount ${ratedCount == 1 ? 'rated episode' : 'rated episodes'})'
+                                              : 'Season Average: — / 10',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                            color: seasonAvg != null
+                                                ? AppColors.textPrimary
+                                                : AppColors.textSecondary,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ],
@@ -820,8 +885,8 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                               ),
                               label: Text(
                                 allAiredWatched
-                                    ? 'Desmarcar temporada'
-                                    : 'Marcar toda vista',
+                                    ? 'Unmark season'
+                                    : 'Mark season watched',
                                 style: const TextStyle(fontSize: 12),
                               ),
                             ),
@@ -889,7 +954,9 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ListTile(
+          Material(
+            type: MaterialType.transparency,
+            child: ListTile(
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -1061,7 +1128,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                           ),
                           SizedBox(width: 3),
                           Text(
-                            'Avaliar',
+                            'Rate',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -1084,7 +1151,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                     size: 24,
                   ),
                   tooltip:
-                      isWatched ? 'Marcar como não visto' : 'Marcar como visto',
+                      isWatched ? 'Mark as unwatched' : 'Mark as watched',
                   onPressed: isAired
                       ? () async {
                           final wasWatched = isWatched;
@@ -1111,7 +1178,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                       : () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Este episódio ainda não estreou!'),
+                              content: Text('This episode has not aired yet!'),
                               duration: Duration(seconds: 2),
                             ),
                           );
@@ -1119,6 +1186,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                 ),
               ],
             ),
+          ),
           ),
           if (episode.overview.isNotEmpty)
             Padding(
@@ -1152,7 +1220,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                             SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                'Sinopse oculta (anti-spoiler) • Toca para ver',
+                                'Spoiler hidden • Tap to reveal',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -1233,7 +1301,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                                       (trackingState?.watchedRegularCount(show.id) ?? 0) >=
                                           show.airedEpisodeCount &&
                                       !show.status.isFinished)
-                                  ? 'Em dia'
+                                  ? 'Up to date'
                                   : null,
                             ),
                           ],
@@ -1249,6 +1317,58 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                 const SizedBox(height: 8),
                 const Divider(),
 
+                // Option 0: Mark entire series watched / unwatched
+                () {
+                  final watchedCount =
+                      trackingState?.watchedRegularCount(show.id) ?? 0;
+                  final effectiveAiredCount = show.airedEpisodeCount > 0
+                      ? show.airedEpisodeCount
+                      : show.totalEpisodeCount;
+                  final allAiredWatched = (effectiveAiredCount > 0 &&
+                          watchedCount >= effectiveAiredCount) ||
+                      (tracked.status == TrackingStatus.completed);
+
+                  return ListTile(
+                    leading: Icon(
+                      allAiredWatched
+                          ? Icons.remove_done_rounded
+                          : Icons.done_all_rounded,
+                      color: allAiredWatched
+                          ? AppColors.danger
+                          : AppColors.secondary,
+                    ),
+                    title: Text(
+                      allAiredWatched
+                          ? 'Mark all as unwatched'
+                          : 'Mark all as watched',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: allAiredWatched
+                            ? AppColors.danger
+                            : AppColors.textPrimary,
+                      ),
+                    ),
+                    subtitle: Text(
+                      allAiredWatched
+                          ? 'Unmarks all episodes and resets progress'
+                          : 'Marks all available episodes as watched',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(modalCtx);
+                      _confirmMarkEntireSeries(
+                        context,
+                        ref,
+                        show,
+                        markWatched: !allAiredWatched,
+                      );
+                    },
+                  );
+                }(),
+
                 // Option 1: Drop or Resume
                 if (tracked.status != TrackingStatus.dropped)
                   ListTile(
@@ -1257,14 +1377,14 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                       color: Color(0xFFF59E0B),
                     ),
                     title: const Text(
-                      'Marcar como Abandonada / Pausa',
+                      'Mark as Dropped / On Hold',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
                       ),
                     ),
                     subtitle: const Text(
-                      'Arquiva a série e move-a para a secção "Retomar"',
+                      'Archives the show and moves it to the "Resume" section',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textMuted,
@@ -1278,7 +1398,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Série marcada como Abandonada.'),
+                            content: Text('Show marked as Dropped.'),
                             duration: Duration(seconds: 2),
                           ),
                         );
@@ -1292,14 +1412,14 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                       color: AppColors.primary,
                     ),
                     title: const Text(
-                      'Retomar Série ("A Ver")',
+                      'Resume Show ("Watching")',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
                       ),
                     ),
                     subtitle: const Text(
-                      'Reativa a série na tua lista de séries que estás a ver',
+                      'Reactivates the show in your watching list',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textMuted,
@@ -1313,7 +1433,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Série reativada ("A Ver").'),
+                            content: Text('Show resumed ("Watching").'),
                             duration: Duration(seconds: 2),
                           ),
                         );
@@ -1328,14 +1448,14 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                     color: AppColors.danger,
                   ),
                   title: const Text(
-                    'Remover da Minha Lista',
+                    'Remove from My List',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: AppColors.danger,
                     ),
                   ),
                   subtitle: const Text(
-                    'Elimina a série da tua biblioteca e apaga o progresso',
+                    'Removes the show from your library and clears progress',
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textMuted,
@@ -1352,6 +1472,147 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
         );
       },
     );
+  }
+
+  static Future<void> _confirmMarkEntireSeries(
+    BuildContext context,
+    WidgetRef ref,
+    ShowDetails show, {
+    required bool markWatched,
+  }) async {
+    final showOriginal =
+        ref.read(settingsControllerProvider).showOriginalTitles;
+    final title = show.displayTitle(showOriginal: showOriginal);
+
+    final showWithEpisodes = ref.read(showWithEpisodesProvider(show.id)).value;
+    List<Episode>? episodes = showWithEpisodes?.episodes;
+    if (episodes == null || episodes.isEmpty) {
+      try {
+        final fetched =
+            await ref.read(showWithEpisodesProvider(show.id).future);
+        episodes = fetched.episodes;
+      } catch (_) {}
+    }
+
+    if (!context.mounted) return;
+
+    final now = DateTime.now();
+    final airedEpisodes = episodes != null
+        ? episodes.where((e) => e.isAiredAt(now)).toList()
+        : <Episode>[];
+
+    final effectiveAiredCount = show.airedEpisodeCount > 0
+        ? show.airedEpisodeCount
+        : show.totalEpisodeCount;
+    final totalAiredCount = airedEpisodes.isNotEmpty
+        ? airedEpisodes.length
+        : effectiveAiredCount;
+
+    final seasons = show.regularSeasons.isNotEmpty
+        ? show.regularSeasons
+        : show.seasons.where((s) => s.seasonNumber > 0).toList();
+    final seasonCount = seasons.isNotEmpty ? seasons.length : 1;
+
+    final trackingState = ref.read(trackingControllerProvider).value;
+    final watchedCount = trackingState?.watchedRegularCount(show.id) ?? 0;
+
+    final affectedEpisodes = markWatched
+        ? ((totalAiredCount - watchedCount) > 0
+            ? (totalAiredCount - watchedCount)
+            : totalAiredCount)
+        : (watchedCount > 0 ? watchedCount : totalAiredCount);
+
+    final epLabel =
+        '$affectedEpisodes ${affectedEpisodes == 1 ? 'episode' : 'episodes'}';
+    final seasonLabel =
+        '$seasonCount ${seasonCount == 1 ? 'season' : 'seasons'}';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceHigh,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.outline),
+        ),
+        title: Text(
+          markWatched ? 'Mark all as watched?' : 'Mark all as unwatched?',
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: Text(
+          markWatched
+              ? 'Are you sure you want to mark $epLabel across $seasonLabel of "$title" as watched?'
+              : 'Are you sure you want to unmark $epLabel across $seasonLabel of "$title" and reset your progress to 0%?',
+          style: const TextStyle(
+            fontSize: 13,
+            color: AppColors.textSecondary,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textMuted),
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor:
+                  markWatched ? AppColors.primary : AppColors.danger,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              markWatched ? 'Mark as watched' : 'Unmark all',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      if (markWatched) {
+        await ref
+            .read(trackingControllerProvider.notifier)
+            .markEntireSeriesWatched(
+              show.id.toString(),
+              showDetails: show,
+              episodes: airedEpisodes.isNotEmpty ? airedEpisodes : episodes,
+            );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Marked $epLabel across $seasonLabel as watched.'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        await ref
+            .read(trackingControllerProvider.notifier)
+            .markEntireSeriesUnwatched(
+              show.id.toString(),
+              showDetails: show,
+            );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Unmarked all episodes for "$title". Progress reset.'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    }
   }
 
   static Future<void> _confirmRemoveShow(
@@ -1372,7 +1633,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
           side: const BorderSide(color: AppColors.outline),
         ),
         title: const Text(
-          'Remover da Minha Lista?',
+          'Remove from My List?',
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
@@ -1380,7 +1641,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
           ),
         ),
         content: Text(
-          'Tens a certeza que queres remover "$title" da tua biblioteca? O teu progresso e episódios vistos nesta série serão apagados.',
+          'Are you sure you want to remove "$title" from your library? Your progress and watched episodes for this show will be deleted.',
           style: const TextStyle(
             fontSize: 13,
             color: AppColors.textSecondary,
@@ -1391,7 +1652,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: const Text(
-              'Cancelar',
+              'Cancel',
               style: TextStyle(color: AppColors.textMuted),
             ),
           ),
@@ -1404,7 +1665,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text(
-              'Remover',
+              'Remove',
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
@@ -1417,7 +1678,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Série removida da tua biblioteca.'),
+            content: Text('Show removed from your library.'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -1457,7 +1718,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'COMUNIDADE',
+                      'COMMUNITY',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
@@ -1515,7 +1776,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'A TUA AVALIAÇÃO',
+                        'YOUR RATING',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -1538,7 +1799,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
                             child: Text(
                               userRating != null
                                   ? userRating.toStringAsFixed(1)
-                                  : 'Avaliar Série',
+                                  : 'Rate Show',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -1607,9 +1868,9 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
         ref.read(settingsControllerProvider).showOriginalTitles;
     final result = await RatingModal.show(
       context,
-      title: 'Classificar & Registar Série',
+      title: 'Rate & Log Show',
       itemName: show.displayTitle(showOriginal: showOriginal),
-      badgeText: 'SÉRIE',
+      badgeText: 'SHOW',
       initialRating: tracked?.overallUserRating,
       initialReview: tracked?.reviewText,
       initialHasSpoilers: tracked?.hasSpoilers ?? false,
@@ -1630,11 +1891,11 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
       if (mounted) {
         final scoreText = result.rating != null
             ? '${result.rating!.toStringAsFixed(1)} ★'
-            : 'registo guardado';
+            : 'log saved';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Série atualizada: $scoreText!',
+              'Show updated: $scoreText!',
             ),
             duration: const Duration(seconds: 2),
           ),
@@ -1647,7 +1908,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Avaliação e registo da série removidos.'),
+            content: Text('Show rating and log removed.'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -1669,7 +1930,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
 
     final result = await RatingModal.show(
       context,
-      title: 'Classificar Episódio',
+      title: 'Rate Episode',
       itemName:
           '${episode.code} • ${episode.displayTitle(showOriginal: showOriginal)}',
       badgeText: episode.code,
@@ -1693,12 +1954,12 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
           );
       if (mounted) {
         final scoreMsg = result.rating != null
-            ? 'avaliado com ${result.rating!.toStringAsFixed(1)} ★'
-            : 'registado';
+            ? 'rated ${result.rating!.toStringAsFixed(1)} ★'
+            : 'logged';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Episódio ${episode.code} $scoreMsg (marcado como visto)!',
+              'Episode ${episode.code} $scoreMsg (marked as watched)!',
             ),
             duration: const Duration(seconds: 2),
           ),
@@ -1711,7 +1972,7 @@ class _ShowDetailScreenState extends ConsumerState<ShowDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Avaliação do episódio ${episode.code} removida.'),
+            content: Text('Episode ${episode.code} rating removed.'),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -1766,7 +2027,7 @@ class _FavoriteHeartButtonState extends ConsumerState<_FavoriteHeartButton> {
             size: 22,
           ),
           tooltip:
-              isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos',
+              isFavorite ? 'Remove from favorites' : 'Add to favorites',
           onPressed: () async {
             _triggerBounce();
             final nowFav = await ref
@@ -1778,8 +2039,8 @@ class _FavoriteHeartButtonState extends ConsumerState<_FavoriteHeartButton> {
               SnackBar(
                 content: Text(
                   nowFav
-                      ? 'Adicionaste "${widget.show.title}" às favoritas ❤️'
-                      : 'Removeste "${widget.show.title}" das favoritas.',
+                      ? 'Added "${widget.show.title}" to favorites ❤️'
+                      : 'Removed "${widget.show.title}" from favorites.',
                 ),
                 duration: const Duration(seconds: 2),
                 behavior: SnackBarBehavior.floating,
@@ -1803,6 +2064,14 @@ class _ShowDetailOptionsMenu extends ConsumerWidget {
     final settings = ref.watch(settingsControllerProvider);
     final isInTopFive = settings.favoriteShowIds.contains(show.id);
     final tracked = ref.watch(trackedShowProvider(show.id));
+    final trackingState = ref.watch(trackingControllerProvider).value;
+    final watchedCount = trackingState?.watchedRegularCount(show.id) ?? 0;
+    final effectiveAiredCount = show.airedEpisodeCount > 0
+        ? show.airedEpisodeCount
+        : show.totalEpisodeCount;
+    final allAiredWatched = (effectiveAiredCount > 0 &&
+            watchedCount >= effectiveAiredCount) ||
+        (tracked?.status == TrackingStatus.completed);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -1819,7 +2088,21 @@ class _ShowDetailOptionsMenu extends ConsumerWidget {
           side: const BorderSide(color: AppColors.outline),
         ),
         onSelected: (value) async {
-          if (value == 'top5') {
+          if (value == 'mark_all_watched') {
+            _ShowDetailScreenState._confirmMarkEntireSeries(
+              context,
+              ref,
+              show,
+              markWatched: true,
+            );
+          } else if (value == 'mark_all_unwatched') {
+            _ShowDetailScreenState._confirmMarkEntireSeries(
+              context,
+              ref,
+              show,
+              markWatched: false,
+            );
+          } else if (value == 'top5') {
             _showTopFiveSlotPicker(context, ref, show);
           } else if (value == 'drop') {
             await ref
@@ -1828,7 +2111,7 @@ class _ShowDetailOptionsMenu extends ConsumerWidget {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Série marcada como Abandonada.'),
+                  content: Text('Show marked as Dropped.'),
                   duration: Duration(seconds: 2),
                 ),
               );
@@ -1840,7 +2123,7 @@ class _ShowDetailOptionsMenu extends ConsumerWidget {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Série reativada ("A Ver").'),
+                  content: Text('Show resumed ("Watching").'),
                   duration: Duration(seconds: 2),
                 ),
               );
@@ -1850,6 +2133,38 @@ class _ShowDetailOptionsMenu extends ConsumerWidget {
           }
         },
         itemBuilder: (context) => [
+          PopupMenuItem<String>(
+            value: allAiredWatched ? 'mark_all_unwatched' : 'mark_all_watched',
+            child: Row(
+              children: [
+                Icon(
+                  allAiredWatched
+                      ? Icons.remove_done_rounded
+                      : Icons.done_all_rounded,
+                  color: allAiredWatched
+                      ? AppColors.danger
+                      : AppColors.secondary,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    allAiredWatched
+                        ? 'Mark all as unwatched'
+                        : 'Mark all as watched',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: allAiredWatched
+                          ? AppColors.danger
+                          : AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const PopupMenuDivider(),
           if (tracked != null) ...[
             if (tracked.status != TrackingStatus.dropped)
               const PopupMenuItem<String>(
@@ -1862,12 +2177,14 @@ class _ShowDetailOptionsMenu extends ConsumerWidget {
                       size: 20,
                     ),
                     SizedBox(width: 12),
-                    Text(
-                      'Marcar como Abandonada',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                    Expanded(
+                      child: Text(
+                        'Mark as Dropped',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                   ],
@@ -1884,12 +2201,14 @@ class _ShowDetailOptionsMenu extends ConsumerWidget {
                       size: 20,
                     ),
                     SizedBox(width: 12),
-                    Text(
-                      'Retomar Série ("A Ver")',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                    Expanded(
+                      child: Text(
+                        'Resume Show ("Watching")',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                   ],
@@ -1905,12 +2224,14 @@ class _ShowDetailOptionsMenu extends ConsumerWidget {
                     size: 20,
                   ),
                   SizedBox(width: 12),
-                  Text(
-                    'Remover da Minha Lista',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.danger,
+                  Expanded(
+                    child: Text(
+                      'Remove from My List',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.danger,
+                      ),
                     ),
                   ),
                 ],
@@ -1928,12 +2249,14 @@ class _ShowDetailOptionsMenu extends ConsumerWidget {
                   size: 20,
                 ),
                 SizedBox(width: 12),
-                Text(
-                  isInTopFive ? 'Gerir no Top 5' : 'Adicionar ao Top 5',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                Expanded(
+                  child: Text(
+                    isInTopFive ? 'Manage in Top 5' : 'Add to Top 5',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ),
               ],
@@ -1980,7 +2303,7 @@ void _showTopFiveSlotPicker(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Selecionar Posição no Top 5',
+                            'Select Top 5 Slot',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
@@ -1990,8 +2313,8 @@ void _showTopFiveSlotPicker(
                           const SizedBox(height: 2),
                           Text(
                             currentSlotIndex != -1
-                                ? 'Atualmente na posição #${currentSlotIndex + 1}'
-                                : 'Escolhe em que posição colocar esta série',
+                                ? 'Currently at #${currentSlotIndex + 1}'
+                                : 'Choose a slot for this show',
                             style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.textSecondary,
@@ -2026,7 +2349,7 @@ void _showTopFiveSlotPicker(
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  'Série "${show.title}" colocada na posição #${index + 1} do Top 5.',
+                                  'Show "${show.title}" placed at slot #${index + 1} in Top 5.',
                                 ),
                                 duration: const Duration(seconds: 2),
                                 behavior: SnackBarBehavior.floating,
@@ -2079,7 +2402,7 @@ void _showTopFiveSlotPicker(
                                   child: isOccupied
                                       ? (isCurrentShow
                                           ? Text(
-                                              '${show.title} (Posição Atual)',
+                                              '${show.title} (Current Slot)',
                                               style: const TextStyle(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w700,
@@ -2090,7 +2413,7 @@ void _showTopFiveSlotPicker(
                                               showId: occupiedId!,
                                             ))
                                       : const Text(
-                                          'Slot Vazio (+)',
+                                          'Empty Slot (+)',
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
@@ -2110,14 +2433,14 @@ void _showTopFiveSlotPicker(
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         const SnackBar(
-                                          content: Text('Removida do Top 5.'),
+                                          content: Text('Removed from Top 5.'),
                                           duration: Duration(seconds: 2),
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
                                     },
                                     child: const Text(
-                                      'Remover',
+                                      'Remove',
                                       style: TextStyle(
                                         color: AppColors.danger,
                                         fontSize: 12,
@@ -2127,7 +2450,7 @@ void _showTopFiveSlotPicker(
                                   )
                                 else
                                   Text(
-                                    isOccupied ? 'Substituir' : 'Atribuir',
+                                    isOccupied ? 'Replace' : 'Assign',
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
@@ -2163,7 +2486,7 @@ class _OccupiedSlotTitle extends ConsumerWidget {
     final showAsync = ref.watch(showDetailsProvider(showId));
     return showAsync.when(
       data: (s) => Text(
-        '${s.title} (Substituir)',
+        '${s.title} (Replace)',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(
@@ -2173,11 +2496,11 @@ class _OccupiedSlotTitle extends ConsumerWidget {
         ),
       ),
       loading: () => const Text(
-        'A carregar...',
+        'Loading...',
         style: TextStyle(fontSize: 12, color: AppColors.textMuted),
       ),
       error: (_, _) => Text(
-        'Série #$showId',
+        'Show #$showId',
         style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
       ),
     );
@@ -2240,7 +2563,7 @@ class _BackdropTrailerButton extends ConsumerWidget {
                   ),
                   SizedBox(width: 4),
                   Text(
-                    'Ver Trailer',
+                    'Watch Trailer',
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 12,

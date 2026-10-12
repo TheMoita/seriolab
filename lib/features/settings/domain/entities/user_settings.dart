@@ -27,21 +27,21 @@ class SeriolabAvatar {
     ),
     SeriolabAvatar(
       id: 'mask',
-      name: 'Máscara',
-      seriesInspiration: 'La Casa de Papel & Watchmen',
+      name: 'Mask',
+      seriesInspiration: 'Money Heist & Watchmen',
       icon: Icons.theater_comedy_rounded,
       gradientColors: [Color(0xFFEF4444), Color(0xFF991B1B)],
     ),
     SeriolabAvatar(
       id: 'fedora',
-      name: 'Chapéu Fedora',
+      name: 'Fedora Hat',
       seriesInspiration: 'Breaking Bad & Peaky Blinders',
       icon: Icons.shield_moon_rounded,
       gradientColors: [Color(0xFFF59E0B), Color(0xFF78350F)],
     ),
     SeriolabAvatar(
       id: 'throne',
-      name: 'Trono de Ferro',
+      name: 'Iron Throne',
       seriesInspiration: 'House of the Dragon & GoT',
       icon: Icons.castle_rounded,
       gradientColors: [Color(0xFFD97706), Color(0xFF334155)],
@@ -55,42 +55,42 @@ class SeriolabAvatar {
     ),
     SeriolabAvatar(
       id: 'clapper',
-      name: 'Claquete',
-      seriesInspiration: 'Produção de TV & HBO',
+      name: 'Clapperboard',
+      seriesInspiration: 'TV Production & HBO',
       icon: Icons.movie_rounded,
       gradientColors: [Color(0xFFE2E8F0), Color(0xFF6366F1)],
     ),
     SeriolabAvatar(
       id: 'dragon',
-      name: 'Dragão',
-      seriesInspiration: 'Targaryen & Épicos de Fantasia',
+      name: 'Dragon',
+      seriesInspiration: 'Targaryen & Fantasy Epics',
       icon: Icons.local_fire_department_rounded,
       gradientColors: [Color(0xFFDC2626), Color(0xFFF97316)],
     ),
     SeriolabAvatar(
       id: 'cyber',
-      name: 'Nave Sci-Fi',
+      name: 'Sci-Fi Ship',
       seriesInspiration: 'Severance & The Expanse',
       icon: Icons.rocket_launch_rounded,
       gradientColors: [Color(0xFF38BDF8), Color(0xFF1E1B4B)],
     ),
     SeriolabAvatar(
       id: 'detective',
-      name: 'Investigador',
+      name: 'Detective',
       seriesInspiration: 'Sherlock & True Detective',
       icon: Icons.search_rounded,
       gradientColors: [Color(0xFF10B981), Color(0xFF064E3B)],
     ),
     SeriolabAvatar(
       id: 'crown',
-      name: 'Coroa Real',
+      name: 'Royal Crown',
       seriesInspiration: 'The Crown & Succession',
       icon: Icons.emoji_events_rounded,
       gradientColors: [Color(0xFFFBBF24), Color(0xFF6D28D9)],
     ),
     SeriolabAvatar(
       id: 'heart',
-      name: 'Coração de Drama',
+      name: 'Drama Heart',
       seriesInspiration: 'Grey\'s Anatomy & This Is Us',
       icon: Icons.favorite_rounded,
       gradientColors: [Color(0xFFEC4899), Color(0xFF831843)],
@@ -98,7 +98,7 @@ class SeriolabAvatar {
     SeriolabAvatar(
       id: 'iris',
       name: 'Electric Iris',
-      seriesInspiration: 'Identidade Oficial Seriolab',
+      seriesInspiration: 'Official Seriolab Identity',
       icon: Icons.movie_filter_rounded,
       gradientColors: [Color(0xFF7C5CFC), Color(0xFF38BDF8)],
     ),
@@ -187,16 +187,8 @@ class UserSettings {
   final bool groupSpecialEpisodes;
   final bool showOriginalTitles;
 
-  /// Returns standard TMDB language code (e.g., 'pt-PT', 'pt-BR', 'en-US', 'es-ES').
-  String get tmdbLanguageCode {
-    if (language.contains('-')) return language;
-    return switch (language.toLowerCase()) {
-      'pt' => streamingRegion == 'BR' ? 'pt-BR' : 'pt-PT',
-      'en' => 'en-US',
-      'es' => 'es-ES',
-      _ => 'en-US',
-    };
-  }
+  /// Returns standard TMDB language code (en-US).
+  String get tmdbLanguageCode => 'en-US';
 
   // Notifications
   final bool episodeReleaseReminders;

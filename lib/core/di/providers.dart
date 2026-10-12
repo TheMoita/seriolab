@@ -26,11 +26,10 @@ final httpClientProvider = Provider<http.Client>((ref) {
 
 /// TMDB API Client provider configured with active credentials and user selected language.
 final tmdbApiClientProvider = Provider<TmdbApiClient>((ref) {
-  final settings = ref.watch(settingsControllerProvider);
   return TmdbApiClient(
     client: ref.watch(httpClientProvider),
     apiKey: AppConfig.tmdbApiKey,
-    defaultLanguage: settings.tmdbLanguageCode,
+    defaultLanguage: 'en-US',
   );
 });
 

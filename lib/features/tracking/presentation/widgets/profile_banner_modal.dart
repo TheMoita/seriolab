@@ -54,7 +54,7 @@ class ProfileBannerModal extends ConsumerWidget {
                   Icon(Icons.check_circle_rounded,
                       color: AppColors.secondary, size: 20),
                   SizedBox(width: 10),
-                  Text('Foto da galeria aplicada como banner!'),
+                  Text('Gallery photo applied as banner!'),
                 ],
               ),
               backgroundColor: AppColors.surfaceHigh,
@@ -71,7 +71,7 @@ class ProfileBannerModal extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao escolher fotografia: $e'),
+            content: Text('Error picking photo: $e'),
             backgroundColor: AppColors.danger,
             behavior: SnackBarBehavior.floating,
           ),
@@ -95,7 +95,7 @@ class ProfileBannerModal extends ConsumerWidget {
             children: [
               Icon(Icons.refresh_rounded, color: AppColors.secondary, size: 20),
               SizedBox(width: 10),
-              Text('Banner reposto para o gradiente padrão.'),
+              Text('Banner reset to default gradient.'),
             ],
           ),
           backgroundColor: AppColors.surfaceHigh,
@@ -131,7 +131,7 @@ class ProfileBannerModal extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Personalizar Banner do Perfil',
+                    'Customize Profile Banner',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -165,7 +165,7 @@ class ProfileBannerModal extends ConsumerWidget {
                 ),
               ),
               title: const Text(
-                'Escolher Backdrop de uma Série',
+                'Choose Show Backdrop',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -173,7 +173,7 @@ class ProfileBannerModal extends ConsumerWidget {
                 ),
               ),
               subtitle: const Text(
-                'Pesquisa séries e escolhe um wallpaper oficial em alta resolução (TMDB)',
+                'Search shows and pick an official high-resolution wallpaper (TMDB)',
                 style: TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
@@ -203,7 +203,7 @@ class ProfileBannerModal extends ConsumerWidget {
                 ),
               ),
               title: const Text(
-                'Carregar Foto da Galeria',
+                'Upload from Gallery',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -211,7 +211,7 @@ class ProfileBannerModal extends ConsumerWidget {
                 ),
               ),
               subtitle: const Text(
-                'Seleciona uma imagem do armazenamento do teu dispositivo',
+                'Select an image from your device storage',
                 style: TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
@@ -247,7 +247,7 @@ class ProfileBannerModal extends ConsumerWidget {
                   ),
                 ),
                 title: const Text(
-                  'Remover Banner',
+                  'Remove Banner',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -255,7 +255,7 @@ class ProfileBannerModal extends ConsumerWidget {
                   ),
                 ),
                 subtitle: const Text(
-                  'Repor o banner padrão com o gradiente da marca Seriolab',
+                  'Reset to default Seriolab brand gradient banner',
                   style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,

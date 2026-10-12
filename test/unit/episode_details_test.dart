@@ -10,29 +10,29 @@ void main() {
   group('Formatters.timeAgo', () {
     final fixedNow = DateTime(2026, 10, 10, 12, 0, 0);
 
-    test('returns "agora mesmo" for timestamps less than 1 minute ago', () {
+    test('returns "just now" for timestamps less than 1 minute ago', () {
       final t = fixedNow.subtract(const Duration(seconds: 30));
-      expect(Formatters.timeAgo(t, now: fixedNow), 'agora mesmo');
+      expect(Formatters.timeAgo(t, now: fixedNow), 'just now');
     });
 
     test('returns minutes ago', () {
       final t = fixedNow.subtract(const Duration(minutes: 15));
-      expect(Formatters.timeAgo(t, now: fixedNow), 'há 15m');
+      expect(Formatters.timeAgo(t, now: fixedNow), '15m ago');
     });
 
     test('returns hours ago', () {
       final t = fixedNow.subtract(const Duration(hours: 4));
-      expect(Formatters.timeAgo(t, now: fixedNow), 'há 4h');
+      expect(Formatters.timeAgo(t, now: fixedNow), '4h ago');
     });
 
-    test('returns "ontem" for 1 day ago', () {
+    test('returns "yesterday" for 1 day ago', () {
       final t = fixedNow.subtract(const Duration(days: 1));
-      expect(Formatters.timeAgo(t, now: fixedNow), 'ontem');
+      expect(Formatters.timeAgo(t, now: fixedNow), 'yesterday');
     });
 
     test('returns days ago for multiple days', () {
       final t = fixedNow.subtract(const Duration(days: 4));
-      expect(Formatters.timeAgo(t, now: fixedNow), 'há 4 dias');
+      expect(Formatters.timeAgo(t, now: fixedNow), '4d ago');
     });
   });
 

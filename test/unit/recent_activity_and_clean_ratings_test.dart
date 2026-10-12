@@ -15,29 +15,29 @@ void main() {
   group('formatRelativeWatchedAt', () {
     final baseNow = DateTime(2026, 10, 11, 12, 0);
 
-    test('returns Hoje for same day', () {
+    test('returns Today for same day', () {
       final today = DateTime(2026, 10, 11, 8, 30);
-      expect(formatRelativeWatchedAt(today, now: baseNow), 'Hoje');
+      expect(formatRelativeWatchedAt(today, now: baseNow), 'Today');
     });
 
-    test('returns Ontem for previous day', () {
+    test('returns Yesterday for previous day', () {
       final yesterday = DateTime(2026, 10, 10, 20, 0);
-      expect(formatRelativeWatchedAt(yesterday, now: baseNow), 'Ontem');
+      expect(formatRelativeWatchedAt(yesterday, now: baseNow), 'Yesterday');
     });
 
-    test('returns há X dias for 2 to 6 days ago', () {
+    test('returns X days ago for 2 to 6 days ago', () {
       final threeDaysAgo = DateTime(2026, 10, 8, 14, 0);
-      expect(formatRelativeWatchedAt(threeDaysAgo, now: baseNow), 'há 3 dias');
+      expect(formatRelativeWatchedAt(threeDaysAgo, now: baseNow), '3 days ago');
     });
 
-    test('returns há 1 semana for 7 to 13 days ago', () {
+    test('returns 1 week ago for 7 to 13 days ago', () {
       final sevenDaysAgo = DateTime(2026, 10, 4, 10, 0);
-      expect(formatRelativeWatchedAt(sevenDaysAgo, now: baseNow), 'há 1 semana');
+      expect(formatRelativeWatchedAt(sevenDaysAgo, now: baseNow), '1 week ago');
     });
 
-    test('returns há 2 semanas for 14 days ago', () {
+    test('returns 2 weeks ago for 14 days ago', () {
       final twoWeeksAgo = DateTime(2026, 9, 27, 10, 0);
-      expect(formatRelativeWatchedAt(twoWeeksAgo, now: baseNow), 'há 2 semanas');
+      expect(formatRelativeWatchedAt(twoWeeksAgo, now: baseNow), '2 weeks ago');
     });
   });
 
@@ -66,7 +66,7 @@ void main() {
       // RATINGS header is present
       expect(find.text('RATINGS'), findsOneWidget);
       // Empty state text is present when total = 0
-      expect(find.text('Ainda não avaliaste nenhuma série'), findsOneWidget);
+      expect(find.text('You haven\'t rated any shows yet'), findsOneWidget);
 
       // Old bottom axis labels must NOT exist
       expect(find.text('0.5'), findsNothing);
@@ -97,8 +97,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('ATIVIDADE RECENTE'), findsOneWidget);
-      expect(find.text('Ainda sem atividade recente'), findsOneWidget);
+      expect(find.text('RECENT ACTIVITY'), findsOneWidget);
+      expect(find.text('No recent activity yet'), findsOneWidget);
     });
 
     testWidgets('displays recent episode cards and navigates on tap',
@@ -144,22 +144,22 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('ATIVIDADE RECENTE'), findsOneWidget);
+      expect(find.text('RECENT ACTIVITY'), findsOneWidget);
       expect(find.text('2 recentes'), findsNothing);
 
       // Episode key badge
-      expect(find.text('T1 • E1'), findsOneWidget);
-      expect(find.text('T1 • E2'), findsOneWidget);
+      expect(find.text('S1 • E1'), findsOneWidget);
+      expect(find.text('S1 • E2'), findsOneWidget);
 
       // Rating badge for rated episode
       expect(find.text('9.5'), findsOneWidget);
 
       // Relative times
-      expect(find.text('Hoje'), findsOneWidget);
-      expect(find.text('Ontem'), findsOneWidget);
+      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('Yesterday'), findsOneWidget);
 
       // Tap on first card to navigate to EpisodeDetailScreen
-      await tester.tap(find.text('T1 • E1'));
+      await tester.tap(find.text('S1 • E1'));
       await tester.pumpAndSettle();
 
       expect(find.byType(EpisodeDetailScreen), findsOneWidget);

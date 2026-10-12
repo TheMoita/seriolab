@@ -98,7 +98,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Estado na tua lista',
+                            'Status in your list',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: AppColors.textSecondary,
                             ),
@@ -121,7 +121,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                         color: Color(0xFFF59E0B),
                       ),
                       title: const Text(
-                        'Marcar como Abandonada / Pausa',
+                        'Mark as Dropped / Paused',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: AppColors.textPrimary,
@@ -133,7 +133,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('$displayTitle marcada como Abandonada.'),
+                            content: Text('$displayTitle marked as Dropped.'),
                             duration: const Duration(seconds: 2),
                           ),
                         );
@@ -148,7 +148,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                         color: AppColors.primary,
                       ),
                       title: const Text(
-                        'Retomar Série ("A Ver")',
+                        'Resume Show ("Watching")',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: AppColors.textPrimary,
@@ -160,7 +160,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('$displayTitle retomada ("A Ver").'),
+                            content: Text('$displayTitle resumed ("Watching").'),
                             duration: const Duration(seconds: 2),
                           ),
                         );
@@ -175,7 +175,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                       color: AppColors.danger,
                     ),
                     title: const Text(
-                      'Remover da Minha Lista',
+                      'Remove from My List',
                       style: TextStyle(
                         color: AppColors.danger,
                         fontWeight: FontWeight.w600,
@@ -192,7 +192,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                             side: const BorderSide(color: AppColors.outline),
                           ),
                           title: const Text(
-                            'Remover da Minha Lista?',
+                            'Remove from My List?',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
@@ -200,7 +200,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                             ),
                           ),
                           content: Text(
-                            'Tens a certeza que queres remover "$displayTitle" da tua biblioteca? O teu progresso será apagado.',
+                            'Are you sure you want to remove "$displayTitle" from your library? Your progress will be deleted.',
                             style: const TextStyle(
                               fontSize: 13,
                               color: AppColors.textSecondary,
@@ -209,12 +209,12 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(dlgCtx, false),
-                              child: const Text('Cancelar', style: TextStyle(color: AppColors.textMuted)),
+                              child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
                             ),
                             FilledButton(
                               style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
                               onPressed: () => Navigator.pop(dlgCtx, true),
-                              child: const Text('Remover'),
+                              child: const Text('Remove'),
                             ),
                           ],
                         ),
@@ -224,7 +224,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('$displayTitle removida da tua biblioteca.'),
+                            content: Text('$displayTitle removed from your library.'),
                             duration: const Duration(seconds: 2),
                           ),
                         );
@@ -393,7 +393,7 @@ class _LetterboxdShowCardState extends ConsumerState<LetterboxdShowCard> {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('$displayTitle adicionada a "Quero Ver"'),
+                                  content: Text('$displayTitle added to "Plan to Watch"'),
                                   duration: const Duration(seconds: 2),
                                 ),
                               );

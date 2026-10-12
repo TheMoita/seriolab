@@ -167,20 +167,20 @@ void main() {
       expect(find.byType(ModalDragHandle), findsOneWidget);
 
       // Title & Subtitle
-      expect(find.text('Denunciar Comentário'), findsOneWidget);
+      expect(find.text('Report Comment'), findsOneWidget);
       expect(
-        find.text('Ajuda-nos a manter a comunidade do Seriolab segura.'),
+        find.text('Help us keep the Seriolab community safe.'),
         findsOneWidget,
       );
 
       // Comment-specific reasons
-      expect(find.text('Discurso de ódio ou ofensivo'), findsOneWidget);
-      expect(find.text('Spam ou publicidade'), findsOneWidget);
-      expect(find.text('Spoilers não sinalizados'), findsOneWidget);
-      expect(find.text('Outro motivo'), findsOneWidget);
+      expect(find.text('Hate speech or harassment'), findsOneWidget);
+      expect(find.text('Spam or advertisement'), findsOneWidget);
+      expect(find.text('Unmarked spoilers'), findsOneWidget);
+      expect(find.text('Other reason'), findsOneWidget);
 
-      // Select 'Spoilers não sinalizados'
-      await tester.tap(find.text('Spoilers não sinalizados'));
+      // Select 'Unmarked spoilers'
+      await tester.tap(find.text('Unmarked spoilers'));
       await tester.pumpAndSettle();
 
       // Enter additional details
@@ -191,7 +191,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Submit
-      final submitButton = find.widgetWithText(ElevatedButton, 'Submeter Denúncia');
+      final submitButton = find.widgetWithText(ElevatedButton, 'Submit Report');
       await tester.ensureVisible(submitButton);
       await tester.tap(submitButton);
       await tester.pumpAndSettle();
@@ -202,13 +202,13 @@ void main() {
       expect(report.targetType, ReportTargetType.comment);
       expect(report.targetId, 'review_42');
       expect(report.reportedUserId, 'author_99');
-      expect(report.reason, 'Spoilers não sinalizados');
+      expect(report.reason, 'Unmarked spoilers');
       expect(report.details, 'Revelou o final da temporada no comentário!');
 
       // SnackBar feedback is rendered
       expect(
         find.text(
-          'Denúncia enviada com sucesso. Obrigado por manteres a comunidade segura.',
+          'Report submitted successfully. Thank you for keeping our community safe.',
         ),
         findsOneWidget,
       );
@@ -243,20 +243,20 @@ void main() {
       await tester.pumpAndSettle();
 
       // Title
-      expect(find.text('Denunciar Perfil'), findsOneWidget);
+      expect(find.text('Report Profile'), findsOneWidget);
 
       // Profile-specific reasons
-      expect(find.text('Foto, avatar ou banner impróprio'), findsOneWidget);
-      expect(find.text('Nickname ou biografia inadequada'), findsOneWidget);
-      expect(find.text('Spam ou publicidade'), findsOneWidget);
-      expect(find.text('Outro motivo'), findsOneWidget);
+      expect(find.text('Inappropriate photo, avatar, or banner'), findsOneWidget);
+      expect(find.text('Inappropriate nickname or bio'), findsOneWidget);
+      expect(find.text('Spam or advertisement'), findsOneWidget);
+      expect(find.text('Other reason'), findsOneWidget);
 
-      // Tap 'Cancelar'
-      await tester.tap(find.text('Cancelar'));
+      // Tap 'Cancel'
+      await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
       // Sheet is dismissed
-      expect(find.text('Denunciar Perfil'), findsNothing);
+      expect(find.text('Report Profile'), findsNothing);
     });
   });
 
@@ -290,10 +290,10 @@ void main() {
       expect(find.text('@martas'), findsOneWidget);
 
       // Report flag button next to follow action button
-      expect(find.byTooltip('Denunciar utilizador'), findsOneWidget);
+      expect(find.byTooltip('Report user'), findsOneWidget);
 
       // 3-dots more options in top-right banner
-      expect(find.byTooltip('Mais opções'), findsOneWidget);
+      expect(find.byTooltip('More options'), findsOneWidget);
     });
   });
 
@@ -356,23 +356,23 @@ void main() {
       expect(commentFinder, findsOneWidget);
 
       // Tap comment options menu (3 dots)
-      final optionsButton = find.byTooltip('Opções do comentário');
+      final optionsButton = find.byTooltip('Comment options');
       expect(optionsButton, findsOneWidget);
       await tester.tap(optionsButton);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      // Tap 'Denunciar comentário'
-      expect(find.text('Denunciar comentário'), findsOneWidget);
-      await tester.tap(find.text('Denunciar comentário'));
+      // Tap 'Report comment'
+      expect(find.text('Report comment'), findsOneWidget);
+      await tester.tap(find.text('Report comment'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
       // Report sheet opened
-      expect(find.text('Denunciar Comentário'), findsOneWidget);
+      expect(find.text('Report Comment'), findsOneWidget);
 
       // Submit report
-      final submitButton = find.widgetWithText(ElevatedButton, 'Submeter Denúncia');
+      final submitButton = find.widgetWithText(ElevatedButton, 'Submit Report');
       await tester.ensureVisible(submitButton);
       await tester.tap(submitButton);
       await tester.pump();

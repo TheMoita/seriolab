@@ -41,9 +41,9 @@ class UserProfileScreen extends ConsumerWidget {
           body: Center(
             child: EmptyState(
               icon: Icons.error_outline_rounded,
-              title: 'Erro ao carregar perfil',
+              title: 'Error loading profile',
               message: err.toString(),
-              actionLabel: 'Tentar novamente',
+              actionLabel: 'Try again',
               onAction: () => ref.refresh(userProfileProvider(userId)),
             ),
           ),
@@ -55,8 +55,8 @@ class UserProfileScreen extends ConsumerWidget {
               body: const Center(
                 child: EmptyState(
                   icon: Icons.person_off_rounded,
-                  title: 'Utilizador não encontrado',
-                  message: 'O perfil que procuras não existe ou foi removido.',
+                  title: 'User not found',
+                  message: 'The profile you are looking for does not exist or has been removed.',
                 ),
               ),
             );
@@ -91,7 +91,7 @@ class UserProfileScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'ATIVIDADE & AVALIAÇÕES RECENTES',
+                        'RECENT ACTIVITY & RATINGS',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
@@ -113,7 +113,7 @@ class UserProfileScreen extends ConsumerWidget {
                           ),
                           child: const Center(
                             child: Text(
-                              'Ainda sem avaliações públicas registadas.',
+                              'No public ratings logged yet.',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: AppColors.textMuted,
@@ -251,7 +251,7 @@ class _UserProfileHeader extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _FollowCounterPill(
-                        label: 'A Seguir',
+                        label: 'Following',
                         count: profile.followingCount,
                         onTap: () {
                           FollowListSheet.show(
@@ -272,7 +272,7 @@ class _UserProfileHeader extends ConsumerWidget {
                         ),
                       ),
                       _FollowCounterPill(
-                        label: 'Seguidores',
+                        label: 'Followers',
                         count: profile.followersCount,
                         onTap: () {
                           FollowListSheet.show(
@@ -311,7 +311,7 @@ class _UserProfileHeader extends ConsumerWidget {
                               size: 18,
                               color: AppColors.textMuted,
                             ),
-                            tooltip: 'Denunciar utilizador',
+                            tooltip: 'Report user',
                             onPressed: () {
                               showReportBottomSheet(
                                 context: context,
@@ -363,7 +363,7 @@ class _UserProfileHeader extends ConsumerWidget {
                   color: Colors.white,
                   size: 20,
                 ),
-                tooltip: 'Mais opções',
+                tooltip: 'More options',
                 color: AppColors.surfaceHigh,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -392,7 +392,7 @@ class _UserProfileHeader extends ConsumerWidget {
                         ),
                         SizedBox(width: 8),
                         Text(
-                          'Denunciar utilizador',
+                          'Report user',
                           style: TextStyle(
                             fontSize: 13,
                             color: AppColors.danger,
@@ -523,7 +523,7 @@ class _FollowActionButton extends ConsumerWidget {
           color: AppColors.textSecondary,
         ),
         label: const Text(
-          'A Seguir',
+          'Following',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
@@ -548,7 +548,7 @@ class _FollowActionButton extends ConsumerWidget {
       },
       icon: const Icon(Icons.person_add_rounded, size: 18, color: Colors.white),
       label: const Text(
-        'Seguir',
+        'Follow',
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
@@ -564,17 +564,17 @@ class _FollowActionButton extends ConsumerWidget {
       builder: (dlgCtx) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: Text(
-          'Deixar de seguir $username?',
+          'Unfollow $username?',
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         content: Text(
-          'Vais deixar de ver a atividade e atualizações de $username no Seriolab.',
+          'You will no longer see activity and updates from $username on Seriolab.',
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dlgCtx),
-            child: const Text('Cancelar', style: TextStyle(color: AppColors.textMuted)),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
@@ -582,7 +582,7 @@ class _FollowActionButton extends ConsumerWidget {
               Navigator.pop(dlgCtx);
               ref.read(socialActionsProvider).unfollowUser(userId);
             },
-            child: const Text('Deixar de Seguir'),
+            child: const Text('Unfollow'),
           ),
         ],
       ),

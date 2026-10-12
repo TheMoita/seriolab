@@ -36,30 +36,30 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     // Verify main destinations in bottom bar
-    expect(find.text('Início'), findsOneWidget);
-    expect(find.text('Explorar'), findsOneWidget);
-    expect(find.text('Agenda'), findsOneWidget);
-    expect(find.text('Perfil'), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Explore'), findsOneWidget);
+    expect(find.text('Schedule'), findsOneWidget);
+    expect(find.text('Profile'), findsOneWidget);
 
     // Default tab is Início (Letterboxd-style Home, localized in English by default)
     expect(find.text('POPULAR THIS WEEK'), findsOneWidget);
 
-    // Tap on Explorar tab
-    await tester.tap(find.text('Explorar'));
+    // Tap on Explore tab
+    await tester.tap(find.text('Explore'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.text('Catálogo Completo'), findsOneWidget);
+    expect(find.text('Full Catalogue'), findsOneWidget);
 
-    // Tap on Agenda tab
-    await tester.tap(find.text('Agenda'));
+    // Tap on Schedule tab
+    await tester.tap(find.text('Schedule'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.widgetWithText(AppBar, 'Agenda'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Schedule'), findsOneWidget);
 
-    // Tap on Perfil tab
-    await tester.tap(find.text('Perfil'));
+    // Tap on Profile tab
+    await tester.tap(find.text('Profile'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
@@ -89,12 +89,12 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     // Navigate to Profile tab
-    await tester.tap(find.text('Perfil'));
+    await tester.tap(find.text('Profile'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     // Verify settings button exists in Profile AppBar
-    final settingsBtn = find.byTooltip('Definições');
+    final settingsBtn = find.byTooltip('Settings');
     expect(settingsBtn, findsOneWidget);
 
     // Tap on Settings button
@@ -103,23 +103,23 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
 
     // Verify SettingsScreen loaded
-    expect(find.widgetWithText(AppBar, 'Definições'), findsOneWidget);
-    expect(find.text('CONTA & PERFIL'), findsOneWidget);
-    expect(find.text('PREFERÊNCIAS DE CONTEÚDO & IDIOMA'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Settings'), findsOneWidget);
+    expect(find.text('ACCOUNT & PROFILE'), findsOneWidget);
+    expect(find.text('CONTENT & LANGUAGE PREFERENCES'), findsOneWidget);
 
     // Tap to open Edit Profile Sheet
-    await tester.tap(find.text('Editar Perfil e Avatar'));
+    await tester.tap(find.text('Edit Profile & Avatar'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 
     // Verify EditProfileSheet contents
-    expect(find.text('Editar Perfil'), findsOneWidget);
-    expect(find.text('Nome de Exibição'), findsOneWidget);
-    expect(find.text('Nome de Utilizador'), findsOneWidget);
-    expect(find.text('Bio Curta'), findsOneWidget);
+    expect(find.text('Edit Profile'), findsOneWidget);
+    expect(find.text('Display Name'), findsOneWidget);
+    expect(find.text('Username'), findsOneWidget);
+    expect(find.text('Short Bio'), findsOneWidget);
 
     // Close sheet
-    await tester.tap(find.text('Cancelar'));
+    await tester.tap(find.text('Cancel'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -128,9 +128,9 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('NOTIFICAÇÕES'), findsOneWidget);
-    expect(find.text('ARMAZENAMENTO & DADOS'), findsOneWidget);
-    expect(find.text('SOBRE & VERSÃO'), findsOneWidget);
+    expect(find.text('NOTIFICATIONS'), findsOneWidget);
+    expect(find.text('STORAGE & DATA'), findsOneWidget);
+    expect(find.text('ABOUT & VERSION'), findsOneWidget);
   });
 
   testWidgets('AppNetworkImage renders Seriolab placeholder with title on null image',
@@ -200,8 +200,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     // Verify transitioned to MainScreen
-    expect(find.text('Início'), findsOneWidget);
-    expect(find.text('Perfil'), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Profile'), findsOneWidget);
   });
 
   testWidgets(
@@ -228,20 +228,20 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     // Navigate to Profile tab
-    await tester.tap(find.text('Perfil'));
+    await tester.tap(find.text('Profile'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    // Bio is empty by default -> "Adicionar biografia" is shown
-    expect(find.text('Adicionar biografia'), findsOneWidget);
+    // Bio is empty by default -> "Add bio" is shown
+    expect(find.text('Add bio'), findsOneWidget);
 
-    // Tap "Adicionar biografia" -> opens EditProfileSheet
-    await tester.tap(find.text('Adicionar biografia'));
+    // Tap "Add bio" -> opens EditProfileSheet
+    await tester.tap(find.text('Add bio'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Editar Perfil'), findsOneWidget);
-    await tester.tap(find.text('Cancelar'));
+    expect(find.text('Edit Profile'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -252,9 +252,9 @@ void main() {
 
     // Verify RatingsBreakdownSection displays 0-ratings state
     expect(find.text('RATINGS'), findsOneWidget);
-    expect(find.text('Média: —'), findsOneWidget);
+    expect(find.text('Average: —'), findsOneWidget);
     expect(find.text('(0)'), findsOneWidget);
-    expect(find.text('Ainda não avaliaste nenhuma série'), findsOneWidget);
+    expect(find.text('You haven\'t rated any shows yet'), findsOneWidget);
   });
 
   testWidgets(
@@ -282,14 +282,14 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
 
     // Verify Community Card
-    expect(find.text('COMUNIDADE'), findsOneWidget);
+    expect(find.text('COMMUNITY'), findsOneWidget);
     expect(find.byIcon(Icons.star_rounded), findsWidgets);
     expect(find.text('8.9'), findsNWidgets(2)); // Backdrop pill and Community rating card
 
     // Verify User Rating Card (unrated state)
-    expect(find.text('A TUA AVALIAÇÃO'), findsOneWidget);
+    expect(find.text('YOUR RATING'), findsOneWidget);
     expect(find.byIcon(Icons.star_border), findsOneWidget);
-    expect(find.text('Avaliar Série'), findsOneWidget);
+    expect(find.text('Rate Show'), findsOneWidget);
 
     // Verify that neither rating card contains a duplicate '★' text character
     expect(find.text('8.9 ★'), findsNothing);

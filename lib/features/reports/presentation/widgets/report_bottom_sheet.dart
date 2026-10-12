@@ -60,18 +60,18 @@ class _ReportBottomSheetState extends ConsumerState<ReportBottomSheet> {
   bool _isSubmitting = false;
 
   static const List<String> _commentReasons = [
-    'Discurso de ódio ou ofensivo',
-    'Spam ou publicidade',
-    'Spoilers não sinalizados',
-    'Outro motivo',
+    'Hate speech or harassment',
+    'Spam or advertisement',
+    'Unmarked spoilers',
+    'Other reason',
   ];
 
   static const List<String> _profileReasons = [
-    'Discurso de ódio ou ofensivo',
-    'Foto, avatar ou banner impróprio',
-    'Nickname ou biografia inadequada',
-    'Spam ou publicidade',
-    'Outro motivo',
+    'Hate speech or harassment',
+    'Inappropriate photo, avatar, or banner',
+    'Inappropriate nickname or bio',
+    'Spam or advertisement',
+    'Other reason',
   ];
 
   List<String> get _reasons =>
@@ -127,7 +127,7 @@ class _ReportBottomSheetState extends ConsumerState<ReportBottomSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Denúncia enviada com sucesso. Obrigado por manteres a comunidade segura.',
+            'Report submitted successfully. Thank you for keeping our community safe.',
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
           backgroundColor: AppColors.surfaceHigh,
@@ -140,7 +140,7 @@ class _ReportBottomSheetState extends ConsumerState<ReportBottomSheet> {
       setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro ao submeter denúncia: $err'),
+          content: Text('Error submitting report: $err'),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -170,7 +170,7 @@ class _ReportBottomSheetState extends ConsumerState<ReportBottomSheet> {
 
               // Title
               Text(
-                isComment ? 'Denunciar Comentário' : 'Denunciar Perfil',
+                isComment ? 'Report Comment' : 'Report Profile',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
@@ -181,7 +181,7 @@ class _ReportBottomSheetState extends ConsumerState<ReportBottomSheet> {
 
               // Subtitle
               const Text(
-                'Ajuda-nos a manter a comunidade do Seriolab segura.',
+                'Help us keep the Seriolab community safe.',
                 style: TextStyle(
                   fontSize: 13,
                   color: AppColors.textSecondary,
@@ -205,7 +205,7 @@ class _ReportBottomSheetState extends ConsumerState<ReportBottomSheet> {
                   color: AppColors.textPrimary,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Detalhes adicionais (opcional)...',
+                  hintText: 'Additional details (optional)...',
                   hintStyle: const TextStyle(
                     fontSize: 13,
                     color: AppColors.textMuted,
@@ -256,7 +256,7 @@ class _ReportBottomSheetState extends ConsumerState<ReportBottomSheet> {
                   child: _isSubmitting
                       ? const SeriolabLoader(size: 24)
                       : const Text(
-                          'Submeter Denúncia',
+                          'Submit Report',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
@@ -275,7 +275,7 @@ class _ReportBottomSheetState extends ConsumerState<ReportBottomSheet> {
                       ? null
                       : () => Navigator.of(context).pop(false),
                   child: const Text(
-                    'Cancelar',
+                    'Cancel',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

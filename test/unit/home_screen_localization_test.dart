@@ -32,7 +32,7 @@ void main() {
       );
     });
 
-    testWidgets('HomeScreen renders all sections, filters and buttons in Portuguese by default',
+    testWidgets('HomeScreen renders all sections, filters and buttons in English by default',
         (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
@@ -47,7 +47,7 @@ void main() {
             demoSeedingEnabledProvider.overrideWithValue(false),
             settingsControllerProvider.overrideWith(
               () => _FakeSettingsNotifier(
-                UserSettings.defaultSettings.copyWith(language: 'pt-PT'),
+                UserSettings.defaultSettings,
               ),
             ),
           ],
@@ -69,31 +69,29 @@ void main() {
       expect(find.text('SÉRIES'), findsNothing);
       expect(find.text('TV SHOWS'), findsNothing);
 
-      // Filter chips in Portuguese
-      expect(find.text('Tudo'), findsOneWidget);
-      expect(find.text('All'), findsNothing);
-      expect(find.text('Sci-Fi & Fantasia'), findsOneWidget);
-      expect(find.text('Sci-Fi & Fantasy'), findsNothing);
-      expect(find.text('Comédia'), findsOneWidget);
-      expect(find.text('Comedy'), findsNothing);
+      // Filter chips in English
+      expect(find.text('All'), findsOneWidget);
+      expect(find.text('Tudo'), findsNothing);
+      expect(find.text('Sci-Fi & Fantasy'), findsOneWidget);
+      expect(find.text('Sci-Fi & Fantasia'), findsNothing);
+      expect(find.text('Comedy'), findsOneWidget);
+      expect(find.text('Comédia'), findsNothing);
 
-      // Section 1: Populares Esta Semana
-      expect(find.text('POPULARES ESTA SEMANA'), findsOneWidget);
-      expect(find.text('POPULAR THIS WEEK'), findsNothing);
-      expect(find.text('As séries com maior tendência na comunidade'), findsOneWidget);
-      expect(find.text('Ver tudo'), findsOneWidget);
-      expect(find.text('See all'), findsNothing);
-      expect(find.text('Ver todas'), findsNothing);
+      // Section 1: Popular This Week
+      expect(find.text('POPULAR THIS WEEK'), findsOneWidget);
+      expect(find.text('POPULARES ESTA SEMANA'), findsNothing);
+      expect(find.text('Trending series across the community'), findsOneWidget);
+      expect(find.text('See all'), findsOneWidget);
+      expect(find.text('Ver tudo'), findsNothing);
 
-      // Section 2: A Estrear / Em Exibição
-      expect(find.text('A ESTREAR / EM EXIBIÇÃO'), findsOneWidget);
-      expect(find.text('JUST PREMIERED / NOVAS TEMPORADAS'), findsNothing);
-      expect(find.text('Episódios e estreias recentes em exibição'), findsOneWidget);
+      // Section 2: Upcoming / On The Air
+      expect(find.text('UPCOMING / ON THE AIR'), findsOneWidget);
+      expect(find.text('Recent episodes and premieres on the air'), findsOneWidget);
 
-      // Section 3: Mais Votadas
-      expect(find.text('MAIS VOTADAS'), findsOneWidget);
-      expect(find.text('TOP RATED TV SHOWS'), findsNothing);
-      expect(find.text('As séries e animes mais aclamados de sempre'), findsOneWidget);
+      // Section 3: Top Rated
+      expect(find.text('TOP RATED'), findsOneWidget);
+      expect(find.text('MAIS VOTADAS'), findsNothing);
+      expect(find.text('The most acclaimed series and anime of all time'), findsOneWidget);
     });
 
     testWidgets('HomeScreen renders all sections, filters and buttons in English when set to en-US',
@@ -210,7 +208,7 @@ void main() {
       addTearDown(container.dispose);
 
       final settings = container.read(settingsControllerProvider);
-      expect(settings.tmdbLanguageCode, equals('pt-BR'));
+      expect(settings.tmdbLanguageCode, equals('en-US'));
 
       // Reading providers triggers with active language
       expect(container.read(popularThisWeekProvider), isNotNull);

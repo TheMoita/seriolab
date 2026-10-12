@@ -14,6 +14,9 @@ abstract interface class TrackingRepository {
 
   Future<void> unmarkWatched(int showId, List<EpisodeKey> keys);
 
+  /// Unmarks all watched episodes for the given show in batch.
+  Future<void> unmarkAllWatched(int showId);
+
   /// Generic key/value flags (e.g. demo data already seeded).
   Future<String?> readMeta(String key);
   Future<void> writeMeta(String key, String value);

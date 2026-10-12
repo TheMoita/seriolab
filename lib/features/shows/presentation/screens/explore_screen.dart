@@ -45,7 +45,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Explorar'),
+        title: const Text('Explore'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(114),
           child: Column(
@@ -59,8 +59,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   },
                   decoration: InputDecoration(
                     hintText: _currentTab == ExploreTab.shows
-                        ? 'Pesquisar séries, anime, criadores...'
-                        : 'Pesquisar utilizadores por @username ou nome...',
+                        ? 'Search shows, anime, creators...'
+                        : 'Search users by @username or name...',
                     prefixIcon: const Icon(
                       Icons.search_rounded,
                       color: AppColors.textSecondary,
@@ -82,14 +82,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 child: Row(
                   children: [
                     _ExploreTabPill(
-                      label: 'Séries',
+                      label: 'Shows',
                       icon: Icons.tv_rounded,
                       isSelected: _currentTab == ExploreTab.shows,
                       onTap: () => setState(() => _currentTab = ExploreTab.shows),
                     ),
                     const SizedBox(width: 8),
                     _ExploreTabPill(
-                      label: 'Utilizadores',
+                      label: 'Users',
                       icon: Icons.people_alt_rounded,
                       isSelected: _currentTab == ExploreTab.users,
                       onTap: () => setState(() => _currentTab = ExploreTab.users),
@@ -130,7 +130,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       ),
                       SizedBox(width: 6),
                       Text(
-                        'Em Destaque Esta Semana',
+                        'Trending This Week',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
@@ -157,8 +157,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Text(
                             isMissingKey
-                                ? 'Configura TMDB_API_KEY no ficheiro .env para carregar tendências em tempo real.'
-                                : 'Erro ao carregar tendências: $err',
+                                ? 'Configure TMDB_API_KEY in .env to load trending shows.'
+                                : 'Error loading trending shows: $err',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: isMissingKey
@@ -173,7 +173,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     data: (trending) {
                       if (trending.isEmpty) {
                         return const Center(
-                          child: Text('Sem destaques de momento.'),
+                          child: Text('No trending shows right now.'),
                         );
                       }
                       return ListView.separated(
@@ -203,7 +203,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          isSearching ? 'Resultados da Pesquisa' : 'Catálogo Completo',
+                          isSearching ? 'Search Results' : 'Full Catalogue',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
@@ -282,7 +282,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: FilterChip(
-                            label: const Text('Todos'),
+                            label: const Text('All'),
                             selected: selectedGenre == null,
                             onSelected: (_) {
                               ref
@@ -349,15 +349,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         ? Icons.key_off_rounded
                         : Icons.search_off_rounded,
                     title: isMissingKey
-                        ? 'Chave TMDB Não Configurada'
-                        : 'Erro na pesquisa',
+                        ? 'TMDB API Key Missing'
+                        : 'Search Error',
                     message: isMissingKey
-                        ? 'Configura a tua TMDB_API_KEY no ficheiro .env na raiz do projeto para pesquisares no catálogo TMDB em tempo real.'
+                        ? 'Configure your TMDB_API_KEY in the .env file at the project root to search TMDB.'
                         : errStr,
-                    actionLabel: 'Tentar novamente',
+                    actionLabel: 'Try again',
                     onAction: () => ref.refresh(exploreShowsProvider),
                     secondaryActionLabel: isMissingKey
-                        ? 'Ativar Modo Demonstração (Mock)'
+                        ? 'Enable Demo Mode (Mock)'
                         : null,
                     onSecondaryAction: isMissingKey
                         ? () {
@@ -376,11 +376,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   return SliverFillRemaining(
                     child: EmptyState(
                       icon: Icons.tv_off_rounded,
-                      title: 'Nenhuma série encontrada',
+                      title: 'No shows found',
                       message: isSearching
-                          ? 'Não encontrámos resultados para "$searchQuery". Tenta outro termo ou limpa os filtros.'
-                          : 'Não há séries disponíveis para este género.',
-                      actionLabel: isSearching ? 'Limpar pesquisa' : 'Ver todas',
+                          ? 'No results found for "$searchQuery". Try another search or reset filters.'
+                          : 'No shows available for this genre.',
+                      actionLabel: isSearching ? 'Clear search' : 'View all',
                       onAction: () {
                         if (isSearching) {
                           _searchController.clear();
@@ -441,7 +441,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         error: (err, _) => Center(
           child: EmptyState(
             icon: Icons.error_outline_rounded,
-            title: 'Erro na pesquisa',
+            title: 'Search Error',
             message: err.toString(),
           ),
         ),
@@ -450,8 +450,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             return const Center(
               child: EmptyState(
                 icon: Icons.person_search_rounded,
-                title: 'Nenhum utilizador encontrado',
-                message: 'Tenta pesquisar por outro nome ou @username.',
+                title: 'No users found',
+                message: 'Try searching for another name or @username.',
               ),
             );
           }
@@ -475,7 +475,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       error: (err, _) => Center(
         child: EmptyState(
           icon: Icons.error_outline_rounded,
-          title: 'Erro ao carregar comunidade',
+          title: 'Error loading community',
           message: err.toString(),
         ),
       ),
@@ -494,7 +494,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'Comunidade & Sugestões para Seguir',
+                      'Community & Follow Suggestions',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -511,9 +511,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 child: Center(
                   child: EmptyState(
                     icon: Icons.check_circle_outline_rounded,
-                    title: 'Estás a par de tudo!',
+                    title: 'You\'re all caught up!',
                     message:
-                        'Já segues todos os utilizadores sugeridos da comunidade.',
+                        'You already follow all suggested community members.',
                   ),
                 ),
               )
@@ -668,7 +668,7 @@ class _UserExploreTile extends ConsumerWidget {
                   ],
                   const SizedBox(height: 6),
                   Text(
-                    '${user.followersCount} seguidores • ${user.topFiveFavorites.length} favoritos',
+                    '${user.followersCount} followers • ${user.topFiveFavorites.length} favorites',
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
@@ -717,7 +717,7 @@ class _ExploreFollowButton extends ConsumerWidget {
         ),
         onPressed: () => _confirmUnfollow(context, ref),
         child: const Text(
-          'A Seguir',
+          'Following',
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
@@ -740,7 +740,7 @@ class _ExploreFollowButton extends ConsumerWidget {
         ref.read(socialActionsProvider).followUser(userId);
       },
       child: const Text(
-        'Seguir',
+        'Follow',
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
@@ -756,17 +756,17 @@ class _ExploreFollowButton extends ConsumerWidget {
       builder: (dlgCtx) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: Text(
-          'Deixar de seguir $username?',
+          'Unfollow $username?',
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         content: Text(
-          'Vais deixar de ver as séries e atualizações de $username.',
+          'You will no longer see updates and shows from $username.',
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dlgCtx),
-            child: const Text('Cancelar', style: TextStyle(color: AppColors.textMuted)),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
@@ -774,7 +774,7 @@ class _ExploreFollowButton extends ConsumerWidget {
               Navigator.pop(dlgCtx);
               ref.read(socialActionsProvider).unfollowUser(userId);
             },
-            child: const Text('Deixar de Seguir'),
+            child: const Text('Unfollow'),
           ),
         ],
       ),

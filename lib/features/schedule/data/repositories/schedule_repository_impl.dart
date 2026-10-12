@@ -46,8 +46,8 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
               .toList();
 
           // 3. Strict Inclusion Criterion:
-          // A série SÓ é incluída se existir pelo menos 1 episódio já transmitido
-          // que ainda NÃO foi visto pelo utilizador.
+          // The show is ONLY included if there is at least 1 episode already aired
+          // that has NOT yet been watched by the user.
           if (unwatchedAired.isEmpty) {
             return null;
           }
@@ -78,7 +78,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
     TrackingState trackingState,
   ) async {
     final now = _clock();
-    // Séries em 'plan_to_watch' ('watchlist') que ainda não têm nenhum episódio visto
+    // Shows in 'plan_to_watch' ('watchlist') that have 0 watched episodes
     final watchlistShows = trackingState
         .byStatus(TrackingStatus.watchlist)
         .where((tracked) => trackingState.watchedRegularCount(tracked.showId) == 0)
@@ -94,7 +94,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
           final show = showWithEpisodes.show;
           final episodes = showWithEpisodes.episodes;
 
-          // Selecionar 1º episódio (preferencialmente temporada 1, excluindo especiais)
+          // Select 1st episode (preferably season 1, excluding specials)
           final regularEpisodes =
               episodes.where((e) => e.seasonNumber > 0).toList();
           final firstEpisode = regularEpisodes.isNotEmpty
@@ -133,7 +133,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
     TrackingState trackingState,
   ) async {
     final now = _clock();
-    // Séries marcadas como 'dropped' ('Abandonadas')
+    // Shows marked as 'dropped' ('Dropped')
     final droppedShows = trackingState.byStatus(TrackingStatus.dropped);
     if (droppedShows.isEmpty) return const [];
 
@@ -150,7 +150,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
           final candidateEpisodes =
               regularEpisodes.isNotEmpty ? regularEpisodes : episodes;
 
-          // Próximo episódio por assistir
+          // Next unwatched episode
           final unwatched = candidateEpisodes
               .where((ep) => !trackingState.isWatched(tracked.showId, ep.key))
               .toList();
@@ -278,7 +278,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
                   episodeNumber: 1,
                   episodeTitle: season.name.isNotEmpty
                       ? season.name
-                      : 'Estreia da Temporada ${season.seasonNumber}',
+                      : 'Season ${season.seasonNumber} Premiere',
                   posterUrl: season.posterUrl ?? show.posterUrl,
                   backdropUrl: show.backdropUrl,
                   network: show.primaryNetwork,
@@ -305,7 +305,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
                 airDate: firstAir,
                 seasonNumber: 1,
                 episodeNumber: 1,
-                episodeTitle: 'Estreia da Série',
+                episodeTitle: 'Series Premiere',
                 posterUrl: show.posterUrl,
                 backdropUrl: show.backdropUrl,
                 network: show.primaryNetwork,

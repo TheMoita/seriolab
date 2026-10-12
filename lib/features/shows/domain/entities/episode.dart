@@ -4,12 +4,12 @@ import '../../data/models/tmdb_mapper.dart';
 
 /// Production status of a TV show.
 enum ShowStatus {
-  returning('Em exibição', 'Returning Series'),
-  inProduction('Em produção', 'In Production'),
-  planned('Planeada', 'Planned'),
-  ended('Terminada', 'Ended'),
-  canceled('Cancelada', 'Canceled'),
-  unknown('Desconhecido', '');
+  returning('Returning Series', 'Returning Series'),
+  inProduction('In Production', 'In Production'),
+  planned('Planned', 'Planned'),
+  ended('Ended', 'Ended'),
+  canceled('Canceled', 'Canceled'),
+  unknown('Unknown', '');
 
   const ShowStatus(this.label, this.tmdbValue);
 

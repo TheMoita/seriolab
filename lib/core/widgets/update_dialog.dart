@@ -128,7 +128,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                 _isDownloading = false;
                 _isInstalling = false;
                 _errorMessage =
-                    'A transferência da atualização já se encontra a decorrer.';
+                    'Update download is already running.';
               });
               break;
 
@@ -137,7 +137,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                 _isDownloading = false;
                 _isInstalling = false;
                 _errorMessage =
-                    'Permissão de instalação necessária. Ativa "Permitir a partir desta fonte" nas Definições do Android.';
+                    'Install permission required. Enable "Install unknown apps" in Android Settings.';
               });
               break;
 
@@ -146,7 +146,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                 _isDownloading = false;
                 _isInstalling = false;
                 _errorMessage =
-                    'Erro ao transferir o ficheiro APK. Verifica a ligação ou descarrega via browser.';
+                    'Failed to download the APK file. Check your connection or download via browser.';
               });
               break;
 
@@ -155,7 +155,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                 _isDownloading = false;
                 _isInstalling = false;
                 _errorMessage =
-                    'Erro na verificação de integridade do ficheiro APK.';
+                    'APK file checksum verification failed.';
               });
               break;
 
@@ -172,7 +172,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                 _isDownloading = false;
                 _isInstalling = false;
                 _errorMessage =
-                    'Falha ao instalar a atualização. Podes tentar descarregar pelo browser.';
+                    'Failed to install update. You can try downloading from the browser.';
               });
               break;
 
@@ -189,7 +189,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                 _isDownloading = false;
                 _isInstalling = false;
                 _errorMessage =
-                    'Não foi possível concluir a atualização. Podes tentar descarregar pelo browser.';
+                    'Could not complete the update. You can try downloading from the browser.';
               });
               break;
           }
@@ -200,7 +200,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
             _isDownloading = false;
             _isInstalling = false;
             _errorMessage =
-                'Falha na transferência da atualização. Podes tentar no browser.';
+                'Failed to download update. You can try from your browser.';
           });
         },
       );
@@ -210,7 +210,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
         _isDownloading = false;
         _isInstalling = false;
         _errorMessage =
-            'Não foi possível iniciar a atualização OTA. Podes descarregar no browser.';
+            'Could not start OTA update. You can download from your browser.';
       });
     }
   }
@@ -298,10 +298,10 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                   children: [
                     Text(
                       _isInstalling
-                          ? 'A Iniciar Instalação'
+                          ? 'Starting Installation'
                           : _isDownloading
-                              ? 'A Descarregar Atualização...'
-                              : 'Nova Atualização Disponível',
+                              ? 'Downloading Update...'
+                              : 'New Update Available',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 20,
@@ -342,10 +342,10 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
               Center(
                 child: Text(
                   _isInstalling
-                      ? 'O instalador nativo do Android foi iniciado. Por favor confirma a instalação no ecrã para atualizar o Seriolab.'
+                      ? 'The native Android installer has started. Please confirm installation on screen to update Seriolab.'
                       : _isDownloading
-                          ? 'A transferir seriolab-update.apk (v${widget.updateInfo.latestVersion}). Por favor aguarda.'
-                          : 'Vê o que mudou nesta versão:',
+                          ? 'Downloading seriolab-update.apk (v${widget.updateInfo.latestVersion}). Please wait.'
+                          : 'See what changed in this version:',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 13,
@@ -375,8 +375,8 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                         children: [
                           Text(
                             _isInstalling
-                                ? 'A abrir instalador do sistema...'
-                                : 'Progresso da transferência',
+                                ? 'Opening system installer...'
+                                : 'Download progress',
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -384,7 +384,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                             ),
                           ),
                           Text(
-                            _isInstalling ? 'Pronto' : '$_progress%',
+                            _isInstalling ? 'Ready' : '$_progress%',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w800,
@@ -485,7 +485,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: const Text(
-                    'Cancelar Transferência',
+                    'Cancel Download',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -510,7 +510,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                     ),
                   ),
                   child: const Text(
-                    'Fechar',
+                    'Close',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -535,7 +535,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                       Icon(Icons.download_rounded, size: 20),
                       SizedBox(width: 8),
                       Text(
-                        'Atualizar Agora',
+                        'Update Now',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -562,7 +562,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                         Icon(Icons.open_in_browser_rounded, size: 18),
                         SizedBox(width: 8),
                         Text(
-                          'Descarregar no Browser',
+                          'Download in Browser',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -586,7 +586,7 @@ class _UpdateBottomSheetState extends State<UpdateBottomSheet> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: const Text(
-                    'Mais Tarde',
+                    'Later',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

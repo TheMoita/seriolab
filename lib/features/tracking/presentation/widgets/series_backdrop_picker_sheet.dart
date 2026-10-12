@@ -99,7 +99,7 @@ class _SeriesBackdropPickerSheetState
           children: [
             Icon(Icons.check_circle_rounded, color: AppColors.secondary, size: 20),
             SizedBox(width: 10),
-            Text('Banner do perfil atualizado com sucesso!'),
+            Text('Profile banner updated successfully!'),
           ],
         ),
         backgroundColor: AppColors.surfaceHigh,
@@ -149,7 +149,7 @@ class _SeriesBackdropPickerSheetState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Escolher Backdrop de Série',
+                          'Choose Show Backdrop',
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w800,
@@ -157,7 +157,7 @@ class _SeriesBackdropPickerSheetState
                           ),
                         ),
                         Text(
-                          'Wallpapers oficiais do catálogo TMDB em alta resolução',
+                          'Official high-resolution TMDB wallpapers',
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
@@ -205,7 +205,7 @@ class _SeriesBackdropPickerSheetState
               textInputAction: TextInputAction.search,
               style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'Pesquisar série (ex: Severance, Breaking Bad...)',
+                hintText: 'Search shows (e.g. Severance, Breaking Bad...)',
                 hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
                 prefixIcon: const Icon(
                   Icons.search_rounded,
@@ -260,7 +260,7 @@ class _SeriesBackdropPickerSheetState
               ),
               const SizedBox(height: 12),
               Text(
-                'Nenhuma série encontrada para "$_query"',
+                'No shows found for "$_query"',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 14,
@@ -270,7 +270,7 @@ class _SeriesBackdropPickerSheetState
               ),
               const SizedBox(height: 6),
               const Text(
-                'Tenta outro título em português ou inglês.',
+                'Try searching with another title.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, color: AppColors.textMuted),
               ),
@@ -302,7 +302,7 @@ class _SeriesBackdropPickerSheetState
               Icon(Icons.trending_up_rounded, size: 16, color: AppColors.secondary),
               SizedBox(width: 8),
               Text(
-                'Séries Populares no Seriolab',
+                'Popular Shows on Seriolab',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -320,7 +320,7 @@ class _SeriesBackdropPickerSheetState
             ),
             error: (err, _) => Center(
               child: Text(
-                'Pesquisa uma série no campo acima.',
+                'Search for a show in the field above.',
                 style: TextStyle(color: AppColors.textMuted, fontSize: 13),
               ),
             ),
@@ -445,7 +445,7 @@ class _SeriesBackdropPickerSheetState
               TextButton.icon(
                 onPressed: () => setState(() => _selectedShow = null),
                 icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                label: const Text('Outra série'),
+                label: const Text('Change show'),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.secondary,
                   visualDensity: VisualDensity.compact,
@@ -470,7 +470,7 @@ class _SeriesBackdropPickerSheetState
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 6),
           child: Text(
-            'Toca num wallpaper para aplicar imediatamente:',
+            'Tap a wallpaper to apply immediately:',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
@@ -489,7 +489,7 @@ class _SeriesBackdropPickerSheetState
                   SeriolabLoader(size: 44),
                   SizedBox(height: 16),
                   Text(
-                    'A carregar wallpapers oficiais...',
+                    'Loading official wallpapers...',
                     style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
                   ),
                 ],
@@ -508,7 +508,7 @@ class _SeriesBackdropPickerSheetState
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Não foi possível obter wallpapers para ${show.name}',
+                      'Could not load wallpapers for ${show.name}',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 14,
@@ -518,7 +518,7 @@ class _SeriesBackdropPickerSheetState
                     const SizedBox(height: 12),
                     FilledButton.tonal(
                       onPressed: () => ref.refresh(showBackdropsProvider(show.id)),
-                      child: const Text('Tentar novamente'),
+                      child: const Text('Try again'),
                     ),
                   ],
                 ),
@@ -539,7 +539,7 @@ class _SeriesBackdropPickerSheetState
                         ),
                         const SizedBox(height: 12),
                         const Text(
-                          'Sem backdrops oficiais disponíveis para esta série.',
+                          'No official backdrops available for this show.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
@@ -549,7 +549,7 @@ class _SeriesBackdropPickerSheetState
                         const SizedBox(height: 12),
                         OutlinedButton(
                           onPressed: () => setState(() => _selectedShow = null),
-                          child: const Text('Escolher outra série'),
+                          child: const Text('Choose another show'),
                         ),
                       ],
                     ),
@@ -586,14 +586,14 @@ class _SeriesBackdropPickerSheetState
                                 width: isSelected ? 3 : 1,
                               ),
                               boxShadow: isSelected
-                                  ? [
-                                      BoxShadow(
-                                        color: AppColors.primary.withValues(alpha: 0.45),
-                                        blurRadius: 12,
-                                        spreadRadius: 1,
-                                      ),
-                                    ]
-                                  : null,
+                                    ? [
+                                        BoxShadow(
+                                          color: AppColors.primary.withValues(alpha: 0.45),
+                                          blurRadius: 12,
+                                          spreadRadius: 1,
+                                        ),
+                                      ]
+                                    : null,
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(isSelected ? 13 : 15),
@@ -684,7 +684,7 @@ class _SeriesBackdropPickerSheetState
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
-                                          isSelected ? 'Banner Ativo' : 'Tocar para aplicar',
+                                          isSelected ? 'Active Banner' : 'Tap to apply',
                                           style: const TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,
@@ -706,7 +706,7 @@ class _SeriesBackdropPickerSheetState
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Text(
-                      '${backdrops.length} wallpapers oficiais disponíveis. Desliza na horizontal para ver todos.',
+                      '${backdrops.length} official wallpapers available. Swipe horizontally to see all.',
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textMuted,

@@ -5,10 +5,10 @@ import '../../../shows/domain/entities/episode.dart';
 
 /// Personal list a show belongs to.
 enum TrackingStatus {
-  watching('A ver', Icons.play_circle_fill_rounded),
-  watchlist('Quero ver', Icons.bookmark_rounded),
-  completed('Terminadas', Icons.check_circle_rounded),
-  dropped('Abandonadas', Icons.do_not_disturb_on_rounded);
+  watching('Watching', Icons.play_circle_fill_rounded),
+  watchlist('Plan to Watch', Icons.bookmark_rounded),
+  completed('Completed', Icons.check_circle_rounded),
+  dropped('Dropped', Icons.do_not_disturb_on_rounded);
 
   const TrackingStatus(this.label, this.icon);
 
@@ -22,12 +22,12 @@ enum TrackingStatus {
         dropped => const Color(0xFFEF4444), // Crimson
       };
 
-  /// Singular label used on buttons ("Terminada" instead of "Terminadas").
+  /// Singular label used on buttons.
   String get actionLabel => switch (this) {
-        watching => 'A ver',
-        watchlist => 'Quero ver',
-        completed => 'Terminada',
-        dropped => 'Abandonada',
+        watching => 'Watching',
+        watchlist => 'Plan to Watch',
+        completed => 'Completed',
+        dropped => 'Dropped',
       };
 
   static TrackingStatus fromName(String name) =>
@@ -148,9 +148,9 @@ class WatchedEpisode {
   int get episodeNumber => key.episode;
 
   /// Compares two watched episodes for Recent Activity ordering:
-  /// 1º Critério: watchedAt (descendente — mais recente primeiro);
-  /// 2º Critério: seasonNumber (descendente — temporadas mais recentes primeiro);
-  /// 3º Critério: episodeNumber (descendente — episódios finais primeiro).
+  /// 1st Criterion: watchedAt (descending — most recent first);
+  /// 2nd Criterion: seasonNumber (descending — most recent seasons first);
+  /// 3rd Criterion: episodeNumber (descending — later episodes first).
   static int compareForRecentActivity(WatchedEpisode a, WatchedEpisode b) {
     final timeDiff = b.watchedAt.compareTo(a.watchedAt);
     if (timeDiff != 0) return timeDiff;

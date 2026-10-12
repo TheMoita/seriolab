@@ -14,11 +14,11 @@ class Genre {
   static const int animationId = 16;
 
   static const drama = Genre(id: 18, name: 'Drama');
-  static const actionAdventure = Genre(id: 10759, name: 'Ação & Aventura');
-  static const sciFiFantasy = Genre(id: 10765, name: 'Sci-Fi & Fantasia');
-  static const comedy = Genre(id: 35, name: 'Comédia');
+  static const actionAdventure = Genre(id: 10759, name: 'Action & Adventure');
+  static const sciFiFantasy = Genre(id: 10765, name: 'Sci-Fi & Fantasy');
+  static const comedy = Genre(id: 35, name: 'Comedy');
   static const crime = Genre(id: 80, name: 'Crime');
-  static const mystery = Genre(id: 9648, name: 'Mistério');
+  static const mystery = Genre(id: 9648, name: 'Mystery');
 
   static const List<Genre> all = [
     anime,
@@ -28,12 +28,12 @@ class Genre {
     comedy,
     crime,
     mystery,
-    Genre(id: 16, name: 'Animação'),
-    Genre(id: 10768, name: 'Guerra & Política'),
-    Genre(id: 99, name: 'Documentário'),
-    Genre(id: 10751, name: 'Família'),
+    Genre(id: 16, name: 'Animation'),
+    Genre(id: 10768, name: 'War & Politics'),
+    Genre(id: 99, name: 'Documentary'),
+    Genre(id: 10751, name: 'Family'),
     Genre(id: 10764, name: 'Reality'),
-    Genre(id: 10762, name: 'Infantil'),
+    Genre(id: 10762, name: 'Kids'),
     Genre(id: 37, name: 'Western'),
   ];
 
@@ -56,9 +56,9 @@ class Genre {
 
 /// Sorting options available in Explore.
 enum ShowSort {
-  popularity('Popularidade'),
-  rating('Classificação'),
-  newest('Mais recentes');
+  popularity('Popularity'),
+  rating('Top Rated'),
+  newest('Newest');
 
   const ShowSort(this.label);
   final String label;

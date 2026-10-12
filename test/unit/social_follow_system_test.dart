@@ -203,18 +203,18 @@ void main() {
       // Verify profile info
       expect(find.text('Marta Silva'), findsOneWidget);
       expect(find.text('@martas'), findsOneWidget);
-      expect(find.text('A Seguir'), findsWidgets);
-      expect(find.text('Seguidores'), findsWidgets);
+      expect(find.text('Following'), findsWidgets);
+      expect(find.text('Followers'), findsWidgets);
 
-      // Initially not following -> Button says "Seguir"
-      expect(find.widgetWithText(FilledButton, 'Seguir'), findsOneWidget);
+      // Initially not following -> Button says "Follow"
+      expect(find.widgetWithText(FilledButton, 'Follow'), findsOneWidget);
 
-      // Tap "Seguir"
-      await tester.tap(find.widgetWithText(FilledButton, 'Seguir'));
+      // Tap "Follow"
+      await tester.tap(find.widgetWithText(FilledButton, 'Follow'));
       await tester.pumpAndSettle();
 
-      // Button now changes to "A Seguir"
-      expect(find.widgetWithText(OutlinedButton, 'A Seguir'), findsOneWidget);
+      // Button now changes to "Following"
+      expect(find.widgetWithText(OutlinedButton, 'Following'), findsOneWidget);
     });
 
     testWidgets('FollowListSheet displays followers and following tabs',
@@ -254,8 +254,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tab bar text
-      expect(find.text('A Seguir (1)'), findsOneWidget);
-      expect(find.text('Seguidores (0)'), findsOneWidget);
+      expect(find.text('Following (1)'), findsOneWidget);
+      expect(find.text('Followers (0)'), findsOneWidget);
 
       // Followed user item
       expect(find.text('Marta Silva'), findsOneWidget);

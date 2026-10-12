@@ -25,7 +25,7 @@ abstract class AppLocalizations {
     return fromLanguageCode(locale?.languageCode);
   }
 
-  /// Resolves localizations based on a language string (e.g. 'pt-PT', 'en-US', 'es-ES').
+  /// Resolves localizations based on a language string.
   static AppLocalizations fromLanguageCode(String? language) {
     if (language == null) return const AppLocalizationsEn();
     final code = language.toLowerCase();
@@ -103,13 +103,12 @@ class _AppLocalizationsDelegate
   const _AppLocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) =>
-      ['pt', 'en', 'es'].contains(locale.languageCode.toLowerCase());
+  bool isSupported(Locale locale) => true;
 
   @override
   Future<AppLocalizations> load(Locale locale) {
     return SynchronousFuture<AppLocalizations>(
-      AppLocalizations.fromLocale(locale),
+      const AppLocalizationsEn(),
     );
   }
 
@@ -117,146 +116,7 @@ class _AppLocalizationsDelegate
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
-/// Portuguese strings (default)
-class AppLocalizationsPt extends AppLocalizations {
-  const AppLocalizationsPt();
 
-  @override
-  String get appTitle => 'Seriolab';
-
-  @override
-  String get tvShowsBadge => 'SÉRIES';
-
-  @override
-  String get searchTooltip => 'Procurar';
-
-  @override
-  String get trending => 'Tendências de Hoje';
-
-  @override
-  String get trendingSubtitle => 'As séries com maior tendência na comunidade';
-
-  @override
-  String get popular => 'Populares';
-
-  @override
-  String get popularThisWeek => 'Populares Esta Semana';
-
-  @override
-  String get popularSubtitle => 'As séries com maior tendência na comunidade';
-
-  @override
-  String get topRated => 'Mais Votadas';
-
-  @override
-  String get topRatedSubtitle => 'As séries e animes mais aclamados de sempre';
-
-  @override
-  String get upcoming => 'A Estrear';
-
-  @override
-  String get onTheAir => 'Em Exibição';
-
-  @override
-  String get justPremieredAndNewSeasons => 'A Estrear / Em Exibição';
-
-  @override
-  String get justPremieredSubtitle => 'Episódios e estreias recentes em exibição';
-
-  @override
-  String get all => 'Tudo';
-
-  @override
-  String get thisWeek => 'Esta Semana';
-
-  @override
-  String get today => 'Hoje';
-
-  @override
-  String get genreDrama => 'Drama';
-
-  @override
-  String get genreSciFi => 'Sci-Fi & Fantasia';
-
-  @override
-  String get genreCrime => 'Crime';
-
-  @override
-  String get genreAnime => 'Anime';
-
-  @override
-  String get genreComedy => 'Comédia';
-
-  @override
-  String get noShowsFound => 'Nenhuma série encontrada';
-
-  @override
-  String get noShowsForGenre => 'Nenhuma série encontrada para o género selecionado.';
-
-  @override
-  String get failedToLoad => 'Erro ao carregar dados';
-
-  @override
-  String get failedToLoadPopular => 'Não foi possível carregar as séries populares';
-
-  @override
-  String failedToLoadWithMessage(String error) => 'Erro ao carregar dados: $error';
-
-  @override
-  String get retry => 'Tentar novamente';
-
-  @override
-  String get reload => 'Tentar novamente';
-
-  @override
-  String get tmdbKeyMissingTitle => 'Chave TMDB Não Configurada';
-
-  @override
-  String get tmdbKeyMissingMessage =>
-      'Configura a tua TMDB_API_KEY no ficheiro .env na raiz do projeto para obteres dados em tempo real.';
-
-  @override
-  String get waitingTmdbKey => 'A aguardar TMDB_API_KEY no .env';
-
-  @override
-  String get demoModeActive => 'Modo de demonstração ativo (dados locais mock).';
-
-  @override
-  String get enableDemoMode => 'Ativar Modo Demonstração (Mock)';
-
-  @override
-  String get tryLiveApi => 'Tentar API Real';
-
-  @override
-  String get seeAll => 'Ver tudo';
-
-  @override
-  String get seeLess => 'Menos';
-
-  @override
-  String get watchlistTab => 'Lista para Assistir';
-
-  @override
-  String get comingSoonTab => 'Brevemente';
-
-  @override
-  String get upNextSection => 'Ver a Seguir';
-
-  @override
-  String get startWatchingSection => 'Começar a Ver';
-
-  @override
-  String get resumeWatchingSection => 'Retomar';
-
-  @override
-  String get language => 'Idioma';
-
-  @override
-  String get applicationLanguage => 'Idioma da Aplicação';
-
-  @override
-  String get contentAndLanguagePreferences => 'Preferências de Conteúdo & Idioma';
-}
 
 /// English strings
 class AppLocalizationsEn extends AppLocalizations {
@@ -399,143 +259,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contentAndLanguagePreferences => 'Content & Language Preferences';
 }
 
-/// Spanish strings
-class AppLocalizationsEs extends AppLocalizations {
+/// Portuguese implementation (English strings)
+class AppLocalizationsPt extends AppLocalizationsEn {
+  const AppLocalizationsPt();
+}
+
+/// Spanish implementation (English strings)
+class AppLocalizationsEs extends AppLocalizationsEn {
   const AppLocalizationsEs();
-
-  @override
-  String get appTitle => 'Seriolab';
-
-  @override
-  String get tvShowsBadge => 'SERIES';
-
-  @override
-  String get searchTooltip => 'Buscar';
-
-  @override
-  String get trending => 'Tendencias de Hoy';
-
-  @override
-  String get trendingSubtitle => 'Las series con mayor tendencia en la comunidad';
-
-  @override
-  String get popular => 'Populares';
-
-  @override
-  String get popularThisWeek => 'Populares Esta Semana';
-
-  @override
-  String get popularSubtitle => 'Las series con mayor tendencia en la comunidad';
-
-  @override
-  String get topRated => 'Más Votadas';
-
-  @override
-  String get topRatedSubtitle => 'Las series y animes más aclamados de siempre';
-
-  @override
-  String get upcoming => 'A Estrenar';
-
-  @override
-  String get onTheAir => 'En Emisión';
-
-  @override
-  String get justPremieredAndNewSeasons => 'A Estrenar / En Emisión';
-
-  @override
-  String get justPremieredSubtitle => 'Episodios y estrenos recientes en emisión';
-
-  @override
-  String get all => 'Todo';
-
-  @override
-  String get thisWeek => 'Esta Semana';
-
-  @override
-  String get today => 'Hoy';
-
-  @override
-  String get genreDrama => 'Drama';
-
-  @override
-  String get genreSciFi => 'Ciencia Ficción y Fantasía';
-
-  @override
-  String get genreCrime => 'Crimen';
-
-  @override
-  String get genreAnime => 'Anime';
-
-  @override
-  String get genreComedy => 'Comedia';
-
-  @override
-  String get noShowsFound => 'No se encontraron series';
-
-  @override
-  String get noShowsForGenre => 'No se encontraron series para el género seleccionado.';
-
-  @override
-  String get failedToLoad => 'Error al cargar datos';
-
-  @override
-  String get failedToLoadPopular => 'No fue posible cargar las series populares';
-
-  @override
-  String failedToLoadWithMessage(String error) => 'Error al cargar: $error';
-
-  @override
-  String get retry => 'Reintentar';
-
-  @override
-  String get reload => 'Reintentar';
-
-  @override
-  String get tmdbKeyMissingTitle => 'Clave TMDB No Configurada';
-
-  @override
-  String get tmdbKeyMissingMessage =>
-      'Configura tu TMDB_API_KEY en el archivo .env en la raíz del proyecto para obtener datos en tiempo real.';
-
-  @override
-  String get waitingTmdbKey => 'Esperando TMDB_API_KEY en .env';
-
-  @override
-  String get demoModeActive => 'Modo de demostración activo (datos locales mock).';
-
-  @override
-  String get enableDemoMode => 'Activar Modo Demostración (Mock)';
-
-  @override
-  String get tryLiveApi => 'Probar API Real';
-
-  @override
-  String get seeAll => 'Ver todo';
-
-  @override
-  String get seeLess => 'Menos';
-
-  @override
-  String get watchlistTab => 'Lista para Ver';
-
-  @override
-  String get comingSoonTab => 'Próximamente';
-
-  @override
-  String get upNextSection => 'Siguiente';
-
-  @override
-  String get startWatchingSection => 'Empezar a Ver';
-
-  @override
-  String get resumeWatchingSection => 'Reanudar';
-
-  @override
-  String get language => 'Idioma';
-
-  @override
-  String get applicationLanguage => 'Idioma de la Aplicación';
-
-  @override
-  String get contentAndLanguagePreferences => 'Preferencias de Contenido e Idioma';
 }

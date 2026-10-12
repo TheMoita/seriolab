@@ -47,7 +47,7 @@ class ChooseAvatarSheet extends ConsumerWidget {
                     ),
                     SizedBox(height: 2),
                     Text(
-                      'Ícones temáticos inspirados nas maiores séries de TV',
+                      'Thematic icons inspired by top TV series',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
@@ -96,7 +96,7 @@ class ChooseAvatarSheet extends ConsumerWidget {
                                 size: 20,
                               ),
                               const SizedBox(width: 10),
-                              Text('Ícone alterado para "${avatar.name}"!'),
+                              Text('Icon changed to "${avatar.name}"!'),
                             ],
                           ),
                           duration: const Duration(seconds: 2),

@@ -16,7 +16,7 @@ void main() {
   );
 
   group('ShowDetailScreen Trailer Button Tests', () {
-    testWidgets('renders exactly ONE "Ver Trailer" button on the backdrop when trailer is available', (tester) async {
+    testWidgets('renders exactly ONE "Watch Trailer" button on the backdrop when trailer is available', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -31,12 +31,12 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Exactly ONE "Ver Trailer" button must exist in the entire screen
-      final trailerButtonFinder = find.text('Ver Trailer');
+      // Exactly ONE "Watch Trailer" button must exist in the entire screen
+      final trailerButtonFinder = find.text('Watch Trailer');
       expect(trailerButtonFinder, findsOneWidget);
 
       // Verify no disabled button is rendered
-      expect(find.text('Trailer indisponível'), findsNothing);
+      expect(find.text('Trailer unavailable'), findsNothing);
     });
 
     testWidgets('hides trailer button completely when no trailer is available (null/empty)', (tester) async {
@@ -55,8 +55,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // No trailer button and no disabled button
-      expect(find.text('Ver Trailer'), findsNothing);
-      expect(find.text('Trailer indisponível'), findsNothing);
+      expect(find.text('Watch Trailer'), findsNothing);
+      expect(find.text('Trailer unavailable'), findsNothing);
     });
   });
 }

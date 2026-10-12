@@ -123,14 +123,14 @@ class _FollowListSheetState extends ConsumerState<FollowListSheet>
               tabs: [
                 Tab(
                   text: followingAsync.maybeWhen(
-                    data: (list) => 'A Seguir (${list.length})',
-                    orElse: () => 'A Seguir',
+                    data: (list) => 'Following (${list.length})',
+                    orElse: () => 'Following',
                   ),
                 ),
                 Tab(
                   text: followersAsync.maybeWhen(
-                    data: (list) => 'Seguidores (${list.length})',
-                    orElse: () => 'Seguidores',
+                    data: (list) => 'Followers (${list.length})',
+                    orElse: () => 'Followers',
                   ),
                 ),
               ],
@@ -148,15 +148,15 @@ class _FollowListSheetState extends ConsumerState<FollowListSheet>
                       child: SeriolabLoader(size: 36),
                     ),
                     error: (err, _) => Center(
-                      child: Text('Erro: $err', style: const TextStyle(color: AppColors.danger)),
+                      child: Text('Error: $err', style: const TextStyle(color: AppColors.danger)),
                     ),
                     data: (list) {
                       if (list.isEmpty) {
                         return const Center(
                           child: EmptyState(
                             icon: Icons.person_search_rounded,
-                            title: 'Ainda não segue ninguém',
-                            message: 'Descobre novos utilizadores no separador Explorar.',
+                            title: 'Not following anyone yet',
+                            message: 'Discover new users in the Explore tab.',
                           ),
                         );
                       }
@@ -181,15 +181,15 @@ class _FollowListSheetState extends ConsumerState<FollowListSheet>
                       child: SeriolabLoader(size: 36),
                     ),
                     error: (err, _) => Center(
-                      child: Text('Erro: $err', style: const TextStyle(color: AppColors.danger)),
+                      child: Text('Error: $err', style: const TextStyle(color: AppColors.danger)),
                     ),
                     data: (list) {
                       if (list.isEmpty) {
                         return const Center(
                           child: EmptyState(
                             icon: Icons.people_outline_rounded,
-                            title: 'Ainda sem seguidores',
-                            message: 'Partilha a tua paixão por séries para ganhar seguidores!',
+                            title: 'No followers yet',
+                            message: 'Share your passion for TV series to gain followers!',
                           ),
                         );
                       }
@@ -294,7 +294,7 @@ class _FollowButton extends ConsumerWidget {
         ),
         onPressed: () => _confirmUnfollow(context, ref),
         child: const Text(
-          'A Seguir',
+          'Following',
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
@@ -317,7 +317,7 @@ class _FollowButton extends ConsumerWidget {
         ref.read(socialActionsProvider).followUser(userId);
       },
       child: const Text(
-        'Seguir',
+        'Follow',
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
@@ -333,17 +333,17 @@ class _FollowButton extends ConsumerWidget {
       builder: (dlgCtx) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: Text(
-          'Deixar de seguir $username?',
+          'Unfollow $username?',
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         content: Text(
-          'Vais deixar de ver a atividade e as séries avaliadas por $username.',
+          'You will no longer see activity and reviewed shows from $username.',
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dlgCtx),
-            child: const Text('Cancelar', style: TextStyle(color: AppColors.textMuted)),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
@@ -351,7 +351,7 @@ class _FollowButton extends ConsumerWidget {
               Navigator.pop(dlgCtx);
               ref.read(socialActionsProvider).unfollowUser(userId);
             },
-            child: const Text('Deixar de Seguir'),
+            child: const Text('Unfollow'),
           ),
         ],
       ),

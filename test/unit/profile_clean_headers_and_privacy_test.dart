@@ -68,7 +68,7 @@ void main() {
       expect(find.byIcon(Icons.mail_outline_rounded), findsNothing);
 
       // Bio button/action should remain visible
-      expect(find.text('Adicionar biografia'), findsOneWidget);
+      expect(find.text('Add bio'), findsOneWidget);
     });
 
     testWidgets(
@@ -130,7 +130,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Section title is present
-      expect(find.text('ATIVIDADE RECENTE'), findsOneWidget);
+      expect(find.text('RECENT ACTIVITY'), findsOneWidget);
 
       // Counter text like "1 recentes" must NOT exist
       expect(find.textContaining('recentes'), findsNothing);

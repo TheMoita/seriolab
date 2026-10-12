@@ -84,7 +84,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
           children: [
             Icon(Icons.check_circle_rounded, color: AppColors.secondary, size: 20),
             SizedBox(width: 10),
-            Text('Perfil atualizado com sucesso!'),
+            Text('Profile updated successfully!'),
           ],
         ),
         duration: Duration(seconds: 2),
@@ -117,10 +117,10 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.textSecondary,
                       ),
-                      child: const Text('Cancelar'),
+                      child: const Text('Cancel'),
                     ),
                     const Text(
-                      'Editar Perfil',
+                      'Edit Profile',
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
@@ -138,7 +138,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                         ),
                       ),
                       child: const Text(
-                        'Guardar',
+                        'Save',
                         style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
@@ -211,7 +211,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                 const SizedBox(height: 14),
                 const Center(
                   child: Text(
-                    'Escolhe o teu ícone de perfil',
+                    'Choose your profile icon',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -286,7 +286,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                       color: AppColors.secondary,
                     ),
                     label: const Text(
-                      'Mais opções (Séries TMDB ou Foto)',
+                      'More options (TMDB Shows or Photo)',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -299,7 +299,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
 
                 // Form Fields
                 const Text(
-                  'Nome de Exibição',
+                  'Display Name',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -320,11 +320,11 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                       color: AppColors.textMuted,
                       size: 20,
                     ),
-                    hintText: 'O teu nome',
+                    hintText: 'Your name',
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return 'O nome não pode estar vazio';
+                      return 'Name cannot be empty';
                     }
                     return null;
                   },
@@ -332,7 +332,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                 const SizedBox(height: 16),
 
                 const Text(
-                  'Nome de Utilizador',
+                  'Username',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -357,7 +357,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
-                      return 'O username não pode estar vazio';
+                      return 'Username cannot be empty';
                     }
                     return null;
                   },
@@ -365,7 +365,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                 const SizedBox(height: 16),
 
                 const Text(
-                  'Bio Curta',
+                  'Short Bio',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -381,7 +381,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                     fontSize: 14,
                   ),
                   decoration: const InputDecoration(
-                    hintText: 'Uma breve frase sobre as tuas séries favoritas...',
+                    hintText: 'A short sentence about your favorite series...',
                     alignLabelWithHint: true,
                   ),
                 ),

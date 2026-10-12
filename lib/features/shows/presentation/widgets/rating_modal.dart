@@ -135,26 +135,26 @@ class _RatingModalState extends State<RatingModal> {
   }
 
   String _getRatingQualifier(double score) {
-    if (score >= 10.0) return 'Obra-Prima ★★★';
-    if (score >= 9.5) return 'Obra-Prima';
-    if (score >= 9.0) return 'Brilhante / Excelente';
-    if (score >= 8.5) return 'Excelente';
-    if (score >= 8.0) return 'Muito Bom';
-    if (score >= 7.5) return 'Bom +';
-    if (score >= 7.0) return 'Bom';
-    if (score >= 6.5) return 'Acima da Média';
-    if (score >= 6.0) return 'Razoável +';
-    if (score >= 5.5) return 'Razoável';
-    if (score >= 5.0) return 'Mediano';
-    if (score >= 4.5) return 'Abaixo da Média';
-    if (score >= 4.0) return 'Fraco +';
-    if (score >= 3.5) return 'Fraco';
-    if (score >= 3.0) return 'Muito Fraco';
-    if (score >= 2.5) return 'Mau';
-    if (score >= 2.0) return 'Muito Mau';
-    if (score >= 1.5) return 'Terrível';
-    if (score >= 1.0) return 'Pavoroso';
-    return 'Insuportável';
+    if (score >= 10.0) return 'Masterpiece ★★★';
+    if (score >= 9.5) return 'Masterpiece';
+    if (score >= 9.0) return 'Brilliant / Excellent';
+    if (score >= 8.5) return 'Excellent';
+    if (score >= 8.0) return 'Very Good';
+    if (score >= 7.5) return 'Good +';
+    if (score >= 7.0) return 'Good';
+    if (score >= 6.5) return 'Above Average';
+    if (score >= 6.0) return 'Decent +';
+    if (score >= 5.5) return 'Decent';
+    if (score >= 5.0) return 'Average';
+    if (score >= 4.5) return 'Below Average';
+    if (score >= 4.0) return 'Poor +';
+    if (score >= 3.5) return 'Poor';
+    if (score >= 3.0) return 'Very Poor';
+    if (score >= 2.5) return 'Bad';
+    if (score >= 2.0) return 'Very Bad';
+    if (score >= 1.5) return 'Terrible';
+    if (score >= 1.0) return 'Dreadful';
+    return 'Unbearable';
   }
 
   void _updateScore10Line(double dx, double totalWidth) {
@@ -351,7 +351,7 @@ class _RatingModalState extends State<RatingModal> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'CLASSIFICAÇÃO (10 ESTRELAS)',
+                          'RATING (10 STARS)',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
@@ -391,7 +391,7 @@ class _RatingModalState extends State<RatingModal> {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  _useTwoRows ? '1 Linha (10★)' : '2 Linhas (2x5★)',
+                                  _useTwoRows ? '1 Row (10★)' : '2 Rows (2x5★)',
                                   style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
@@ -492,7 +492,7 @@ class _RatingModalState extends State<RatingModal> {
                                   ),
                                   SizedBox(width: 3),
                                   Text(
-                                    'Limpar nota',
+                                    'Clear rating',
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
@@ -507,7 +507,7 @@ class _RatingModalState extends State<RatingModal> {
                       ),
                     ] else ...[
                       const Text(
-                        'Toca ou desliza para avaliar (0.5 a 10.0 ★)',
+                        'Tap or slide to rate (0.5 to 10.0 ★)',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -538,7 +538,7 @@ class _RatingModalState extends State<RatingModal> {
                   ),
                   decoration: const InputDecoration(
                     hintText:
-                        'Escreve uma análise ou notas sobre esta série/episódio...',
+                        'Write a review or notes about this show/episode...',
                     hintStyle: TextStyle(
                       fontSize: 13,
                       color: AppColors.textMuted,
@@ -584,7 +584,7 @@ class _RatingModalState extends State<RatingModal> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Contém Spoilers',
+                            'Contains Spoilers',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -593,7 +593,7 @@ class _RatingModalState extends State<RatingModal> {
                           ),
                           if (_hasSpoilers)
                             const Text(
-                              'Aviso visual ativado para proteger outros utilizadores',
+                              'Visual warning enabled to protect other users',
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
@@ -640,7 +640,7 @@ class _RatingModalState extends State<RatingModal> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Data do registo (Watched Date)',
+                              'Watched Date',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -650,7 +650,7 @@ class _RatingModalState extends State<RatingModal> {
                             const SizedBox(height: 2),
                             Text(
                               isToday
-                                  ? 'Hoje (${Formatters.shortDate(_loggedAt)})'
+                                  ? 'Today (${Formatters.shortDate(_loggedAt)})'
                                   : Formatters.fullDate(_loggedAt),
                               style: const TextStyle(
                                 fontSize: 13,
@@ -687,7 +687,7 @@ class _RatingModalState extends State<RatingModal> {
                         ),
                       ),
                       child: const Text(
-                        'Cancelar',
+                        'Cancel',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -716,8 +716,8 @@ class _RatingModalState extends State<RatingModal> {
                           const SizedBox(width: 6),
                           Text(
                             _currentRating != null
-                                ? 'Guardar Registo (${_currentRating!.toStringAsFixed(1)} ★)'
-                                : 'Guardar Registo',
+                                ? 'Save Log (${_currentRating!.toStringAsFixed(1)} ★)'
+                                : 'Save Log',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w900,
@@ -743,7 +743,7 @@ class _RatingModalState extends State<RatingModal> {
                     ),
                     icon: const Icon(Icons.delete_outline_rounded, size: 16),
                     label: const Text(
-                      'Remover registo e avaliação',
+                      'Remove log and rating',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,

@@ -116,7 +116,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
     } catch (e) {
       if (mounted) {
         setState(() {
-          _seriesErrorMessage = 'Erro ao pesquisar séries: $e';
+          _seriesErrorMessage = 'Error searching series: $e';
           _isSearching = false;
         });
       }
@@ -141,7 +141,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
     } catch (e) {
       if (mounted) {
         setState(() {
-          _seriesErrorMessage = 'Erro ao carregar detalhes da série: $e';
+          _seriesErrorMessage = 'Error loading show details: $e';
           _isLoadingDetails = false;
         });
       }
@@ -176,7 +176,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Foto de perfil atualizada com sucesso!'),
+            content: Text('Profile photo updated successfully!'),
             backgroundColor: Color(0xFF10B981),
           ),
         );
@@ -186,7 +186,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
         setState(() => _isProcessingImage = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Falha ao processar foto: $e'),
+            content: Text('Failed to process photo: $e'),
             backgroundColor: const Color(0xFFEF4444),
           ),
         );
@@ -216,7 +216,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Personalizar Avatar',
+                      'Customize Avatar',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -225,7 +225,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Ícones temáticos, imagens de séries ou a tua foto',
+                      'Thematic icons, show images, or your photo',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary.withValues(alpha: 0.9),
@@ -273,15 +273,15 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                 tabs: const [
                   Tab(
                     icon: Icon(Icons.auto_awesome_rounded, size: 18),
-                    text: 'Ícones',
+                    text: 'Icons',
                   ),
                   Tab(
                     icon: Icon(Icons.tv_rounded, size: 18),
-                    text: 'De Séries',
+                    text: 'From Shows',
                   ),
                   Tab(
                     icon: Icon(Icons.add_a_photo_rounded, size: 18),
-                    text: 'Carregar Foto',
+                    text: 'Upload Photo',
                   ),
                 ],
               ),
@@ -333,7 +333,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Avatar Atual',
+                      'Current Avatar',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -344,8 +344,8 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                       settings.avatarType == AvatarType.preset
                           ? SeriolabAvatar.getById(settings.avatarId).name
                           : (settings.avatarType == AvatarType.networkUrl
-                              ? 'Imagem de Série'
-                              : 'Foto Pessoal'),
+                              ? 'Show Image'
+                              : 'Personal Photo'),
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -386,7 +386,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Avatar "${avatar.name}" selecionado!'),
+                        content: Text('Avatar "${avatar.name}" selected!'),
                         duration: const Duration(seconds: 2),
                       ),
                     );
@@ -488,7 +488,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                     color: AppColors.textPrimary,
                   ),
                   decoration: const InputDecoration(
-                    hintText: 'Pesquisar série (ex.: Breaking Bad, Arcane)...',
+                    hintText: 'Search series (e.g., Breaking Bad, Arcane)...',
                     hintStyle: TextStyle(
                       fontSize: 13,
                       color: AppColors.textSecondary,
@@ -557,7 +557,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                   SeriolabLoader(size: 44),
                   SizedBox(height: 14),
                   Text(
-                    'A pesquisar no catálogo do TMDB...',
+                    'Searching TMDB catalog...',
                     style: TextStyle(
                       fontSize: 13,
                       color: AppColors.textSecondary,
@@ -580,7 +580,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'Nenhuma série encontrada',
+                    'No series found',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -589,7 +589,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Tenta pesquisar por outro nome ou termo.',
+                    'Try searching for another name or term.',
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -728,7 +728,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
     if (show.posterUrl != null && show.posterUrl!.isNotEmpty) {
       images.add((
         url: show.posterUrl!,
-        label: 'Poster Oficial',
+        label: 'Official Poster',
         category: 'Poster',
       ));
     }
@@ -736,7 +736,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
     if (show.backdropUrl != null && show.backdropUrl!.isNotEmpty) {
       images.add((
         url: show.backdropUrl!,
-        label: 'Cenário Principal',
+        label: 'Main Backdrop',
         category: 'Backdrop',
       ));
     }
@@ -746,7 +746,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
         images.add((
           url: member.profileUrl!,
           label: member.name,
-          category: member.character.isNotEmpty ? member.character : 'Elenco',
+          category: member.character.isNotEmpty ? member.character : 'Cast',
         ));
       }
     }
@@ -773,7 +773,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                     ),
                     SizedBox(width: 4),
                     Text(
-                      'Voltar',
+                      'Back',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -799,7 +799,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
         ),
         const SizedBox(height: 8),
         Text(
-          'Toca numa imagem para defini-la como o teu novo avatar:',
+          'Tap an image to set it as your new avatar:',
           style: TextStyle(
             fontSize: 12,
             color: AppColors.textSecondary.withValues(alpha: 0.9),
@@ -811,7 +811,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
           const Expanded(
             child: Center(
               child: Text(
-                'Nenhuma imagem de alta qualidade disponível para esta série.',
+                'No high-quality images available for this show.',
                 style: TextStyle(
                   fontSize: 13,
                   color: AppColors.textSecondary,
@@ -845,7 +845,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            'Avatar atualizado a partir de ${show.name} (${item.label})!',
+                            'Avatar updated from ${show.name} (${item.label})!',
                           ),
                           backgroundColor: const Color(0xFF38BDF8),
                         ),
@@ -967,7 +967,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
           const SizedBox(height: 14),
           const Center(
             child: Text(
-              'Escolhe uma foto pessoal para o teu perfil',
+              'Choose a personal photo for your profile',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -1013,7 +1013,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Escolher da Galeria',
+                          'Choose from Gallery',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
@@ -1022,7 +1022,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                         ),
                         SizedBox(height: 3),
                         Text(
-                          'Carregar foto guardada no teu telemóvel',
+                          'Upload photo saved on your device',
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
@@ -1077,7 +1077,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Tirar com a Câmara',
+                          'Take with Camera',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
@@ -1086,7 +1086,7 @@ class _AvatarSelectionSheetState extends ConsumerState<AvatarSelectionSheet>
                         ),
                         SizedBox(height: 3),
                         Text(
-                          'Tirar uma nova fotografia agora mesmo',
+                          'Take a new photo right now',
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,

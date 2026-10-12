@@ -306,7 +306,7 @@ void main() {
       expect(find.text('2'), findsOneWidget);
 
       // Check Translate button
-      expect(find.text('Traduzir'), findsOneWidget);
+      expect(find.text('Translate'), findsOneWidget);
 
       // Tap Like button -> optimistic update to 3
       await tester.tap(find.byIcon(Icons.thumb_up_outlined));
@@ -324,21 +324,21 @@ void main() {
       expect(find.byIcon(Icons.thumb_down_rounded), findsOneWidget);
 
       // Tap Translate button
-      await tester.tap(find.text('Traduzir'));
+      await tester.tap(find.text('Translate'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
 
       // Translated text is displayed
       expect(find.text('Esta é uma reviravolta impressionante no enredo!'), findsOneWidget);
-      expect(find.text('Traduzido automaticamente'), findsOneWidget);
-      expect(find.text('Ver original'), findsOneWidget);
+      expect(find.text('Automatically translated'), findsOneWidget);
+      expect(find.text('View original'), findsOneWidget);
 
-      // Tap "Ver original" to revert back to original
-      await tester.tap(find.text('Ver original'));
+      // Tap "View original" to revert back to original
+      await tester.tap(find.text('View original'));
       await tester.pump();
 
       expect(find.text('This is an awesome plot twist!'), findsOneWidget);
-      expect(find.text('Traduzir'), findsOneWidget);
+      expect(find.text('Translate'), findsOneWidget);
     });
   });
 }

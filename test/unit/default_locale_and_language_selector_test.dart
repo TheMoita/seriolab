@@ -90,7 +90,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Title & close button
-      expect(find.text('Idioma da Aplicação'), findsOneWidget);
+      expect(find.text('App Language'), findsOneWidget);
 
       // All 4 options visible
       expect(find.text('English (US) 🇺🇸'), findsOneWidget);
@@ -177,7 +177,7 @@ void main() {
       expect(find.text('English (US) 🇺🇸'), findsOneWidget);
 
       // Tap the Language tile
-      await tester.tap(find.text('Idioma da Aplicação'));
+      await tester.tap(find.text('App Language'));
       await tester.pumpAndSettle();
 
       // Modal is open

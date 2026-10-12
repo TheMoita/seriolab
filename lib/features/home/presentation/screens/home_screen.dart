@@ -20,7 +20,7 @@ import '../../../shows/presentation/widgets/letterboxd_show_card.dart';
 /// Visual hierarchy:
 /// 1. Minimalist app header with brand & genre quick-filter
 /// 2. Featured "POPULAR THIS WEEK" vertical poster grid (2:3 aspect ratio)
-/// 3. "JUST PREMIERED / NOVAS TEMPORADAS" horizontal carousel
+/// 3. "JUST PREMIERED / NEW SEASONS" horizontal carousel
 /// 4. "TOP RATED TV SHOWS" horizontal carousel
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({

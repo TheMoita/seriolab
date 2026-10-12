@@ -24,7 +24,7 @@ void main() {
       showId: 100,
       seasonNumber: 1,
       episodeNumber: 1,
-      name: 'Episódio Piloto',
+      name: 'Pilot Episode',
     );
 
     await tester.pumpWidget(
@@ -64,33 +64,33 @@ void main() {
     expect(find.byType(ModalDragHandle), findsOneWidget);
 
     // Verify Header texts
-    expect(find.text('T1 • E1 — Episódio Piloto'), findsOneWidget);
-    expect(find.text('O que achaste deste episódio?'), findsOneWidget);
+    expect(find.text('S1 • E1 — Pilot Episode'), findsOneWidget);
+    expect(find.text('What did you think of this episode?'), findsOneWidget);
 
     // Verify rating prompt initially present
-    expect(find.text('Toca ou desliza para avaliar (0.5 a 10.0 ★)'),
+    expect(find.text('Tap or slide to rate (0.5 to 10.0 ★)'),
         findsOneWidget);
 
     // Verify comment text field placeholder
     expect(
-      find.text('Escreve a tua opinião sobre o episódio (opcional)...'),
+      find.text('Write your thoughts on this episode (optional)...'),
       findsOneWidget,
     );
 
     // Verify spoiler toggle
-    expect(find.text('Contém spoilers'), findsOneWidget);
+    expect(find.text('Contains spoilers'), findsOneWidget);
 
     // Verify Action buttons
-    expect(find.text('Agora não'), findsOneWidget);
-    expect(find.text('Guardar'), findsOneWidget);
+    expect(find.text('Not now'), findsOneWidget);
+    expect(find.text('Save'), findsOneWidget);
 
-    // Tap "Agora não" to test dismissal without saving
-    await tester.tap(find.text('Agora não'));
+    // Tap "Not now" to test dismissal without saving
+    await tester.tap(find.text('Not now'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     // Modal should be closed
-    expect(find.text('O que achaste deste episódio?'), findsNothing);
+    expect(find.text('What did you think of this episode?'), findsNothing);
   });
 
   testWidgets(
@@ -108,7 +108,7 @@ void main() {
       showId: 100,
       seasonNumber: 1,
       episodeNumber: 1,
-      name: 'Episódio Piloto',
+      name: 'Pilot Episode',
     );
 
     await tester.pumpWidget(
@@ -156,11 +156,11 @@ void main() {
     await tester.pump();
 
     // Save
-    await tester.tap(find.text('Guardar'));
+    await tester.tap(find.text('Save'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
     // Verify modal is closed
-    expect(find.text('O que achaste deste episódio?'), findsNothing);
+    expect(find.text('What did you think of this episode?'), findsNothing);
   });
 }

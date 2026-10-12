@@ -27,7 +27,7 @@ void main() {
       );
     });
 
-    testWidgets('Displays "Tens a versão mais recente instalada" when app is up to date',
+    testWidgets('Displays "You have the latest version installed" when app is up to date',
         (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
@@ -52,19 +52,19 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      final checkTile = find.text('Verificar Atualizações');
+      final checkTile = find.text('Check for Updates');
       expect(checkTile, findsOneWidget);
 
       await tester.tap(checkTile);
       await tester.pumpAndSettle();
 
       expect(
-        find.text('Tens a versão mais recente instalada (v1.0.14).'),
+        find.text('You have the latest version installed (v1.0.14).'),
         findsOneWidget,
       );
     });
 
-    testWidgets('Displays "Nenhuma versão encontrada no repositório." when 404',
+    testWidgets('Displays "No releases found in the repository." when 404',
         (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
@@ -74,7 +74,7 @@ void main() {
       const fakeResult = UpdateCheckResult(
         status: UpdateCheckStatus.noReleaseFound,
         statusCode: 404,
-        errorMessage: 'Nenhuma versão encontrada no repositório.',
+        errorMessage: 'No releases found in the repository.',
       );
 
       await tester.pumpWidget(
@@ -90,17 +90,17 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      final checkTile = find.text('Verificar Atualizações');
+      final checkTile = find.text('Check for Updates');
       await tester.tap(checkTile);
       await tester.pumpAndSettle();
 
       expect(
-        find.text('Nenhuma versão encontrada no repositório.'),
+        find.text('No releases found in the repository.'),
         findsOneWidget,
       );
     });
 
-    testWidgets('Displays "Sem ligação à internet." on network connectivity error',
+    testWidgets('Displays "No internet connection." on network connectivity error',
         (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
@@ -109,7 +109,7 @@ void main() {
 
       const fakeResult = UpdateCheckResult(
         status: UpdateCheckStatus.networkError,
-        errorMessage: 'Sem ligação à internet.',
+        errorMessage: 'No internet connection.',
       );
 
       await tester.pumpWidget(
@@ -125,12 +125,12 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      final checkTile = find.text('Verificar Atualizações');
+      final checkTile = find.text('Check for Updates');
       await tester.tap(checkTile);
       await tester.pumpAndSettle();
 
       expect(
-        find.text('Sem ligação à internet.'),
+        find.text('No internet connection.'),
         findsOneWidget,
       );
     });

@@ -54,7 +54,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${show.name} ${episode.code} marcado como visto!',
+            '${show.name} ${episode.code} marked as watched!',
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           duration: const Duration(seconds: 2),
@@ -78,7 +78,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro ao atualizar episódio: $e'),
+          content: Text('Error updating episode: $e'),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -99,11 +99,11 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Agenda'),
+        title: const Text('Schedule'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Atualizar agenda',
+            tooltip: 'Refresh schedule',
             onPressed: () =>
                 ref.read(scheduleControllerProvider.notifier).refresh(),
           ),
@@ -159,9 +159,9 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen>
         ),
         error: (err, _) => EmptyState(
           icon: Icons.calendar_today_rounded,
-          title: 'Erro ao carregar agenda',
+          title: 'Error loading schedule',
           message: err.toString(),
-          actionLabel: 'Tentar novamente',
+          actionLabel: 'Try again',
           onAction: () =>
               ref.read(scheduleControllerProvider.notifier).refresh(),
         ),
@@ -288,9 +288,9 @@ class _WatchingListView extends ConsumerWidget {
     if (isEmpty) {
       return EmptyState(
         icon: Icons.check_circle_outline_rounded,
-        title: 'Estás em dia!',
-        message: 'Nenhuma série com episódios pendentes para ver.',
-        actionLabel: 'Explorar séries',
+        title: 'All caught up!',
+        message: 'No pending episodes to watch.',
+        actionLabel: 'Explore shows',
         onAction: onExploreTap,
       );
     }
@@ -469,8 +469,8 @@ class _CurrentlyWatchingCard extends ConsumerWidget {
                           const SizedBox(width: 4),
                           Text(
                             item.trackedShow.showStatus.isFinished
-                                ? 'Série terminada!'
-                                : 'Em dia com os episódios',
+                                ? 'Show ended!'
+                                : 'Up to date with episodes',
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -481,7 +481,7 @@ class _CurrentlyWatchingCard extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'A aguardar novos episódios',
+                        'Waiting for new episodes',
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
@@ -516,7 +516,7 @@ class _CurrentlyWatchingCard extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: const Text(
-                                'Pausada',
+                                'Paused',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -537,7 +537,7 @@ class _CurrentlyWatchingCard extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: const Text(
-                                'Começar',
+                                'Start',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -556,7 +556,7 @@ class _CurrentlyWatchingCard extends ConsumerWidget {
                       Text(
                         epTitle.isNotEmpty
                             ? epTitle
-                            : 'Episódio ${ep.episodeNumber}',
+                            : 'Episode ${ep.episodeNumber}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -567,10 +567,10 @@ class _CurrentlyWatchingCard extends ConsumerWidget {
                     ] else ...[
                       Text(
                         sectionType == _WatchlistSectionType.startWatching
-                            ? 'Começar a ver (Episódio 1)'
+                            ? 'Start watching (Episode 1)'
                             : (sectionType == _WatchlistSectionType.resume
-                                ? 'Retomar série'
-                                : 'Em andamento'),
+                                ? 'Resume show'
+                                : 'In progress'),
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
@@ -593,7 +593,7 @@ class _CurrentlyWatchingCard extends ConsumerWidget {
                     color: AppColors.primary,
                     size: 26,
                   ),
-                  tooltip: 'Marcar como visto',
+                  tooltip: 'Mark as watched',
                   onPressed: () => onMarkWatched(
                     item.showDetails!,
                     item.nextEpisode!,
@@ -630,9 +630,9 @@ class _ComingSoonListView extends StatelessWidget {
     if (items.isEmpty) {
       return EmptyState(
         icon: Icons.event_busy_rounded,
-        title: 'Sem estreias agendadas',
-        message: 'Nenhuma estreia agendada para breve nas tuas séries.',
-        actionLabel: 'Explorar séries',
+        title: 'No upcoming premieres',
+        message: 'No premieres scheduled soon for your tracked shows.',
+        actionLabel: 'Explore shows',
         onAction: onExploreTap,
       );
     }
@@ -829,7 +829,7 @@ class _TemporalBadge extends StatelessWidget {
           ),
         ),
         child: const Text(
-          'Disponível',
+          'Available',
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
@@ -850,11 +850,11 @@ class _TemporalBadge extends StatelessWidget {
 
     final String label;
     if (diff <= 0) {
-      label = 'Hoje';
+      label = 'Today';
     } else if (diff == 1) {
-      label = 'Amanhã';
+      label = 'Tomorrow';
     } else {
-      label = 'Em $diff dias';
+      label = 'In $diff days';
     }
 
     return Container(
@@ -896,18 +896,18 @@ class _PremiereBadge extends StatelessWidget {
     final bool isHighlight;
 
     if (diff <= 0) {
-      text = 'Estreia hoje';
+      text = 'Premieres today';
       isHighlight = true;
     } else if (diff == 1) {
-      text = 'Amanhã';
+      text = 'Tomorrow';
       isHighlight = true;
     } else if (diff < 7) {
-      text = 'Daqui a $diff dias';
+      text = 'In $diff days';
       isHighlight = false;
     } else {
       final weeks = (diff / 7).round();
       if (weeks <= 4 && item.isSeasonPremiere && item.seasonNumber > 1) {
-        text = 'T${item.seasonNumber} Estreia em $weeks semanas';
+        text = 'S${item.seasonNumber} Premieres in $weeks weeks';
         isHighlight = true;
       } else {
         text = Formatters.dayMonth(item.airDate);

@@ -22,8 +22,8 @@ sealed class TmdbException implements Exception {
 class TmdbApiKeyMissingException extends TmdbException {
   const TmdbApiKeyMissingException([
     super.message =
-        'A chave de API do TMDB (TMDB_API_KEY) não está configurada.\n'
-        'Adiciona a tua chave no ficheiro .env para aceder ao catálogo real.',
+        'TMDB API key (TMDB_API_KEY) is not configured.\n'
+        'Add your key to the .env file to access live data.',
   ]) : super(statusCode: 401);
 }
 
@@ -31,28 +31,28 @@ class TmdbApiKeyMissingException extends TmdbException {
 class TmdbAuthException extends TmdbException {
   const TmdbAuthException([
     super.message =
-        'Chave de API do TMDB inválida ou não autorizada (401). Verifica o ficheiro .env.',
+        'Invalid or unauthorized TMDB API key (401). Check your .env file.',
   ]) : super(statusCode: 401);
 }
 
 /// Thrown when a show or season was not found (404 Not Found).
 class TmdbNotFoundException extends TmdbException {
   const TmdbNotFoundException([
-    super.message = 'Conteúdo ou série não encontrado no TMDB (404).',
+    super.message = 'Content or show not found on TMDB (404).',
   ]) : super(statusCode: 404);
 }
 
 /// Thrown on request timeout.
 class TmdbTimeoutException extends TmdbException {
   const TmdbTimeoutException([
-    super.message = 'O pedido ao TMDB demorou demasiado tempo (tempo limite esgotado).',
+    super.message = 'TMDB request timed out.',
   ]);
 }
 
 /// Thrown on network/socket connection failures.
 class TmdbNetworkException extends TmdbException {
   const TmdbNetworkException([
-    super.message = 'Sem ligação à internet ou falha ao contactar os servidores do TMDB.',
+    super.message = 'No internet connection or failed to contact TMDB servers.',
   ]);
 }
 
@@ -77,7 +77,7 @@ class TmdbApiClient {
     String? defaultLanguage,
   })  : _apiKey = apiKey ?? AppConfig.tmdbApiKey,
         baseUrl = baseUrl ?? AppConfig.tmdbBaseUrl,
-        defaultLanguage = defaultLanguage ?? AppConfig.tmdbLanguage;
+        defaultLanguage = defaultLanguage ?? 'en-US';
 
   final http.Client client;
   final String _apiKey;
@@ -122,17 +122,17 @@ class TmdbApiClient {
           return decoded.cast<String, dynamic>();
         }
         throw TmdbApiException(
-          'Resposta inesperada do TMDB (esperado objecto JSON)',
+          'Unexpected response from TMDB (expected JSON object)',
           statusCode: response.statusCode,
         );
       }
 
       // Handle non-200 responses
       _logError(
-        'HTTP ${response.statusCode} em ${_redact(uri)}\n'
-        'Resposta TMDB: $bodyString',
+        'HTTP ${response.statusCode} at ${_redact(uri)}\n'
+        'TMDB response: $bodyString',
       );
-      String errorMessage = 'Erro ao comunicar com o TMDB (${response.statusCode})';
+      String errorMessage = 'Error communicating with TMDB (${response.statusCode})';
       try {
         final decoded = jsonDecode(bodyString);
         if (decoded is Map && decoded['status_message'] is String) {
@@ -152,26 +152,26 @@ class TmdbApiClient {
     } on TmdbException {
       rethrow;
     } on TimeoutException {
-      _logError('Timeout (${timeout.inSeconds}s) em ${_redact(uri)}');
+      _logError('Timeout (${timeout.inSeconds}s) at ${_redact(uri)}');
       throw const TmdbTimeoutException();
     } on SocketException catch (e) {
-      _logError('SocketException em ${_redact(uri)}: $e');
+      _logError('SocketException at ${_redact(uri)}: $e');
       throw TmdbNetworkException(
-        'Sem ligação à internet ou falha ao contactar os servidores do TMDB '
+        'No internet connection or failed to contact TMDB servers '
         '(${e.osError?.message ?? e.message}).',
       );
     } on HandshakeException catch (e) {
-      _logError('HandshakeException (TLS) em ${_redact(uri)}: $e');
-      throw TmdbNetworkException('Falha na ligação segura (TLS) ao TMDB: ${e.message}');
+      _logError('HandshakeException (TLS) at ${_redact(uri)}: $e');
+      throw TmdbNetworkException('Secure TLS connection failure to TMDB: ${e.message}');
     } on http.ClientException catch (e) {
-      _logError('ClientException em ${_redact(uri)}: ${e.message}');
-      throw TmdbNetworkException('Erro de ligação HTTP: ${e.message}');
+      _logError('ClientException at ${_redact(uri)}: ${e.message}');
+      throw TmdbNetworkException('HTTP connection error: ${e.message}');
     } on FormatException catch (e) {
-      _logError('FormatException em ${_redact(uri)}: ${e.message}');
-      throw TmdbApiException('Falha ao processar resposta JSON do TMDB: ${e.message}');
+      _logError('FormatException at ${_redact(uri)}: ${e.message}');
+      throw TmdbApiException('Failed to parse TMDB JSON response: ${e.message}');
     } catch (e) {
-      _logError('Erro inesperado em ${_redact(uri)}: $e');
-      throw TmdbApiException('Erro inesperado: $e');
+      _logError('Unexpected error at ${_redact(uri)}: $e');
+      throw TmdbApiException('Unexpected error: $e');
     }
   }
 

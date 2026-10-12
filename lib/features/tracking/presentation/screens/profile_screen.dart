@@ -75,7 +75,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ? settings.displayName.trim()
         : (authState.user?.displayName?.trim().isNotEmpty == true
             ? authState.user!.displayName!.trim()
-            : (authState.user?.preferredName ?? 'Perfil'));
+            : (authState.user?.preferredName ?? 'Profile'));
 
     return Scaffold(
       appBar: AppBar(
@@ -83,7 +83,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: AppColors.textPrimary),
-            tooltip: 'Definições',
+            tooltip: 'Settings',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -100,9 +100,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ),
         error: (err, _) => EmptyState(
           icon: Icons.error_outline_rounded,
-          title: 'Erro ao carregar perfil',
+          title: 'Error loading profile',
           message: err.toString(),
-          actionLabel: 'Tentar novamente',
+          actionLabel: 'Try again',
           onAction: () => ref.refresh(trackingControllerProvider),
         ),
         data: (trackingState) {
@@ -181,7 +181,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                         ),
                                         const SizedBox(width: 5),
                                         Text(
-                                          'Adicionar biografia',
+                                          'Add bio',
                                           style: TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w500,
@@ -227,7 +227,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                           ),
                                           const SizedBox(width: 5),
                                           const Text(
-                                            'A Seguir',
+                                            'Following',
                                             style: TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w500,
@@ -275,7 +275,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                           ),
                                           const SizedBox(width: 5),
                                           const Text(
-                                            'Seguidores',
+                                            'Followers',
                                             style: TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w500,
@@ -297,7 +297,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     Expanded(
                                       child: _MetricCard(
                                         icon: Icons.timer_outlined,
-                                        label: 'Tempo Gasto',
+                                        label: 'Time Watched',
                                         value: Formatters.watchTime(stats.minutesWatched),
                                         color: AppColors.primary,
                                       ),
@@ -306,7 +306,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     Expanded(
                                       child: _MetricCard(
                                         icon: Icons.done_all_rounded,
-                                        label: 'Episódios',
+                                        label: 'Episodes',
                                         value: '${stats.episodesWatched}',
                                         color: AppColors.secondary,
                                       ),
@@ -315,7 +315,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     Expanded(
                                       child: _MetricCard(
                                         icon: Icons.tv_rounded,
-                                        label: 'Séries',
+                                        label: 'Shows',
                                         value: '${stats.totalShows}',
                                         color: AppColors.success,
                                       ),
@@ -381,10 +381,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 if (shows.isEmpty) {
                   return EmptyState(
                     icon: status.icon,
-                    title: 'Nenhuma série em "${status.label}"',
+                    title: 'No shows in "${status.label}"',
                     message:
-                        'Descobre novas séries no separador Explorar para adicionar a esta lista.',
-                    actionLabel: 'Explorar séries',
+                        'Discover new shows in the Explore tab to add to this list.',
+                    actionLabel: 'Explore shows',
                     onAction: widget.onExploreTap,
                   );
                 }
@@ -571,8 +571,8 @@ class _TrackedShowTile extends ConsumerWidget {
                           children: [
                             Text(
                               totalEpisodes > 0
-                                  ? '$watchedCount / $totalEpisodes episódios'
-                                  : '$watchedCount episódios vistos',
+                                  ? '$watchedCount / $totalEpisodes episodes'
+                                  : '$watchedCount episodes watched',
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textSecondary,
@@ -630,8 +630,8 @@ class _TrackedShowTile extends ConsumerWidget {
                                     const SizedBox(width: 4),
                                     Text(
                                       tracked.showStatus.isFinished
-                                          ? 'Série terminada!'
-                                          : 'Em dia com os episódios',
+                                          ? 'Show ended!'
+                                          : 'Up to date with episodes',
                                       style: const TextStyle(
                                         fontSize: 11,
                                         color: AppColors.success,
@@ -651,7 +651,7 @@ class _TrackedShowTile extends ConsumerWidget {
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
-                                      'A seguir: ${nextEp.code} • ${nextEp.name}',
+                                      'Next: ${nextEp.code} • ${nextEp.name}',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(

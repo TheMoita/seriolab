@@ -36,13 +36,13 @@ void main() async {
       persistenceEnabled: true,
     );
   } catch (e) {
-    debugPrint('Nota: Firebase não inicializado ($e). A usar modo local/reserva.');
+    debugPrint('Note: Firebase not initialized ($e). Using local fallback mode.');
   }
 
   try {
     await dotenv.load(fileName: '.env');
   } catch (e) {
-    debugPrint('Nota: Ficheiro .env não carregado ($e).');
+    debugPrint('Note: .env file not loaded ($e).');
   }
 
   TrackingRepository trackingRepo;
@@ -53,7 +53,7 @@ void main() async {
       final db = await AppDatabase.open();
       trackingRepo = SqfliteTrackingRepository(db);
     } catch (e) {
-      debugPrint('Falha ao abrir SQLite, a usar armazenamento em memória: $e');
+      debugPrint('Failed to open SQLite, using in-memory storage: $e');
       trackingRepo = InMemoryTrackingRepository();
     }
   }
@@ -80,8 +80,7 @@ class SeriolabApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsControllerProvider);
-    final locale = _resolveLocale(settings.language);
+    ref.watch(settingsControllerProvider);
 
     Widget resolveHome() {
       if (home != null) return home!;
@@ -93,24 +92,8 @@ class SeriolabApp extends ConsumerWidget {
       title: 'Seriolab',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark(),
-      locale: locale,
+      locale: const Locale('en', 'US'),
       localeResolutionCallback: (deviceLocale, supportedLocales) {
-        // Respect explicit user setting if available
-        if (settings.language.isNotEmpty) {
-          return locale;
-        }
-        // Match device locale if supported
-        if (deviceLocale != null) {
-          for (final supported in supportedLocales) {
-            if (supported.languageCode == deviceLocale.languageCode) {
-              if (supported.countryCode == null ||
-                  supported.countryCode == deviceLocale.countryCode) {
-                return supported;
-              }
-            }
-          }
-        }
-        // Fallback to English (en-US)
         return const Locale('en', 'US');
       },
       localizationsDelegates: const [
@@ -120,31 +103,10 @@ class SeriolabApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('en'),
         Locale('en', 'US'),
-        Locale('pt', 'PT'),
-        Locale('pt', 'BR'),
-        Locale('es', 'ES'),
       ],
       home: resolveHome(),
     );
-  }
-
-  static Locale _resolveLocale(String? language) {
-    if (language == null || language.isEmpty) {
-      return const Locale('en', 'US');
-    }
-    final normalized = language.replaceAll('_', '-');
-    if (normalized.contains('-')) {
-      final parts = normalized.split('-');
-      return Locale(parts[0], parts[1]);
-    }
-    return switch (normalized.toLowerCase()) {
-      'en' => const Locale('en', 'US'),
-      'pt' => const Locale('pt', 'PT'),
-      'es' => const Locale('es', 'ES'),
-      _ => const Locale('en', 'US'),
-    };
   }
 }
 

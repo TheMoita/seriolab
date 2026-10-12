@@ -44,22 +44,22 @@ class _MainScreenState extends State<MainScreen> {
           NavigationDestination(
             icon: Icon(Icons.tv_outlined),
             selectedIcon: Icon(Icons.tv_rounded),
-            label: 'Início',
+            label: 'Home',
           ),
           NavigationDestination(
             icon: Icon(Icons.search_rounded),
             selectedIcon: Icon(Icons.travel_explore_rounded),
-            label: 'Explorar',
+            label: 'Explore',
           ),
           NavigationDestination(
             icon: Icon(Icons.calendar_today_outlined),
             selectedIcon: Icon(Icons.calendar_month_rounded),
-            label: 'Agenda',
+            label: 'Schedule',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline_rounded),
             selectedIcon: Icon(Icons.person_rounded),
-            label: 'Perfil',
+            label: 'Profile',
           ),
         ],
       ),

@@ -102,7 +102,7 @@ abstract final class TmdbMapper {
     final nameStr = rawName is String ? rawName.trim() : '';
     final originalStr = rawOriginal is String ? rawOriginal.trim() : '';
     final epNum = _int(json['episode_number']);
-    final fallbackName = 'Episódio $epNum';
+    final fallbackName = 'Episode $epNum';
     final title = nameStr.isNotEmpty
         ? nameStr
         : (originalStr.isNotEmpty ? originalStr : fallbackName);
