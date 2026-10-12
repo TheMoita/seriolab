@@ -58,12 +58,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyD8wZDdZ-cIswZHdiIsDMBjzvv61h-Gu9s',
-    appId: '1:686239497156:android:bbf250974fef7ef1390291',
+    appId: '1:686239497156:android:d961f5220805fb90390291',
     messagingSenderId: '686239497156',
     projectId: 'seriolab-85857',
     storageBucket: 'seriolab-85857.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDc_r8iAdcBsH7Besemk1qE0JPuCDrqUls',
     appId: '1:686239497156:ios:260b4080070c1052390291',
