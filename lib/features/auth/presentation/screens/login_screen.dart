@@ -91,36 +91,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.read(authControllerProvider.notifier).clearError();
 
     try {
-      final success =
-          await ref.read(authControllerProvider.notifier).signInWithGoogle();
+      final success = await ref
+          .read(authControllerProvider.notifier)
+          .signInWithGoogle(context: context);
 
       if (!mounted) return;
 
       if (success) {
         _navigateToMain();
-      } else {
-        final errorMsg = ref.read(authControllerProvider).errorMessage;
-        if (errorMsg != null && mounted) {
-          final displayMsg = errorMsg.startsWith('Falha')
-              ? errorMsg
-              : 'Falha ao autenticar com o Google: $errorMsg';
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(displayMsg),
-              backgroundColor: AppColors.danger,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
       }
-    } catch (e) {
-      debugPrint('Erro detalhado no Google Sign-In: $e');
+    } catch (e, stack) {
+      debugPrint('Erro detalhado no Google Sign-In: $e\n\n$stack');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Falha ao autenticar com o Google: $e'),
-            backgroundColor: AppColors.danger,
-            behavior: SnackBarBehavior.floating,
+        showDialog<void>(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Erro no Login'),
+            content: SingleChildScrollView(
+              child: Text('$e\n\n$stack'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Fechar'),
+              ),
+            ],
           ),
         );
       }

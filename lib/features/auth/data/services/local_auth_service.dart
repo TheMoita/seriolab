@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+
 import '../../../tracking/domain/repositories/tracking_repository.dart';
 import '../../domain/auth_exception.dart';
 import '../../domain/entities/app_user.dart';
@@ -130,7 +132,21 @@ class LocalAuthService implements AuthService {
   }
 
   @override
-  Future<AppUser?> signInWithGoogle() async {
+  Future<AppUser?> signInWithGoogle({BuildContext? context}) async {
+    if (context != null && context.mounted) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('A abrir seletor Google...')),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Conta selecionada: utilizador.google@seriolab.app'),
+        ),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tokens obtidos: idToken=true')),
+      );
+    }
     // Simulated Google Sign-In for offline / dev preview
     const email = 'utilizador.google@seriolab.app';
     final user = AppUser(

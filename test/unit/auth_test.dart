@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seriolab/features/auth/data/services/firebase_auth_service.dart';
@@ -238,7 +239,7 @@ class _MockConfigurableAuthService implements AuthService {
   }
 
   @override
-  Future<AppUser?> signInWithGoogle() async {
+  Future<AppUser?> signInWithGoogle({BuildContext? context}) async {
     if (exceptionToThrow != null) {
       throw exceptionToThrow!;
     }

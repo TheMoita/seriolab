@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 import '../entities/app_user.dart';
 
 /// Authentication contract used by the presentation layer.
@@ -23,7 +25,7 @@ abstract interface class AuthService {
   );
 
   /// Returns `null` when the user dismisses the Google account picker.
-  Future<AppUser?> signInWithGoogle();
+  Future<AppUser?> signInWithGoogle({BuildContext? context});
 
   Future<void> signOut();
 }

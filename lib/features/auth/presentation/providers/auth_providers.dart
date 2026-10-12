@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/di/providers.dart';
@@ -163,10 +163,10 @@ class AuthController extends Notifier<AuthState> {
     }
   }
 
-  Future<bool> signInWithGoogle() async {
+  Future<bool> signInWithGoogle({BuildContext? context}) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final user = await _service.signInWithGoogle();
+      final user = await _service.signInWithGoogle(context: context);
       if (user == null) {
         // Utilizador cancelou a seleção
         state = state.copyWith(isLoading: false);
@@ -185,8 +185,8 @@ class AuthController extends Notifier<AuthState> {
       );
       state = state.copyWith(isLoading: false, errorMessage: e.message);
       return false;
-    } catch (e) {
-      debugPrint('Erro detalhado no Google Sign-In (AuthController): $e');
+    } catch (e, stack) {
+      debugPrint('Erro detalhado no Google Sign-In (AuthController): $e\n\n$stack');
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Falha ao autenticar com o Google: $e',
