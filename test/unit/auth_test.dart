@@ -1,12 +1,10 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:seriolab/features/auth/data/services/firebase_auth_service.dart';
+import 'package:seriolab/core/di/providers.dart';
 import 'package:seriolab/features/auth/data/services/local_auth_service.dart';
 import 'package:seriolab/features/auth/domain/auth_exception.dart';
 import 'package:seriolab/features/auth/domain/auth_validators.dart';
 import 'package:seriolab/features/auth/domain/entities/app_user.dart';
-import 'package:seriolab/features/auth/domain/services/auth_service.dart';
 import 'package:seriolab/features/auth/presentation/providers/auth_providers.dart';
 import 'package:seriolab/features/tracking/data/repositories/in_memory_tracking_repository.dart';
 
@@ -56,7 +54,7 @@ void main() {
       const userNoName = AppUser(
         uid: '456',
         email: 'cinefilo@example.com',
-        provider: AuthProviderKind.google,
+        provider: AuthProviderKind.email,
       );
 
       expect(userNoName.preferredName, 'cinefilo');
@@ -119,140 +117,64 @@ void main() {
       expect(signedIn.email, 'tester@seriolab.app');
       expect(service.currentUser?.email, 'tester@seriolab.app');
     });
-
-    test('signInWithGoogle creates and sets active user', () async {
-      final googleUser = await service.signInWithGoogle();
-      expect(googleUser, isNotNull);
-      expect(googleUser!.provider, AuthProviderKind.google);
-      expect(service.currentUser?.provider, AuthProviderKind.google);
-    });
   });
 
-  group('FirebaseAuthService Configuration', () {
-    test('defaultServerClientId matches Google Cloud Web Client ID', () {
-      expect(
-        FirebaseAuthService.defaultServerClientId,
-        '686239497156-tp2m4tqbubp9ic3lq74parcok577mra2.apps.googleusercontent.com',
+  group('AuthController Email Sign-In and Error Handling', () {
+    test('successful email sign-in updates state', () async {
+      final repo = InMemoryTrackingRepository();
+      final localService = LocalAuthService(repo);
+      await localService.registerWithEmailAndPassword(
+        'tester@seriolab.app',
+        'password123',
+        'tester',
       );
-    });
-  });
+      await localService.signOut();
 
-  group('AuthController Google Sign-In State and Error Handling', () {
-    test('cancelling Google Sign-In resets loading and does not set errorMessage', () async {
       final container = ProviderContainer(
         overrides: [
-          authServiceProvider.overrideWithValue(
-            _MockConfigurableAuthService(cancelSelection: true),
-          ),
+          trackingRepositoryProvider.overrideWithValue(repo),
+          authServiceProvider.overrideWithValue(localService),
         ],
       );
       addTearDown(container.dispose);
 
       final notifier = container.read(authControllerProvider.notifier);
-      final result = await notifier.signInWithGoogle();
+      final result = await notifier.signInWithEmail(
+        email: 'tester@seriolab.app',
+        password: 'password123',
+      );
 
-      expect(result, isFalse);
+      expect(result, isTrue);
       final state = container.read(authControllerProvider);
       expect(state.isLoading, isFalse);
+      expect(state.user?.email, 'tester@seriolab.app');
       expect(state.errorMessage, isNull);
+      await Future<void>.delayed(Duration.zero);
     });
 
-    test('failing Google Sign-In with AuthException surfaces detailed error message', () async {
+    test('failing email sign-in sets errorMessage', () async {
+      final repo = InMemoryTrackingRepository();
+      final localService = LocalAuthService(repo);
+
       final container = ProviderContainer(
         overrides: [
-          authServiceProvider.overrideWithValue(
-            _MockConfigurableAuthService(
-              exceptionToThrow: const AuthException(
-                'Não foi possível obter tokens de autenticação do Google.',
-              ),
-            ),
-          ),
+          trackingRepositoryProvider.overrideWithValue(repo),
+          authServiceProvider.overrideWithValue(localService),
         ],
       );
       addTearDown(container.dispose);
 
       final notifier = container.read(authControllerProvider.notifier);
-      final result = await notifier.signInWithGoogle();
+      final result = await notifier.signInWithEmail(
+        email: 'nonexistent@seriolab.app',
+        password: 'password123',
+      );
 
       expect(result, isFalse);
       final state = container.read(authControllerProvider);
       expect(state.isLoading, isFalse);
-      expect(
-        state.errorMessage,
-        'Não foi possível obter tokens de autenticação do Google.',
-      );
-    });
-
-    test('failing Google Sign-In with unexpected exception surfaces descriptive feedback', () async {
-      final container = ProviderContainer(
-        overrides: [
-          authServiceProvider.overrideWithValue(
-            _MockConfigurableAuthService(
-              exceptionToThrow: Exception('Network error during Google auth'),
-            ),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      final notifier = container.read(authControllerProvider.notifier);
-      final result = await notifier.signInWithGoogle();
-
-      expect(result, isFalse);
-      final state = container.read(authControllerProvider);
-      expect(state.isLoading, isFalse);
-      expect(state.errorMessage, contains('Falha ao autenticar com o Google'));
+      expect(state.errorMessage, isNotNull);
+      await Future<void>.delayed(Duration.zero);
     });
   });
-}
-
-class _MockConfigurableAuthService implements AuthService {
-  _MockConfigurableAuthService({
-    this.cancelSelection = false,
-    this.exceptionToThrow,
-  });
-
-  final bool cancelSelection;
-  final Object? exceptionToThrow;
-
-  @override
-  bool get isAvailable => true;
-
-  @override
-  AppUser? get currentUser => null;
-
-  @override
-  Stream<AppUser?> authStateChanges() => Stream.value(null);
-
-  @override
-  Future<AppUser> registerWithEmailAndPassword(
-    String email,
-    String password,
-    String username,
-  ) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<AppUser> signInWithEmailAndPassword(String email, String password) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<AppUser?> signInWithGoogle({BuildContext? context}) async {
-    if (exceptionToThrow != null) {
-      throw exceptionToThrow!;
-    }
-    if (cancelSelection) {
-      return null;
-    }
-    return const AppUser(
-      uid: 'google-uid-123',
-      email: 'test@gmail.com',
-      provider: AuthProviderKind.google,
-    );
-  }
-
-  @override
-  Future<void> signOut() async {}
 }

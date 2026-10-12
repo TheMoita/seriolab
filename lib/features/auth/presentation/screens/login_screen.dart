@@ -8,10 +8,9 @@ import '../../../main/presentation/screens/main_screen.dart';
 import '../../domain/auth_validators.dart';
 import '../providers/auth_providers.dart';
 import '../widgets/auth_gate.dart';
-import '../widgets/social_auth_button.dart';
 import 'register_screen.dart';
 
-/// Screen enabling user login via Email/Password or Google.
+/// Screen enabling user login via Email/Password.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -86,41 +85,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Future<void> _handleGoogleLogin() async {
-    if (ref.read(authControllerProvider).isLoading) return;
-    ref.read(authControllerProvider.notifier).clearError();
-
-    try {
-      final success = await ref
-          .read(authControllerProvider.notifier)
-          .signInWithGoogle(context: context);
-
-      if (!mounted) return;
-
-      if (success) {
-        _navigateToMain();
-      }
-    } catch (e, stack) {
-      debugPrint('Erro detalhado no Google Sign-In: $e\n\n$stack');
-      if (mounted) {
-        showDialog<void>(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('Erro no Login'),
-            content: SingleChildScrollView(
-              child: Text('$e\n\n$stack'),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Fechar'),
-              ),
-            ],
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -298,71 +262,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Divider ("Ou continua com")
-                    Row(
-                      children: [
-                        const Expanded(child: Divider()),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          child: Text(
-                            'Ou continua com',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textMuted,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                        ),
-                        const Expanded(child: Divider()),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Google Sign-In Button
-                    SocialAuthButton(
-                      label: 'Continuar com o Google',
-                      isLoading: authState.isLoading,
-                      onPressed:
-                          authState.isLoading ? null : _handleGoogleLogin,
-                    ),
-                    const SizedBox(height: 24),
-
                     // Switch to Register Screen
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        const Text(
-                          'Ainda não tens conta? ',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: authState.isLoading
-                              ? null
-                              : () {
-                                  ref
-                                      .read(authControllerProvider.notifier)
-                                      .clearError();
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) => const RegisterScreen(),
-                                    ),
-                                  );
-                                },
-                          child: const Text(
-                            'Regista-te',
+                    Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          const Text(
+                            'Ainda não tens conta? ',
                             style: TextStyle(
                               fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.secondary,
+                              color: AppColors.textSecondary,
                             ),
                           ),
-                        ),
-                      ],
+                          GestureDetector(
+                            onTap: authState.isLoading
+                                ? null
+                                : () {
+                                    ref
+                                        .read(authControllerProvider.notifier)
+                                        .clearError();
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder: (_) => const RegisterScreen(),
+                                      ),
+                                    );
+                                  },
+                            child: const Text(
+                              'Regista-te',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.secondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

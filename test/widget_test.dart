@@ -7,6 +7,7 @@ import 'package:seriolab/features/main/presentation/screens/main_screen.dart';
 import 'package:seriolab/features/shows/data/datasources/mock/mock_show_remote_data_source.dart';
 import 'package:seriolab/features/shows/data/repositories/show_repository_impl.dart';
 import 'package:seriolab/features/tracking/data/repositories/in_memory_tracking_repository.dart';
+import 'package:seriolab/features/auth/data/services/local_auth_service.dart';
 import 'package:seriolab/features/shows/presentation/screens/show_detail_screen.dart';
 import 'package:seriolab/main.dart';
 
@@ -155,6 +156,14 @@ void main() {
   testWidgets('AuthGate strictly requires authentication and removes guest mode',
       (WidgetTester tester) async {
     final inMemoryRepo = InMemoryTrackingRepository();
+    final localAuth = LocalAuthService(inMemoryRepo);
+    await localAuth.registerWithEmailAndPassword(
+      'tester@seriolab.app',
+      'password123',
+      'tester',
+    );
+    await localAuth.signOut();
+
     final testRepo = ShowRepositoryImpl(
       remote: MockShowRemoteDataSource(latency: Duration.zero),
       isUsingMockData: true,
@@ -175,17 +184,21 @@ void main() {
 
     // Verify login UI components
     expect(find.text('Iniciar Sessão'), findsOneWidget);
-    expect(find.text('Continuar com o Google'), findsOneWidget);
+    expect(find.text('Entrar'), findsOneWidget);
     expect(find.text('Regista-te'), findsOneWidget);
-    // Guest mode is completely removed
+    // Google Sign-In and guest mode are completely removed
+    expect(find.text('Continuar com o Google'), findsNothing);
+    expect(find.text('Ou continua com'), findsNothing);
     expect(find.text('Continuar como Convidado'), findsNothing);
 
-    // Tap Continuar com o Google to authenticate
-    final googleBtn = find.text('Continuar com o Google');
-    await tester.ensureVisible(googleBtn);
-    await tester.tap(googleBtn);
+    // Enter email & password and tap Entrar to authenticate
+    await tester.enterText(find.byType(TextFormField).at(0), 'tester@seriolab.app');
+    await tester.enterText(find.byType(TextFormField).at(1), 'password123');
+    final entrarBtn = find.text('Entrar');
+    await tester.ensureVisible(entrarBtn);
+    await tester.tap(entrarBtn);
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Verify transitioned to MainScreen
     expect(find.text('Início'), findsOneWidget);
