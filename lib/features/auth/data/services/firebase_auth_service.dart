@@ -15,7 +15,11 @@ class FirebaseAuthService implements AuthService {
     required this.auth,
     GoogleSignIn? googleSignIn,
     this.serverClientId = defaultServerClientId,
-  }) : _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
+  }) : _googleSignIn = googleSignIn ??
+            GoogleSignIn(
+              serverClientId: serverClientId ?? defaultServerClientId,
+              scopes: const ['email', 'profile'],
+            );
 
   /// Web Client ID from Firebase / Google Cloud Console to ensure idToken is returned on Android.
   static const String defaultServerClientId =
@@ -134,53 +138,22 @@ class FirebaseAuthService implements AuthService {
     try {
       // 1. Antes de chamar signIn():
       showFeedback('A abrir seletor Google...');
-      debugPrint('FirebaseAuthService: A inicializar Google Sign-In...');
-      await _googleSignIn.initialize(
-        serverClientId: serverClientId,
-      );
+      debugPrint('FirebaseAuthService: A chamar _googleSignIn.signIn()...');
 
-      // 2. Imediatamente após GoogleSignIn:
-      GoogleSignInAccount account;
-      try {
-        account = await _googleSignIn.authenticate();
-      } on GoogleSignInException catch (e, stack) {
-        debugPrint(
-          'Erro detalhado no Google Sign-In (GoogleSignInException): ${e.code.name} - ${e.description}',
-        );
-        if (e.code == GoogleSignInExceptionCode.canceled) {
-          showFeedback('Google devolveu NULL (Cancelado ou SHA-1 inválida).');
-          return null;
-        }
-        showErrorDialog(e, stack);
-        throw AuthException(
-          'Falha no Google Sign-In: ${e.description ?? e.code.name}',
-          code: e.code.name,
-        );
-      } catch (e, stack) {
-        if (e.toString().contains('canceled') || e.toString().contains('cancelled')) {
-          showFeedback('Google devolveu NULL (Cancelado ou SHA-1 inválida).');
-          return null;
-        }
-        showErrorDialog(e, stack);
-        rethrow;
+      // 2. Imediatamente após GoogleSignIn().signIn():
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        showFeedback('Google devolveu NULL (Cancelado ou SHA-1 inválida).');
+        return null;
+      } else {
+        showFeedback('Conta selecionada: ${googleUser.email}');
       }
-
-      showFeedback('Conta selecionada: ${account.email}');
 
       // 3. Após obter os tokens de autenticação:
-      final authTokens = account.authentication;
-      final idToken = authTokens.idToken;
-
-      String? accessToken;
-      try {
-        final clientAuth = await account.authorizationClient.authorizationForScopes([
-          'email',
-          'profile',
-        ]);
-        accessToken = clientAuth?.accessToken;
-      } catch (scopeError) {
-        debugPrint('FirebaseAuthService: Authorization scopes note: $scopeError');
-      }
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+      final accessToken = googleAuth.accessToken;
 
       showFeedback('Tokens obtidos: idToken=${idToken != null}');
 
@@ -207,32 +180,16 @@ class FirebaseAuthService implements AuthService {
         'FirebaseAuthService: Google Sign-In concluído com sucesso para: ${user.email ?? user.uid}',
       );
       return _mapFirebaseUser(user);
-    } on GoogleSignInException catch (e, stack) {
-      debugPrint(
-        'Erro detalhado no Google Sign-In (GoogleSignInException): ${e.code.name} - ${e.description}',
-      );
-      if (e.code == GoogleSignInExceptionCode.canceled) {
-        showFeedback('Google devolveu NULL (Cancelado ou SHA-1 inválida).');
-        return null;
-      }
-      showErrorDialog(e, stack);
-      throw AuthException(
-        'Falha no Google Sign-In: ${e.description ?? e.code.name}',
-        code: e.code.name,
-      );
-    } on FirebaseAuthException catch (e, stack) {
-      debugPrint(
-        'Erro detalhado no Google Sign-In (FirebaseAuthException): [${e.code}] ${e.message}',
-      );
-      showErrorDialog(e, stack);
-      throw AuthException.fromCode(e.code, e.message);
     } catch (e, stack) {
-      debugPrint('Erro detalhado no Google Sign-In: $e');
+      debugPrint('Erro detalhado no Google Sign-In: $e\n\n$stack');
       if (e.toString().contains('canceled') || e.toString().contains('cancelled')) {
         showFeedback('Google devolveu NULL (Cancelado ou SHA-1 inválida).');
         return null;
       }
       showErrorDialog(e, stack);
+      if (e is FirebaseAuthException) {
+        throw AuthException.fromCode(e.code, e.message);
+      }
       if (e is AuthException) rethrow;
       throw AuthException('Falha ao autenticar com o Google: $e');
     }
